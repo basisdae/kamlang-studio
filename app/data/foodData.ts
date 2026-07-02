@@ -1,0 +1,80 @@
+import { Ingredient } from "../recipes/[slug]/types";
+
+export const ingredientLibrary: Ingredient[] = [
+  {
+    id: "P001",
+    name: "หมูสับ",
+    category: "Protein",
+    icon: "🥩",
+    amount: 90,
+    unit: "กรัม",
+    costPerUnit: 0.2,
+  },
+  {
+    id: "P002",
+    name: "ไก่",
+    category: "Protein",
+    icon: "🍗",
+    amount: 90,
+    unit: "กรัม",
+    costPerUnit: 0.16,
+  },
+  {
+    id: "V001",
+    name: "ใบกะเพรา",
+    category: "Vegetable",
+    icon: "🥬",
+    amount: 10,
+    unit: "กรัม",
+    costPerUnit: 0.1,
+  },
+  {
+    id: "V002",
+    name: "พริกสด",
+    category: "Vegetable",
+    icon: "🌶️",
+    amount: 5,
+    unit: "กรัม",
+    costPerUnit: 0.18,
+  },
+  {
+    id: "V003",
+    name: "กระเทียม",
+    category: "Vegetable",
+    icon: "🧄",
+    amount: 5,
+    unit: "กรัม",
+    costPerUnit: 0.12,
+  },
+  {
+    id: "S001",
+    name: "ซอสกะเพรา",
+    category: "Sauce",
+    icon: "🥣",
+    amount: 22,
+    unit: "กรัม",
+    costPerUnit: 0.34,
+  },
+  {
+    id: "O001",
+    name: "น้ำมัน",
+    category: "Other",
+    icon: "🧂",
+    amount: 10,
+    unit: "กรัม",
+    costPerUnit: 0.08,
+  },
+];
+
+export const recipeMock = {
+  name: "กะเพราหมู",
+  category: "ตามสั่ง",
+  price: 69,
+  ingredients: [
+    { id: "R001", name: "ข้าวสวย", category: "Base", icon: "🍚", amount: 150, unit: "กรัม", costPerUnit: 0.04 },
+    { id: "P001", name: "หมูสับ", category: "Protein", icon: "🥩", amount: 90, unit: "กรัม", costPerUnit: 0.2 },
+    { id: "S001", name: "ซอสกะเพรา", category: "Sauce", icon: "🥣", amount: 22, unit: "กรัม", costPerUnit: 0.34 },
+    { id: "E001", name: "ไข่ดาว", category: "Other", icon: "🍳", amount: 1, unit: "ฟอง", costPerUnit: 6 },
+    { id: "PK001", name: "กล่อง", category: "Packaging", icon: "📦", amount: 1, unit: "ใบ", costPerUnit: 1 },
+  ],
+};
