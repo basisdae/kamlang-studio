@@ -1,0 +1,193 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap");
+
+.home {
+  min-height: 100vh;
+  background: #fafaf8;
+  padding: 18px;
+  font-family: "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+  color: #222;
+  font-weight: 500;
+}
+
+.create-card {
+  width: 100%;
+  height: 112px;
+  border: none;
+  border-radius: 28px;
+  background: #ffe7cc;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+  display: grid;
+  grid-template-columns: 58px 1fr 24px;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.create-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  place-items: center;
+  font-size: 31px;
+}
+
+.create-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.create-content strong {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+.create-content small {
+  font-size: 13px;
+  font-weight: 600;
+  color: #805c3a;
+}
+
+.create-arrow {
+  font-size: 28px;
+  color: #b88b5b;
+  text-align: right;
+}
+
+.section {
+  margin-top: 24px;
+}
+
+.section-head {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #777;
+}
+
+.section-head button {
+  border: none;
+  background: transparent;
+  color: #c46a2d;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.recent-list {
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
+}
+
+.recent-row {
+  width: 100%;
+  height: 58px;
+  border: none;
+  border-bottom: 1px solid #f0f0ee;
+  background: #ffffff;
+  padding: 0 18px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.recent-row:last-child {
+  border-bottom: none;
+}
+
+.recent-row strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: #222;
+  letter-spacing: -0.1px;
+}
+
+.recent-row span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #999;
+  white-space: nowrap;
+}
+
+.database-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.database-card {
+  width: 100%;
+  height: 68px;
+  border: none;
+  border-radius: 22px;
+  padding: 0 18px;
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.045);
+  font-family: inherit;
+}
+
+.database-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  place-items: center;
+  font-size: 23px;
+}
+
+.database-card strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  letter-spacing: -0.1px;
+}
+
+.ingredient {
+  background: #ffd9d9;
+}
+
+.sauce {
+  background: #ffe7cc;
+}
+
+.packaging {
+  background: #dceeff;
+}
+
+button:active {
+  transform: scale(0.985);
+}
+
+@media (min-width: 720px) {
+  .home {
+    max-width: 430px;
+    margin: 0 auto;
+  }
+}

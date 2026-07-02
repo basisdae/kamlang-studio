@@ -1,0 +1,142 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap");
+
+.recipes-page {
+  min-height: 100vh;
+  background: #fafaf8;
+  padding: 18px;
+  font-family: "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+  color: #222;
+}
+
+.top-bar {
+  height: 44px;
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.top-bar h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.back-button,
+.add-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #222;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: 500;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.add-button {
+  background: #c46a2d;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.search-box {
+  height: 52px;
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.045);
+  margin-bottom: 16px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 16px;
+  color: #222;
+}
+
+.search-box input::placeholder {
+  color: #aaa;
+}
+
+.recipe-list {
+  display: grid;
+  gap: 12px;
+}
+
+.recipe-card {
+  width: 100%;
+  min-height: 78px;
+  border: none;
+  border-radius: 22px;
+  background: #ffffff;
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
+  font-family: inherit;
+}
+
+.recipe-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recipe-main strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.recipe-main small {
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+}
+
+.recipe-info {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recipe-info span {
+  font-size: 18px;
+  font-weight: 800;
+  color: #c46a2d;
+}
+
+.recipe-info small {
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+}
+
+button:active,
+a:active {
+  transform: scale(0.985);
+}
+
+@media (min-width: 720px) {
+  .recipes-page {
+    max-width: 430px;
+    margin: 0 auto;
+  }
+}
