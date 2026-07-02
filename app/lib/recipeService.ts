@@ -1,13 +1,16 @@
 import {
-  recipes,
+  getAllRecipes,
   getRecipeBySlug,
-  getRecipeCost,
-  getFoodCostPercent,
-  type Recipe,
-} from "../data/recipes";
+} from "../recipes/RecipeRepository";
+import {
+  getStandardRecipeCost,
+  getStandardRecipeFoodCost,
+  getRecipeReferencePrice,
+} from "./costService";
+import type { Recipe } from "../recipes/types";
 
 export function getRecipes(): Recipe[] {
-  return recipes;
+  return getAllRecipes();
 }
 
 export function getRecipe(slug: string): Recipe | undefined {
@@ -15,9 +18,10 @@ export function getRecipe(slug: string): Recipe | undefined {
 }
 
 export function getRecipeSummary(recipe: Recipe) {
-  const cost = getRecipeCost(recipe);
-  const foodCost = getFoodCostPercent(recipe);
-  const profit = recipe.price - cost;
+  const cost = getStandardRecipeCost(recipe);
+  const referencePrice = getRecipeReferencePrice(recipe);
+  const foodCost = getStandardRecipeFoodCost(cost, referencePrice);
+  const profit = referencePrice - cost;
 
   return {
     cost,
@@ -27,14 +31,17 @@ export function getRecipeSummary(recipe: Recipe) {
 }
 
 export function getTotalRecipeCount() {
-  return recipes.length;
+  return getAllRecipes().length;
 }
 
 export function getAverageFoodCost() {
+  const recipes = getAllRecipes();
   if (recipes.length === 0) return 0;
 
   const total = recipes.reduce((sum, recipe) => {
-    return sum + getFoodCostPercent(recipe);
+    const cost = getStandardRecipeCost(recipe);
+    const referencePrice = getRecipeReferencePrice(recipe);
+    return sum + getStandardRecipeFoodCost(cost, referencePrice);
   }, 0);
 
   return Math.round(total / recipes.length);

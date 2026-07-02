@@ -1,0 +1,143 @@
+[
+  {
+    "id": "recipe-krapao-moo",
+    "slug": "krapao-moo",
+    "name": "กะเพราหมู",
+    "category": "เมนูขายดี",
+    "description": "สูตรมาตรฐานกะเพราหมู 1 ที่",
+    "yieldQuantity": 1,
+    "yieldUnit": "ที่",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 5,
+    "status": "พร้อมใช้",
+    "lines": [
+      { "ingredientId": "pork-mince", "quantity": 80, "unit": "g" },
+      { "ingredientId": "holy-basil", "quantity": 1, "unit": "bunch" },
+      { "ingredientId": "chili-garlic", "quantity": 40, "unit": "g" },
+      { "ingredientId": "stir-fry-sauce", "quantity": 45, "unit": "ml" }
+    ],
+    "steps": [
+      "ตั้งกระทะไฟแรง ใส่น้ำมันเล็กน้อย",
+      "ผัดพริกกระเทียมให้หอม",
+      "ใส่หมูสับ ผัดจนสุก",
+      "ใส่ซอสผัดและใบกะเพรา",
+      "ผัดให้เข้ากันแล้วเสิร์ฟทันที"
+    ]
+  },
+  {
+    "id": "recipe-krapao-moo-sap",
+    "slug": "krapao-moo-sap",
+    "name": "กะเพราหมูสับ",
+    "category": "เมนูขายดี",
+    "description": "สูตรมาตรฐานกะเพราหมูสับ 1 ที่ เสิร์ฟราดข้าวหรือแยกข้าว",
+    "yieldQuantity": 1,
+    "yieldUnit": "ที่",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 5,
+    "status": "พร้อมใช้",
+    "lines": [
+      { "ingredientId": "pork-mince", "quantity": 80, "unit": "g" },
+      { "ingredientId": "holy-basil", "quantity": 1, "unit": "bunch" },
+      { "ingredientId": "chili-garlic", "quantity": 40, "unit": "g" },
+      {
+        "ingredientId": "stir-fry-sauce",
+        "quantity": 45,
+        "unit": "ml",
+        "note": "ซอสผัดกะเพรา"
+      }
+    ],
+    "steps": [
+      "ตั้งกระทะไฟแรง ใส่น้ำมันเล็กน้อย",
+      "ผัดพริกกระเทียมให้หอม",
+      "ใส่หมูสับ ผัดจนสุก",
+      "ใส่ซอสผัดและใบกะเพรา",
+      "ผัดให้เข้ากันแล้วเสิร์ฟทันที"
+    ]
+  },
+  {
+    "id": "recipe-fried-rice-pork",
+    "slug": "fried-rice-pork",
+    "name": "ข้าวผัดหมู",
+    "category": "ข้าวผัด",
+    "description": "สูตรมาตรฐานข้าวผัดหมู 1 จาน",
+    "yieldQuantity": 1,
+    "yieldUnit": "จาน",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 8,
+    "status": "กำลังปรับ",
+    "lines": [
+      { "ingredientId": "rice-cooked", "quantity": 150, "unit": "g" },
+      { "ingredientId": "pork-mince", "quantity": 80, "unit": "g" },
+      { "ingredientId": "egg", "quantity": 1, "unit": "piece" },
+      { "ingredientId": "stir-fry-sauce", "quantity": 45, "unit": "ml" }
+    ],
+    "steps": [
+      "เตรียมข้าวสวยและวัตถุดิบให้พร้อม",
+      "ตั้งกระทะ ใส่กระเทียมผัดให้หอม",
+      "ใส่หมูและไข่ ผัดให้สุก",
+      "ใส่ข้าวและซอสผัด",
+      "ผัดให้แห้ง หอม แล้วจัดเสิร์ฟ"
+    ]
+  },
+  {
+    "id": "recipe-egg-sandwich",
+    "slug": "egg-sandwich",
+    "name": "แซนวิชไข่",
+    "category": "อาหารว่าง",
+    "description": "แซนวิชไข่ทำสด 1 ชิ้น",
+    "yieldQuantity": 1,
+    "yieldUnit": "ชิ้น",
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 8,
+    "status": "พร้อมใช้",
+    "lines": [
+      { "ingredientId": "bread-slice", "quantity": 2, "unit": "piece" },
+      {
+        "ingredientId": "egg",
+        "quantity": 2,
+        "unit": "piece",
+        "note": "ไข่ต้มหรือไข่ดาว"
+      }
+    ],
+    "steps": [
+      "ทอดหรือต้มไข่ตามสูตรร้าน",
+      "ปิ้งขนมปังให้หอม",
+      "จัดไข่ระหว่างขนมปัง",
+      "หั่นครึ่งแล้วเสิร์ฟ"
+    ]
+  },
+  {
+    "id": "recipe-pork-burger",
+    "slug": "pork-burger",
+    "name": "เบอร์เกอร์หมู",
+    "category": "เบอร์เกอร์",
+    "description": "เบอร์เกอร์หมู 1 ชิ้น พร้อมขนมปังเบอร์เกอร์",
+    "yieldQuantity": 1,
+    "yieldUnit": "ชิ้น",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 12,
+    "status": "พร้อมใช้",
+    "lines": [
+      { "ingredientId": "burger-bun", "quantity": 1, "unit": "piece" },
+      { "ingredientId": "pork-mince", "quantity": 120, "unit": "g" },
+      {
+        "ingredientId": "egg",
+        "quantity": 1,
+        "unit": "piece",
+        "note": "ผสมในเนื้อเบอร์เกอร์"
+      },
+      {
+        "ingredientId": "stir-fry-sauce",
+        "quantity": 15,
+        "unit": "ml",
+        "note": "ซอสเบอร์เกอร์"
+      }
+    ],
+    "steps": [
+      "ผสมหมูสับกับไข่ ปั้นเป็นแผ่น",
+      "ย่างหรือทอดเนื้อเบอร์เกอร์จนสุก",
+      "ปิ้งขนมปังเบอร์เกอร์",
+      "ราดซอสและประกอบเบอร์เกอร์"
+    ]
+  }
+]

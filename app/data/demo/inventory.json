@@ -1,0 +1,58 @@
+[
+  {
+    "ingredientId": "pork-mince",
+    "stockQuantity": 3.5,
+    "unit": "kg",
+    "minQuantity": 2,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ingredientId": "holy-basil",
+    "stockQuantity": 2,
+    "unit": "bunch",
+    "minQuantity": 5,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ingredientId": "chili-garlic",
+    "stockQuantity": 0.8,
+    "unit": "kg",
+    "minQuantity": 1,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ingredientId": "stir-fry-sauce",
+    "stockQuantity": 0,
+    "unit": "liter",
+    "minQuantity": 0.5,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ingredientId": "rice-cooked",
+    "stockQuantity": 8,
+    "unit": "kg",
+    "minQuantity": 3,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ingredientId": "egg",
+    "stockQuantity": 0,
+    "unit": "piece",
+    "minQuantity": 12,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ingredientId": "bread-slice",
+    "stockQuantity": 24,
+    "unit": "piece",
+    "minQuantity": 10,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ingredientId": "burger-bun",
+    "stockQuantity": 18,
+    "unit": "piece",
+    "minQuantity": 8,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+]

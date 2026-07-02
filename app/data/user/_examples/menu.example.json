@@ -1,0 +1,10 @@
+{
+  "id": "menu-example",
+  "recipeId": "recipe-example",
+  "name": "ชื่อเมนูขาย",
+  "category": "หมวด",
+  "packagingSetId": "pack-set-example",
+  "sellingPrice": 79,
+  "isActive": true,
+  "notes": "หมายเหตุ (ถ้ามี)"
+}

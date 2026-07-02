@@ -1,10 +1,16 @@
+import type { ModuleAccent } from "./semanticColors";
+import { getModuleSectionClass } from "./semanticColors";
+
 type SectionTitleProps = {
   children: React.ReactNode;
+  module?: ModuleAccent;
 };
 
-export default function SectionTitle({ children }: SectionTitleProps) {
+export default function SectionTitle({ children, module }: SectionTitleProps) {
+  const moduleClass = module ? getModuleSectionClass(module) : "";
+
   return (
-    <h2 className="px-1 text-sm font-bold text-black/45">
+    <h2 className={`kl-type-section-title kl-section-title ${moduleClass}`}>
       {children}
     </h2>
   );

@@ -1,0 +1,8 @@
+{
+  "id": "pack-example",
+  "name": "กล่อง",
+  "category": "กล่อง",
+  "cost": 5,
+  "unit": "ใบ",
+  "active": true
+}

@@ -1,0 +1,6 @@
+{
+  "id": "pack-set-example",
+  "name": "Grab",
+  "description": "ชุดบรรจุภัณฑ์สำหรับ Grab",
+  "items": ["pack-example"]
+}

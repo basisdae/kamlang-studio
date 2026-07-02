@@ -1,83 +1,149 @@
+"use client";
+
+import { Plus } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import AppShell from "../../components/layout/AppShell";
-import Card from "../../components/ui/Card";
+import { KL_ICON_CLASS, KL_ICON_STROKE } from "../../components/layout/navConfig";
+import IconButton from "../../components/ui/IconButton";
 import SearchBar from "../../components/ui/SearchBar";
-import Badge from "../../components/ui/Badge";
-import { coreRecipes } from "../data/recipeCore";
+import SectionTitle from "../../components/ui/SectionTitle";
+import { getModuleIconWellClass } from "../../components/ui/semanticColors";
 import {
-  getRecipeCoreCost,
-  getRecipeCoreFoodCost,
+  getStandardRecipeCost,
+  getRecipeReferencePrice,
 } from "../lib/costService";
+import {
+  deleteSavedRecipe,
+  duplicateSavedRecipe,
+  filterSavedRecipes,
+  getBuilderSavedRecipes,
+} from "../repositories/SavedRecipeRepository";
+import { getAllRecipes } from "./RecipeRepository";
+import type { SavedRecipe } from "./builder/types";
+import { filterRecipes } from "./utils";
+import EmptyState from "../../components/ui/EmptyState";
+import { EMPTY_STATE } from "../copy/emptyStates";
+import RecipeLibraryCard from "./components/RecipeLibraryCard";
+import SavedRecipeLibraryCard from "./components/SavedRecipeLibraryCard";
 
 export default function RecipesPage() {
+  const pathname = usePathname();
+  const [search, setSearch] = useState("");
+  const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
+
+  const standardRecipes = useMemo(() => getAllRecipes(), []);
+
+  useEffect(() => {
+    setSavedRecipes(getBuilderSavedRecipes());
+  }, [pathname]);
+
+  const filteredStandardRecipes = useMemo(
+    () => filterRecipes(standardRecipes, search),
+    [standardRecipes, search]
+  );
+
+  const filteredSavedRecipes = useMemo(
+    () => filterSavedRecipes(savedRecipes, search),
+    [savedRecipes, search]
+  );
+
+  function refreshSavedRecipes() {
+    setSavedRecipes(getBuilderSavedRecipes());
+  }
+
+  function handleDuplicate(id: string) {
+    duplicateSavedRecipe(id);
+    refreshSavedRecipes();
+  }
+
+  function handleDelete(id: string) {
+    deleteSavedRecipe(id);
+    refreshSavedRecipes();
+  }
+
+  const hasSearch = search.trim().length > 0;
+  const hasVisibleResults =
+    filteredStandardRecipes.length > 0 || filteredSavedRecipes.length > 0;
+
   return (
     <AppShell
       title="สูตรอาหาร"
-      description="รวมสูตรเมนูหลัก ต้นทุน และราคาขาย"
+      description="สูตรในครัว"
       backHref="/"
     >
-      <SearchBar placeholder="ค้นหาสูตรอาหาร..." />
-      <Link href="/recipes/new">
-  <Card className="flex items-center justify-center gap-3 border-2 border-dashed border-[#d8b98a] bg-[#fffaf2] text-[#2b2118] active:scale-[0.98]">
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2b2118] text-xl font-bold text-white">
-      +
-    </div>
-    <div className="font-bold">สร้างเมนูใหม่</div>
-  </Card>
-</Link>
+      <SearchBar
+        placeholder="ค้นหาสูตรอาหาร..."
+        value={search}
+        onChange={setSearch}
+      />
 
-      <div className="space-y-3">
-        {coreRecipes.map((recipe) => {
-          const cost = getRecipeCoreCost(recipe);
-          const foodCost = getRecipeCoreFoodCost(recipe);
+      <Link href="/recipes/builder" className="kl-section flex items-center gap-3 kl-pressable">
+        <div
+          className={`${getModuleIconWellClass("recipes")} pointer-events-none`}
+          aria-hidden
+        >
+          <Plus className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
+        </div>
+        <div>
+          <div className="kl-type-card-title">สร้างสูตรใหม่</div>
+          <p className="kl-type-helper mt-1">เริ่มสร้างสูตรอาหารและคำนวณต้นทุน</p>
+        </div>
+      </Link>
 
-          return (
-            <Link key={recipe.slug} href={`/recipes/${recipe.slug}`}>
-              <Card className="space-y-3 active:scale-[0.98]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-bold">{recipe.name}</h2>
-                    <p className="mt-1 text-sm text-black/45">
-                      {recipe.category}
-                    </p>
-                  </div>
+      <Link href="/menus/new" className="kl-section flex items-center gap-3 kl-pressable">
+        <IconButton className="pointer-events-none" tabIndex={-1} aria-hidden>
+          <Plus className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
+        </IconButton>
+        <div>
+          <div className="kl-type-card-title">สร้างเมนูขาย</div>
+          <p className="kl-type-helper mt-1">ใช้สูตรที่มีอยู่เพื่อสร้างสินค้าที่ขายจริง</p>
+        </div>
+      </Link>
 
-                  <Badge
-                    tone={
-                      recipe.status === "พร้อมใช้"
-                        ? "success"
-                        : recipe.status === "กำลังปรับ"
-                        ? "warning"
-                        : "danger"
-                    }
-                  >
-                    {recipe.status}
-                  </Badge>
-                </div>
+      {!hasVisibleResults ? (
+        hasSearch ? (
+          <EmptyState
+            {...EMPTY_STATE.recipes.search}
+            onAction={() => setSearch("")}
+          />
+        ) : (
+          <EmptyState {...EMPTY_STATE.recipes.none} />
+        )
+      ) : null}
 
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-2xl bg-[#f7f2ea] p-3">
-                    <div className="text-xs text-black/40">ต้นทุน</div>
-                    <div className="mt-1 font-bold">฿{cost}</div>
-                  </div>
+      {filteredSavedRecipes.length > 0 ? (
+        <section className="space-y-3">
+          <SectionTitle module="recipes">สูตรที่ยังไม่เสร็จ</SectionTitle>
+          <div className="space-y-3">
+            {filteredSavedRecipes.map((recipe) => (
+              <SavedRecipeLibraryCard
+                key={recipe.id}
+                recipe={recipe}
+                onDuplicate={handleDuplicate}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-                  <div className="rounded-2xl bg-[#f7f2ea] p-3">
-                    <div className="text-xs text-black/40">ขาย</div>
-                    <div className="mt-1 font-bold">
-                      ฿{recipe.sellingPrice}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl bg-[#f7f2ea] p-3">
-                    <div className="text-xs text-black/40">FC</div>
-                    <div className="mt-1 font-bold">{foodCost}%</div>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+      {filteredStandardRecipes.length > 0 ? (
+        <section className="space-y-3">
+          <SectionTitle module="recipes">สูตรตัวอย่าง</SectionTitle>
+          <div className="space-y-3">
+            {filteredStandardRecipes.map((recipe) => (
+              <RecipeLibraryCard
+                key={recipe.id}
+                recipe={recipe}
+                totalCost={getStandardRecipeCost(recipe)}
+                suggestedPrice={getRecipeReferencePrice(recipe)}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </AppShell>
   );
 }

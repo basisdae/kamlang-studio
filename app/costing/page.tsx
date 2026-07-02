@@ -1,21 +1,29 @@
 import AppShell from "../../components/layout/AppShell";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
+import SectionTitle from "../../components/ui/SectionTitle";
+import StatCell from "../../components/ui/StatCell";
 import {
-  recipes,
-  getRecipeCost,
-  getFoodCostPercent,
-} from "../data/recipes";
+  getStandardRecipeCost,
+  getStandardRecipeCostLines,
+  getStandardRecipeFoodCost,
+  getRecipeReferencePrice,
+} from "../lib/costService";
+import { getAllRecipes } from "../recipes/RecipeRepository";
+import { getPerPortionCosts } from "../settings/pricingAccess";
 
-const selectedRecipe = recipes[0];
 const packagingCost = 5;
 
 export default function CostingPage() {
-  const foodOnlyCost = getRecipeCost(selectedRecipe);
-  const totalCost = foodOnlyCost + packagingCost;
-  const sellingPrice = selectedRecipe.price;
-  const foodCost = Math.round((totalCost / sellingPrice) * 100);
+  const selectedRecipe = getAllRecipes()[0];
+  const foodOnlyCost = getStandardRecipeCost(selectedRecipe);
+  const { labourCost, gasCost, electricityCost } = getPerPortionCosts();
+  const totalCost =
+    foodOnlyCost + packagingCost + labourCost + gasCost + electricityCost;
+  const sellingPrice = getRecipeReferencePrice(selectedRecipe);
+  const foodCost = getStandardRecipeFoodCost(totalCost, sellingPrice);
   const profit = sellingPrice - totalCost;
+  const costLines = getStandardRecipeCostLines(selectedRecipe);
 
   return (
     <AppShell
@@ -23,11 +31,11 @@ export default function CostingPage() {
       description="คำนวณต้นทุนต่อเมนู ราคาขาย และกำไร"
       backHref="/"
     >
-      <Card className="space-y-4 bg-[#2b2118] text-white">
-        <div className="flex items-start justify-between">
+      <Card className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm text-white/55">เมนูที่เลือก</p>
-            <h2 className="mt-1 text-2xl font-bold">
+            <p className="kl-type-label">เมนูที่เลือก</p>
+            <h2 className="kl-type-display mt-1.5">
               {selectedRecipe.name}
             </h2>
           </div>
@@ -35,29 +43,19 @@ export default function CostingPage() {
           <Badge tone="success">พร้อมขาย</Badge>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-2xl bg-white/10 p-3">
-            <div className="text-xs text-white/45">ต้นทุน</div>
-            <div className="mt-1 font-bold">฿{totalCost}</div>
-          </div>
-
-          <div className="rounded-2xl bg-white/10 p-3">
-            <div className="text-xs text-white/45">ขาย</div>
-            <div className="mt-1 font-bold">฿{sellingPrice}</div>
-          </div>
-
-          <div className="rounded-2xl bg-white/10 p-3">
-            <div className="text-xs text-white/45">กำไร</div>
-            <div className="mt-1 font-bold">฿{profit}</div>
-          </div>
-        </div>
-      </Card>
+        <div className="grid grid-cols-3 gap-2.5">
+          <StatCell label="ต้นทุน" value={`฿${totalCost}`} size="lg" />
+          <StatCell label="ขาย" value={`฿${sellingPrice}`} size="lg" />
+          <StatCell label="กำไร" value={`฿${profit}`} size="lg" />
+        </div>      </Card>
 
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-black/45">Food Cost</div>
-            <div className="mt-1 text-3xl font-bold">{foodCost}%</div>
+            <div className="kl-type-label">สัดส่วนต้นทุนอาหาร</div>
+            <div className="kl-type-metric-xl mt-1.5 text-kl-brown">
+              {foodCost}%
+            </div>
           </div>
 
           <Badge tone={foodCost <= 35 ? "success" : "warning"}>
@@ -65,48 +63,52 @@ export default function CostingPage() {
           </Badge>
         </div>
 
-        <div className="h-3 overflow-hidden rounded-full bg-[#f1e5d3]">
+        <div className="kl-progress-track h-2">
           <div
-            className="h-full rounded-full bg-[#2b2118]"
+            className="kl-progress-fill"
             style={{ width: `${Math.min(foodCost, 100)}%` }}
           />
         </div>
 
-        <p className="text-sm leading-6 text-black/50">
-          เป้าหมายแนะนำคือ Food Cost ประมาณ 30–35% ถ้าสูงกว่านี้ควรปรับราคาขาย
+        <p className="kl-type-description">
+          เป้าหมายแนะนำคือสัดส่วนต้นทุนอาหารประมาณ 30–35% ถ้าสูงกว่านี้ควรปรับราคาขาย
           หรือทบทวนต้นทุนวัตถุดิบ
         </p>
       </Card>
 
       <section className="space-y-3">
-        <h2 className="px-1 text-sm font-bold text-black/45">
-          รายการต้นทุน
-        </h2>
+        <SectionTitle>รายการต้นทุน</SectionTitle>
 
         <Card className="space-y-3">
-          {selectedRecipe.ingredients.map((item) => (
+          {costLines.map((item) => (
             <div
-              key={item.name}
-              className="flex items-center justify-between border-b border-black/5 pb-3 last:border-0 last:pb-0"
+              key={`${item.name}-${item.quantity}-${item.unit}`}
+              className="flex items-center justify-between border-b border-kl-border pb-3 last:border-0 last:pb-0"
             >
               <div>
-                <div className="font-bold">{item.name}</div>
-                <div className="mt-1 text-sm text-black/45">{item.amount}</div>
+                <div className="kl-type-body">{item.name}</div>
+                <div className="kl-type-caption mt-1">
+                  {item.quantity} {item.unit}
+                </div>
               </div>
 
-              <div className="font-bold">฿{item.cost}</div>
+              <div className="kl-type-metric text-kl-brown">
+                ฿{item.cost}
+              </div>
             </div>
           ))}
 
-          <div className="flex items-center justify-between border-t border-black/10 pt-3">
+          <div className="flex items-center justify-between border-t border-kl-border pt-3">
             <div>
-              <div className="font-bold">Packaging</div>
-              <div className="mt-1 text-sm text-black/45">
+              <div className="kl-type-body">บรรจุภัณฑ์</div>
+              <div className="kl-type-caption mt-1">
                 กล่อง / ถุง / ช้อน
               </div>
             </div>
 
-            <div className="font-bold">฿{packagingCost}</div>
+            <div className="kl-type-metric text-kl-brown">
+              ฿{packagingCost}
+            </div>
           </div>
         </Card>
       </section>

@@ -1,22 +1,40 @@
-type BadgeTone = "success" | "warning" | "danger" | "info" | "neutral";
-
-type BadgeProps = {
-  children: React.ReactNode;
-  tone?: BadgeTone;
-};
-
-const toneClass: Record<BadgeTone, string> = {
-  success: "bg-emerald-100 text-emerald-700",
-  warning: "bg-amber-100 text-amber-700",
-  danger: "bg-red-100 text-red-700",
-  info: "bg-sky-100 text-sky-700",
-  neutral: "bg-stone-100 text-stone-600",
-};
-
-export default function Badge({ children, tone = "neutral" }: BadgeProps) {
-  return (
-    <span className={`rounded-full px-3 py-1 text-xs font-bold ${toneClass[tone]}`}>
-      {children}
-    </span>
-  );
-}
+export type StatusBadgeTone =
+  | "draft"
+  | "ready"
+  | "inProgress"
+  | "completed"
+  | "critical";
+
+/** @deprecated Prefer StatusBadgeTone — mapped to premium status colors */
+type LegacyBadgeTone = "success" | "warning" | "danger" | "info" | "neutral";
+
+export type BadgeTone = StatusBadgeTone | LegacyBadgeTone;
+
+type BadgeProps = {
+  children: React.ReactNode;
+  tone?: BadgeTone;
+};
+
+const toneClass: Record<BadgeTone, string> = {
+  draft: "kl-badge-draft",
+  ready: "kl-badge-ready",
+  inProgress: "kl-badge-inprogress",
+  completed: "kl-badge-completed",
+  critical: "kl-badge-critical",
+  neutral: "kl-badge-neutral",
+  success: "kl-badge-ready",
+  warning: "kl-badge-draft",
+  danger: "kl-badge-critical",
+  info: "kl-badge-inprogress",
+};
+
+export default function Badge({ children, tone = "neutral" }: BadgeProps) {
+  return (
+    <span
+      className={`kl-type-label rounded-full px-3 py-1 font-medium ${toneClass[tone]}`}
+    >
+      {children}
+    </span>
+  );
+}
+

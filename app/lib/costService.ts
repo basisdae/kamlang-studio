@@ -1,57 +1,54 @@
-import { ingredients } from "../data/ingredients";
-import type { CoreRecipe, RecipeIngredientLine } from "../data/recipeCore";
+/**
+ * Cost calculations for Standard Recipes.
+ *
+ * Uses IngredientRepository for ingredient cost data.
+ * Selling price is not stored on Recipe — pass a reference price from Menu
+ * or use getSuggestedSellingPrice() until Menu exists.
+ */
+import { getIngredientById } from "../ingredients/IngredientRepository";
+import { calcLineCost } from "../ingredients/utils";
+import type { Recipe, RecipeLine } from "../recipes/types";
+import { getMainPrice, getSuggestedPriceFromFoodCost } from "./pricingService";
 
-function getIngredientById(id: string) {
-  return ingredients.find((item) => item.id === id);
-}
-
-function convertToPurchaseUnitCost(line: RecipeIngredientLine) {
+function convertLineCost(line: RecipeLine) {
   const ingredient = getIngredientById(line.ingredientId);
 
   if (!ingredient) return 0;
 
-  if (ingredient.purchaseUnit === "kg" && line.unit === "g") {
-    return (ingredient.purchasePrice / 1000) * line.quantity;
-  }
-
-  if (ingredient.purchaseUnit === "liter" && line.unit === "ml") {
-    return (ingredient.purchasePrice / 1000) * line.quantity;
-  }
-
-  if (ingredient.purchaseUnit === line.unit) {
-    return ingredient.purchasePrice * line.quantity;
-  }
-
-  return ingredient.purchasePrice * line.quantity;
+  return calcLineCost(ingredient, line.quantity, line.unit);
 }
 
-export function getRecipeCoreCost(recipe: CoreRecipe) {
+export function getStandardRecipeCost(recipe: Pick<Recipe, "lines">) {
   return Math.round(
-    recipe.ingredients.reduce((sum, line) => {
-      return sum + convertToPurchaseUnitCost(line);
-    }, 0)
+    recipe.lines.reduce((sum, line) => sum + convertLineCost(line), 0)
   );
 }
 
-export function getRecipeCoreFoodCost(recipe: CoreRecipe) {
-  return Math.round((getRecipeCoreCost(recipe) / recipe.sellingPrice) * 100);
+export function getStandardRecipeFoodCost(cost: number, sellingPrice: number) {
+  if (sellingPrice <= 0) return 0;
+
+  return Math.round((cost / sellingPrice) * 100);
 }
 
-export function getRecipeCostLines(recipe: CoreRecipe) {
-  return recipe.ingredients.map((line) => {
+export function getStandardRecipeCostLines(recipe: Pick<Recipe, "lines">) {
+  return recipe.lines.map((line) => {
     const ingredient = getIngredientById(line.ingredientId);
 
     return {
       name: ingredient?.name ?? "ไม่พบวัตถุดิบ",
       quantity: line.quantity,
       unit: line.unit,
-      cost: Math.round(convertToPurchaseUnitCost(line)),
+      cost: Math.round(convertLineCost(line)),
     };
   });
 }
-export function getSuggestedSellingPrice(recipe: CoreRecipe, targetFoodCost = 35) {
-  const cost = getRecipeCoreCost(recipe);
-  const rawPrice = cost / (targetFoodCost / 100);
 
-  return Math.ceil(rawPrice / 10) * 10 - 1;
+/** Suggested selling price from cost + target food cost %. Menu layer will own actual prices. */
+export function getSuggestedSellingPrice(recipe: Pick<Recipe, "lines">) {
+  return getSuggestedPriceFromFoodCost(getStandardRecipeCost(recipe));
+}
+
+/** Reference sell price: channel price from PricingService, or suggested if unset. */
+export function getRecipeReferencePrice(recipe: Pick<Recipe, "id" | "lines">) {
+  return getMainPrice(recipe.id) ?? getSuggestedSellingPrice(recipe);
 }

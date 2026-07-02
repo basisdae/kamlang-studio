@@ -1,0 +1,42 @@
+[
+  {
+    "id": "menu-krapao-sap-over-rice",
+    "recipeId": "recipe-krapao-moo-sap",
+    "name": "กะเพราหมูสับราดข้าว",
+    "category": "จานเดียว",
+    "packagingSetId": "pack-set-dine-in",
+    "sellingPrice": 69,
+    "isActive": true,
+    "notes": "เสิร์ฟราดบนข้าวสวยร้อน — ทานในร้าน"
+  },
+  {
+    "id": "menu-krapao-sap-with-rice",
+    "recipeId": "recipe-krapao-moo-sap",
+    "name": "กะเพราหมูสับกับข้าว",
+    "category": "จานเดียว",
+    "packagingSetId": "pack-set-pickup",
+    "sellingPrice": 65,
+    "isActive": true,
+    "notes": "แยกกะเพราและข้าวสำหรับลูกค้ารับกลับบ้าน"
+  },
+  {
+    "id": "menu-pork-burger",
+    "recipeId": "recipe-pork-burger",
+    "name": "เบอร์เกอร์หมู",
+    "category": "เบอร์เกอร์",
+    "packagingSetId": "pack-set-grab",
+    "sellingPrice": 99,
+    "isActive": true,
+    "notes": "ขายผ่าน Grab — กล่อง ช้อน ถุง สติ๊กเกอร์"
+  },
+  {
+    "id": "menu-egg-sandwich",
+    "recipeId": "recipe-egg-sandwich",
+    "name": "แซนด์วิชไข่",
+    "category": "อาหารว่าง",
+    "packagingSetId": "pack-set-lineman",
+    "sellingPrice": 45,
+    "isActive": true,
+    "notes": "เหมาะสำหรับขายช่วงเช้าผ่าน LINE MAN"
+  }
+]

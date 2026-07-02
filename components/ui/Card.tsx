@@ -4,9 +4,5 @@ type CardProps = {
 };
 
 export default function Card({ children, className = "" }: CardProps) {
-  return (
-    <div className={`rounded-[24px] bg-white p-4 shadow-sm ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`kl-card ${className}`}>{children}</div>;
 }

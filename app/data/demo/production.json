@@ -1,0 +1,19 @@
+[
+  {
+    "id": "plan-__TODAY__",
+    "date": "__TODAY__",
+    "status": "preparing",
+    "lines": [
+      {
+        "menuId": "menu-pork-burger",
+        "quantity": 25,
+        "note": "เตรียมสำหรับออเดอร์ Grab"
+      },
+      {
+        "menuId": "menu-egg-sandwich",
+        "quantity": 18,
+        "note": "ช่วงเช้า LINE MAN"
+      }
+    ]
+  }
+]

@@ -1,16 +1,25 @@
+import { Search } from "lucide-react";
+import { KL_ICON_CLASS, KL_ICON_STROKE } from "../layout/navConfig";
+
 type SearchBarProps = {
   placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 };
 
 export default function SearchBar({
   placeholder = "ค้นหา...",
+  value,
+  onChange,
 }: SearchBarProps) {
   return (
-    <div className="flex items-center gap-3 rounded-[22px] bg-white px-4 py-3 shadow-sm">
-      <span className="text-lg text-black/35">🔍</span>
+    <div className="kl-search">
+      <Search className={`${KL_ICON_CLASS} text-kl-muted`} strokeWidth={KL_ICON_STROKE} />
       <input
-        className="w-full bg-transparent text-sm outline-none placeholder:text-black/35"
+        className="w-full bg-transparent text-[length:var(--kl-text-body)] text-kl-brown outline-none placeholder:text-kl-muted"
         placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
       />
     </div>
   );

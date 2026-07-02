@@ -1,0 +1,16 @@
+{
+  "id": "recipe-example",
+  "slug": "recipe-example",
+  "name": "ชื่อสูตร",
+  "category": "หมวด",
+  "description": "คำอธิบายสั้นๆ",
+  "yieldQuantity": 1,
+  "yieldUnit": "ที่",
+  "prepTimeMinutes": 10,
+  "cookTimeMinutes": 5,
+  "status": "พร้อมใช้",
+  "lines": [
+    { "ingredientId": "my-ingredient", "quantity": 100, "unit": "g" }
+  ],
+  "steps": ["ขั้นตอนที่ 1", "ขั้นตอนที่ 2"]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "plan-2026-07-02",
+  "date": "2026-07-02",
+  "status": "draft",
+  "lines": [
+    { "menuId": "menu-example", "quantity": 10, "note": "หมายเหตุ (ถ้ามี)" }
+  ]
+}

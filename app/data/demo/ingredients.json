@@ -1,0 +1,74 @@
+[
+  {
+    "id": "pork-mince",
+    "name": "หมูสับ",
+    "purchaseUnit": "kg",
+    "purchasePrice": 180,
+    "supplier": "ตลาด",
+    "stockQuantity": 3.5,
+    "minQuantity": 2
+  },
+  {
+    "id": "holy-basil",
+    "name": "ใบกะเพรา",
+    "purchaseUnit": "bunch",
+    "purchasePrice": 10,
+    "supplier": "ตลาด",
+    "stockQuantity": 2,
+    "minQuantity": 5
+  },
+  {
+    "id": "chili-garlic",
+    "name": "พริกกระเทียม",
+    "purchaseUnit": "kg",
+    "purchasePrice": 90,
+    "supplier": "ตลาด",
+    "stockQuantity": 0.8,
+    "minQuantity": 1
+  },
+  {
+    "id": "stir-fry-sauce",
+    "name": "ซอสผัด",
+    "purchaseUnit": "liter",
+    "purchasePrice": 65,
+    "supplier": "สูตรร้าน",
+    "stockQuantity": 0,
+    "minQuantity": 0.5
+  },
+  {
+    "id": "rice-cooked",
+    "name": "ข้าวสวย",
+    "purchaseUnit": "kg",
+    "purchasePrice": 45,
+    "supplier": "ร้านข้าวสาร",
+    "stockQuantity": 8,
+    "minQuantity": 3
+  },
+  {
+    "id": "egg",
+    "name": "ไข่ไก่",
+    "purchaseUnit": "piece",
+    "purchasePrice": 5,
+    "supplier": "ตลาด",
+    "stockQuantity": 0,
+    "minQuantity": 12
+  },
+  {
+    "id": "bread-slice",
+    "name": "ขนมปังแซนวิช",
+    "purchaseUnit": "piece",
+    "purchasePrice": 8,
+    "supplier": "ร้านขนมปัง",
+    "stockQuantity": 24,
+    "minQuantity": 10
+  },
+  {
+    "id": "burger-bun",
+    "name": "ขนมปังเบอร์เกอร์",
+    "purchaseUnit": "piece",
+    "purchasePrice": 12,
+    "supplier": "ร้านขนมปัง",
+    "stockQuantity": 18,
+    "minQuantity": 8
+  }
+]

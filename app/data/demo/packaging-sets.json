@@ -1,0 +1,31 @@
+[
+  {
+    "id": "pack-set-grab",
+    "name": "Grab",
+    "description": "บรรจุภัณฑ์สำหรับออเดอร์ Grab — กล่อง ช้อน ถุง และสติ๊กเกอร์",
+    "items": [
+      "pack-box-750ml",
+      "pack-plastic-spoon",
+      "pack-carry-bag",
+      "pack-sticker"
+    ]
+  },
+  {
+    "id": "pack-set-lineman",
+    "name": "LINE MAN",
+    "description": "บรรจุภัณฑ์สำหรับออเดอร์ LINE MAN — กล่องและช้อน",
+    "items": ["pack-takeaway-box", "pack-plastic-spoon"]
+  },
+  {
+    "id": "pack-set-pickup",
+    "name": "รับเอง",
+    "description": "บรรจุภัณฑ์สำหรับลูกค้ารับกลับบ้าน — กล่องอย่างเดียว",
+    "items": ["pack-takeaway-box"]
+  },
+  {
+    "id": "pack-set-dine-in",
+    "name": "ทานร้าน",
+    "description": "อุปกรณ์เสิร์ฟในหน้าร้าน — จานและช้อนสแตนเลส",
+    "items": ["pack-plate", "pack-stainless-spoon"]
+  }
+]

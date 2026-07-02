@@ -1,0 +1,90 @@
+[
+  {
+    "id": "pack-box-750ml",
+    "name": "กล่อง 750 ml",
+    "category": "กล่อง",
+    "cost": 4,
+    "unit": "ใบ",
+    "active": true
+  },
+  {
+    "id": "pack-takeaway-box",
+    "name": "กล่อง 1000 ml",
+    "category": "กล่อง",
+    "cost": 5,
+    "unit": "ใบ",
+    "active": true
+  },
+  {
+    "id": "pack-burger-box",
+    "name": "กล่องเบอร์เกอร์",
+    "category": "กล่อง",
+    "cost": 6,
+    "unit": "ใบ",
+    "active": true
+  },
+  {
+    "id": "pack-burger-wrap",
+    "name": "กระดาษห่อเบอร์เกอร์",
+    "category": "ห่ออาหาร",
+    "cost": 3,
+    "unit": "แผ่น",
+    "active": true
+  },
+  {
+    "id": "pack-plastic-spoon",
+    "name": "ช้อนพลาสติก",
+    "category": "อุปกรณ์ทาน",
+    "cost": 1,
+    "unit": "ชิ้น",
+    "active": true
+  },
+  {
+    "id": "pack-fork",
+    "name": "ส้อม",
+    "category": "อุปกรณ์ทาน",
+    "cost": 1,
+    "unit": "ชิ้น",
+    "active": true
+  },
+  {
+    "id": "pack-stainless-spoon",
+    "name": "ช้อนสแตนเลส",
+    "category": "อุปกรณ์ทาน",
+    "cost": 0,
+    "unit": "ชิ้น",
+    "active": true
+  },
+  {
+    "id": "pack-plate",
+    "name": "จาน",
+    "category": "อุปกรณ์ทาน",
+    "cost": 0,
+    "unit": "ใบ",
+    "active": true
+  },
+  {
+    "id": "pack-rubber-band",
+    "name": "หนังยาง",
+    "category": "อื่นๆ",
+    "cost": 0.5,
+    "unit": "เส้น",
+    "active": true
+  },
+  {
+    "id": "pack-carry-bag",
+    "name": "ถุงหิ้ว",
+    "category": "ถุง",
+    "cost": 2,
+    "unit": "ใบ",
+    "active": true
+  },
+  {
+    "id": "pack-sticker",
+    "name": "สติ๊กเกอร์",
+    "category": "อื่นๆ",
+    "cost": 0.5,
+    "unit": "แผ่น",
+    "active": true
+  }
+]

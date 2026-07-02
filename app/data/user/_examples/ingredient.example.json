@@ -1,0 +1,9 @@
+{
+  "id": "my-ingredient",
+  "name": "ชื่อวัตถุดิบ",
+  "purchaseUnit": "kg",
+  "purchasePrice": 100,
+  "supplier": "แหล่งซื้อ",
+  "stockQuantity": 5,
+  "minQuantity": 2
+}
