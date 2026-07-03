@@ -5,7 +5,7 @@ import { getRecipeReferencePrice } from "../../lib/costService";
 import RecipeHero from "./components/RecipeHero";
 import RecipeScaledSections from "./components/RecipeScaledSections";
 import RecipeNotes from "./components/RecipeNotes";
-import RecipeActionBar from "./components/RecipeActionBar";
+import RecipeSampleFooter from "./components/RecipeSampleFooter";
 
 type PageProps = {
   params: Promise<{
@@ -24,8 +24,13 @@ export default async function RecipeDetailPage({ params }: PageProps) {
   const suggestedPrice = getRecipeReferencePrice(recipe);
 
   return (
-    <AppShell title={recipe.name} description={recipe.category} backHref="/recipes">
-      <div className="space-y-7 kl-scroll-above-bottom-bar">
+    <AppShell
+      title={recipe.name}
+      description={recipe.category}
+      backHref="/recipes"
+      compact
+    >
+      <div className="space-y-4 kl-scroll-above-bottom-bar">
         <RecipeHero recipe={recipe} />
         <RecipeScaledSections
           recipeId={recipe.id}
@@ -34,10 +39,11 @@ export default async function RecipeDetailPage({ params }: PageProps) {
           lines={recipe.lines}
           yieldUnit={recipe.yieldUnit}
           suggestedPrice={suggestedPrice}
+          showSave={false}
         />
         <RecipeNotes notes={recipe.description} />
       </div>
-      <RecipeActionBar />
+      <RecipeSampleFooter />
     </AppShell>
   );
 }

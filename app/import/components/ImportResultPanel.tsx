@@ -19,18 +19,18 @@ export default function ImportResultPanel({ result, onResetFile }: Props) {
 
   return (
     <section className="space-y-3">
-      <SectionTitle>ผลการตรวจสอบ</SectionTitle>
+      <SectionTitle>ตรวจไฟล์แล้ว</SectionTitle>
 
       <Card className="space-y-4">
         <div className="kl-metric-grid">
           <StatCell
-            label="จำนวนที่ผ่าน"
+            label="ใช้ได้"
             value={result.successCount}
             size="lg"
             className="text-kl-success-text"
           />
           <StatCell
-            label="จำนวนที่ผิด"
+            label="มีปัญหา"
             value={result.failedCount}
             size="lg"
             className="text-kl-danger-text"
@@ -38,11 +38,8 @@ export default function ImportResultPanel({ result, onResetFile }: Props) {
         </div>
 
         {isClean ? (
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex justify-center">
             <Badge tone="ready">พร้อมบันทึก</Badge>
-            <span className="kl-type-body text-kl-success-text">
-              ไฟล์ผ่านการตรวจสอบ
-            </span>
           </div>
         ) : null}
 
@@ -76,7 +73,7 @@ export default function ImportResultPanel({ result, onResetFile }: Props) {
         {result.errors.length > 0 ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="kl-type-card-title">ข้อผิดพลาด</div>
+              <div className="kl-type-card-title">ต้องแก้ก่อน</div>
               <Badge tone="danger">{result.errors.length}</Badge>
             </div>
 

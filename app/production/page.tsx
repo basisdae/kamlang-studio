@@ -1,16 +1,11 @@
 "use client";
 
-import { ClipboardList, Pencil } from "lucide-react";
-import Link from "next/link";
+import { ClipboardList } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../../components/layout/AppShell";
-import { KL_ICON_CLASS, KL_ICON_STROKE } from "../../components/layout/navConfig";
-import Card from "../../components/ui/Card";
-import Badge from "../../components/ui/Badge";
 import EmptyState from "../../components/ui/EmptyState";
 import { EMPTY_STATE } from "../copy/emptyStates";
-import { getModuleIconWellClass } from "../../components/ui/semanticColors";
 import { getProductionRollupForPlan } from "../lib/productionRollupService";
 import {
   getSavedPlanByDate,
@@ -18,8 +13,8 @@ import {
   materializeProductionPlan,
   updateSavedProductionPlanStatus,
 } from "../repositories/SavedProductionRepository";
-import ProductionActionBar from "./components/ProductionActionBar";
 import ProductionCostSummary from "./components/ProductionCostSummary";
+import ProductionHeroActions from "./components/ProductionHeroActions";
 import ProductionDeductConfirmSheet from "./components/ProductionDeductConfirmSheet";
 import ProductionDeductedBanner from "./components/ProductionDeductedBanner";
 import ProductionHero from "./components/ProductionHero";
@@ -27,12 +22,11 @@ import ProductionIngredientTotals from "./components/ProductionIngredientTotals"
 import ProductionMenuLines from "./components/ProductionMenuLines";
 import ProductionPackagingTotals from "./components/ProductionPackagingTotals";
 import ProductionStatusControl from "./components/ProductionStatusControl";
-import ProductionTodayHeader from "./components/ProductionTodayHeader";
+import SectionLink from "../../components/ui/SectionLink";
 import { getEffectivePlanByDate } from "./planAccess";
 import type { ProductionPlanStatus } from "./types";
 import {
   formatProductionDate,
-  getProductionStatusLabel,
   todayPlanDate,
 } from "./utils";
 
@@ -94,7 +88,7 @@ export default function ProductionPage() {
 
     if (status === "completed") {
       if (plan?.deducted || isProductionPlanDeducted(today)) {
-        setDeductMessage("แผนนี้หักของในครัวไปแล้ว");
+        setDeductMessage("แผนนี้ตัดของในครัวไปแล้ว");
         applyStatusOnly("completed");
         return;
       }
@@ -125,32 +119,24 @@ export default function ProductionPage() {
 
   return (
     <AppShell
-      title="แผนผลิต"
-      description="เมนูที่ต้องทำและความคืบหน้าวันนี้"
+      title="แผนวันนี้"
       backHref="/"
+      compact
     >
       {rollup ? (
-        <>
-          <ProductionHero
-            dateLabel={formatProductionDate(today)}
-            totalDishes={totalDishes}
-            menuCount={rollup.menuLines.length}
-            statusLabel={getProductionStatusLabel(rollup.plan.status)}
-          />
-
-          <Link href={editHref} className="kl-section flex items-center gap-3 kl-pressable">
-            <div
-              className={`${getModuleIconWellClass("production")} pointer-events-none`}
-              aria-hidden
-            >
-              <Pencil className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="kl-type-card-title">แก้ไขแผนผลิต</div>
-              <p className="kl-type-helper mt-1">ปรับเป้าผลิตวันนี้</p>
-            </div>
-          </Link>
-        </>
+        <ProductionHero
+          dateLabel={formatProductionDate(today)}
+          totalDishes={totalDishes}
+          menuCount={rollup.menuLines.length}
+          actions={
+            <ProductionHeroActions
+              editHref={editHref}
+              planDate={today}
+              canDelete
+              onDeleted={refreshPlan}
+            />
+          }
+        />
       ) : (
         <EmptyState
           {...EMPTY_STATE.production.noPlan}
@@ -160,18 +146,14 @@ export default function ProductionPage() {
       )}
 
       {rollup ? (
-        <div className="space-y-6 kl-scroll-above-tall-bottom-bar">
+        <div className="space-y-4">
           <ProductionMenuLines menuLines={rollup.menuLines} />
           <ProductionIngredientTotals
             ingredientTotals={rollup.ingredientTotals}
           />
-          <ProductionTodayHeader plan={rollup.plan} />
           <ProductionDeductedBanner plan={rollup.plan} />
           {deductMessage ? (
-            <Card className="space-y-2">
-              <Badge tone="warning">หมายเหตุ</Badge>
-              <p className="kl-type-caption text-kl-warning-text">{deductMessage}</p>
-            </Card>
+            <p className="kl-type-caption px-1 text-kl-warning-text">{deductMessage}</p>
           ) : null}
           <ProductionStatusControl
             status={rollup.plan.status}
@@ -182,17 +164,13 @@ export default function ProductionPage() {
             totalPackagingCost={rollup.totalPackagingCost}
             totalCost={rollup.totalCost}
           />
+          <SectionLink variant="nav" href="/purchase" title="ดูรายการซื้อของ" />
           <details className="kl-details">
-            <summary className="kl-details-summary">ดูบรรจุภัณฑ์</summary>
+            <summary className="kl-details-summary">ดูของห่อกลับบ้าน</summary>
             <div className="kl-details-body">
               <ProductionPackagingTotals packagingTotals={rollup.packagingTotals} />
             </div>
           </details>
-          <ProductionActionBar
-            planDate={today}
-            canDelete
-            onDeleted={refreshPlan}
-          />
           <ProductionDeductConfirmSheet
             isOpen={isDeductSheetOpen}
             rollup={rollup}

@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import Card from "./Card";
+import Button from "./Button";
 import {
   getUndoToastState,
   performUndoToast,
@@ -20,16 +21,12 @@ export default function UndoToastHost() {
   return (
     <div className="kl-undo-toast fixed inset-x-0 z-[60] px-4">
       <Card className="mx-auto flex max-w-md items-center justify-between gap-3 py-3">
-        <span className="text-sm font-semibold text-kl-brown">
+        <span className="kl-type-caption font-medium text-kl-text">
           {toast.message}
         </span>
-        <button
-          type="button"
-          onClick={performUndoToast}
-          className="shrink-0 rounded-xl bg-kl-brown px-4 py-2 text-sm font-semibold text-white kl-pressable"
-        >
+        <Button type="button" size="sm" onClick={performUndoToast}>
           {toast.undoLabel}
-        </button>
+        </Button>
       </Card>
     </div>
   );

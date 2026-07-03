@@ -7,7 +7,7 @@ import {
   getSavedMenuById,
   updateSavedMenu,
 } from "../../../repositories/SavedMenuRepository";
-import { getAllRecipes } from "../../../recipes/RecipeRepository";
+import { getAllRecipesForPicker } from "../../../recipes/recipeAccess";
 import type {
   MenuBuilderValidationErrors,
   SavedMenu,
@@ -42,7 +42,7 @@ function validateForSave(
 
 export function useMenuBuilder(editingMenuId?: string) {
   const router = useRouter();
-  const recipes = useMemo(() => getAllRecipes(), []);
+  const recipes = useMemo(() => getAllRecipesForPicker(), []);
   const packagingSets = useMemo(() => getAllPackagingSets(), []);
 
   const [editingId, setEditingId] = useState<string | null>(null);

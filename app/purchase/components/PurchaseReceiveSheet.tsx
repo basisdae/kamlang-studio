@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Button from "../../../components/ui/Button";
+import BottomSheet from "../../../components/ui/BottomSheet";
+import FormField from "../../../components/ui/FormField";
+import SheetActions from "../../../components/ui/SheetActions";
 import { getIngredientById } from "../../ingredients/IngredientRepository";
 import {
   applyPurchaseReceive,
@@ -122,7 +124,7 @@ export default function PurchaseReceiveSheet({
 
       if (!Number.isFinite(quantity) || quantity <= 0) {
         const ingredient = getIngredientById(draft.line.ingredientId);
-        setError(`กรุณาใส่จำนวนรับเข้าที่ถูกต้องสำหรับ ${ingredient?.name ?? "รายการ"}`);
+        setError(`กรุณาใส่จำนวนที่ถูกต้องสำหรับ ${ingredient?.name ?? "รายการ"}`);
         return;
       }
 
@@ -134,7 +136,7 @@ export default function PurchaseReceiveSheet({
     }
 
     if (inputs.length === 0) {
-      setError("ไม่มีรายการที่จะรับเข้า");
+      setError("ไม่มีรายการที่จะเอาเข้าครัว");
       return;
     }
 
@@ -147,47 +149,34 @@ export default function PurchaseReceiveSheet({
 
   if (showRepeatConfirm) {
     return (
-      <div
-        className="kl-sheet-overlay fixed inset-0 flex items-end kl-sheet-scrim px-4"
-        onClick={onClose}
+      <BottomSheet
+        isOpen={isOpen}
+        onClose={onClose}
+        surface="panel"
+        scrollable={false}
       >
-        <div
-          className="kl-sheet"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div className="kl-type-card-title">รายการรับเข้าแล้ว</div>
+          <div className="kl-type-card-title">เอาเข้าครัวแล้ว</div>
           <p className="kl-type-helper mt-2">
             รายการที่เอาเข้าครัวแล้ว {alreadyReceivedLines.length}{" "}
-            รายการ ต้องการรับซ้ำหรือไม่?
+            รายการ ต้องการเอาเข้าซ้ำหรือไม่?
           </p>
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            <Button variant="secondary" fullWidth onClick={onClose}>
-              ยกเลิก
-            </Button>
-            <Button
-              fullWidth
-              onClick={() => {
+          <div className="mt-5">
+            <SheetActions
+              className="grid grid-cols-2 gap-2"
+              onCancel={onClose}
+              onConfirm={() => {
                 setAllowRepeat(true);
                 setShowRepeatConfirm(false);
               }}
-            >
-              รับซ้ำ
-            </Button>
+              confirmLabel="เอาเข้าซ้ำ"
+            />
           </div>
-        </div>
-      </div>
+      </BottomSheet>
     );
   }
 
   return (
-    <div
-      className="kl-sheet-overlay fixed inset-0 flex items-end kl-sheet-scrim px-4"
-      onClick={onClose}
-    >
-      <div
-        className="kl-sheet kl-sheet--scroll"
-        onClick={(event) => event.stopPropagation()}
-      >
+    <BottomSheet isOpen={isOpen} onClose={onClose} surface="panel">
         <div className="kl-type-card-title">เอาเข้าครัว</div>
         <p className="kl-type-helper mt-1">
           ปรับจำนวนก่อนยืนยัน ({targetLines.length} รายการ)
@@ -195,7 +184,7 @@ export default function PurchaseReceiveSheet({
 
         {alreadyReceivedLines.length > 0 && !allowRepeat ? (
           <p className="kl-type-caption mt-2 text-kl-warning-text">
-            ข้าม {alreadyReceivedLines.length} รายการที่รับเข้าแล้ว
+            ข้าม {alreadyReceivedLines.length} รายการที่เอาเข้าครัวแล้ว
           </p>
         ) : null}
 
@@ -213,19 +202,18 @@ export default function PurchaseReceiveSheet({
                   ซื้อ {formatProductionQuantity(draft.line.quantityNeeded)}{" "}
                   {draft.line.unit}
                 </div>
-                <label className="kl-type-label mt-3 block">
-                  รับเข้า ({stockUnit ?? draft.line.unit})
-                </label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  value={draft.quantity}
-                  onChange={(event) =>
-                    updateDraftQuantity(draft.lineKey, event.target.value)
-                  }
-                  className={fieldClassName}
-                />
+                <FormField label={`จำนวนเอาเข้า (${stockUnit ?? draft.line.unit})`}>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    value={draft.quantity}
+                    onChange={(event) =>
+                      updateDraftQuantity(draft.lineKey, event.target.value)
+                    }
+                    className={fieldClassName}
+                  />
+                </FormField>
               </div>
             );
           })}
@@ -235,15 +223,14 @@ export default function PurchaseReceiveSheet({
           <div className="kl-type-caption mt-3 text-kl-danger-text">{error}</div>
         ) : null}
 
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          <Button variant="secondary" fullWidth onClick={onClose}>
-            ยกเลิก
-          </Button>
-          <Button fullWidth onClick={handleConfirm}>
-            ยืนยันเอาเข้าครัว
-          </Button>
+        <div className="mt-5">
+          <SheetActions
+            className="grid grid-cols-2 gap-2"
+            onCancel={onClose}
+            onConfirm={handleConfirm}
+            confirmLabel="ยืนยันเอาเข้าครัว"
+          />
         </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 }

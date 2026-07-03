@@ -112,19 +112,19 @@ export default function PurchasePage() {
   return (
     <AppShell
       title="ซื้อของ"
-      description="ติ๊กของที่ซื้อแล้ว"
       backHref="/"
+      compact
     >
       {!purchaseList ? (
         <EmptyState {...EMPTY_STATE.purchase.noPlan} />
       ) : (
-        <div className="space-y-7 kl-scroll-above-bottom-bar">
+        <div className="space-y-4 kl-scroll-above-bottom-bar">
           <PurchaseHero
             dateLabel={formatProductionDate(today)}
             boughtCount={boughtCount}
             totalCount={purchaseList.lines.length}
           />
-          <PurchaseListHeader purchaseList={purchaseList} />
+          <PurchaseListHeader />
           <PurchaseListItems
             lines={purchaseList.lines}
             lineStates={lineStates}
@@ -133,6 +133,7 @@ export default function PurchasePage() {
           />
           <PurchaseReceiveBar
             eligibleCount={checkedCount}
+            totalCount={purchaseList.lines.length}
             onReceive={() => setIsReceiveOpen(true)}
           />
           <PurchaseReceiveSheet

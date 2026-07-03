@@ -3,9 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import AppShell from "../../../components/layout/AppShell";
 import ProductionBuilderPageSkeleton from "../../../components/ui/skeletons/ProductionBuilderPageSkeleton";
-import ProductionCostSummary from "../components/ProductionCostSummary";
-import ProductionIngredientTotals from "../components/ProductionIngredientTotals";
-import ProductionPackagingTotals from "../components/ProductionPackagingTotals";
 import { todayPlanDate } from "../utils";
 import ProductionBuilderForm from "./components/ProductionBuilderForm";
 import ProductionBuilderSummary from "./components/ProductionBuilderSummary";
@@ -21,9 +18,10 @@ export default function ProductionEditPageContent() {
   if (!builder.isLoaded) {
     return (
       <AppShell
-        title="แผนผลิต"
-        description="กำหนดวันที่ เป้าผลิต และจำนวนที่ต้องทำ"
+        title="แผนวันนี้"
+        description="เลือกเมนู ใส่จำนวน แล้วบันทึก"
         backHref="/production"
+        compact
       >
         <ProductionBuilderPageSkeleton />
       </AppShell>
@@ -34,15 +32,16 @@ export default function ProductionEditPageContent() {
     <AppShell
       title={
         duplicateFrom
-          ? "ทำสำเนาแผนผลิต"
+          ? "คัดลอกแผนวันนี้"
           : builder.isEditMode
-            ? "แก้ไขแผนผลิต"
-            : "สร้างแผนผลิต"
+            ? "แก้ไขแผนวันนี้"
+            : "วางแผนวันนี้"
       }
-      description="กำหนดวันที่ เป้าผลิต และจำนวนที่ต้องทำ"
+      description="เลือกเมนู ใส่จำนวน แล้วบันทึก"
       backHref="/production"
+      compact
     >
-      <div className="space-y-7 pb-44">
+      <div className="space-y-4 kl-builder-scroll">
         {builder.versionEntityId ? (
           <VersionHistoryPanel
             entityType="production_plan"
@@ -61,22 +60,6 @@ export default function ProductionEditPageContent() {
           onRemoveLine={builder.removeLine}
           onUpdateLine={builder.updateLine}
         />
-
-        {builder.preview ? (
-          <>
-            <ProductionCostSummary
-              totalRecipeCost={builder.preview.totalRecipeCost}
-              totalPackagingCost={builder.preview.totalPackagingCost}
-              totalCost={builder.preview.totalCost}
-            />
-            <ProductionIngredientTotals
-              ingredientTotals={builder.preview.ingredientTotals}
-            />
-            <ProductionPackagingTotals
-              packagingTotals={builder.preview.packagingTotals}
-            />
-          </>
-        ) : null}
       </div>
 
       <ProductionBuilderSummary

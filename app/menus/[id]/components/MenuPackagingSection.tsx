@@ -19,7 +19,7 @@ export default function MenuPackagingSection({
 }: Props) {
   return (
     <section className="space-y-3">
-      <SectionTitle module="menus">ชุดบรรจุภัณฑ์</SectionTitle>
+      <SectionTitle module="menus">ของห่อกลับบ้าน</SectionTitle>
 
       {!packagingSet ? (
         <EmptyState

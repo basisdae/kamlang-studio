@@ -12,9 +12,9 @@ import {
 import Card from "../../../components/ui/Card";
 
 const links = [
-  { href: "/production", label: "แผนผลิต", icon: ClipboardList },
+  { href: "/production", label: "แผนวันนี้", icon: ClipboardList },
   { href: "/purchase", label: "ซื้อของ", icon: ShoppingCart },
-  { href: "/inventory", label: "สต๊อก", icon: Package },
+  { href: "/inventory", label: "ของในครัว", icon: Package },
   { href: "/menus", label: "เมนูขาย", icon: UtensilsCrossed },
 ];
 

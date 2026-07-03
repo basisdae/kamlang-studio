@@ -27,7 +27,7 @@ function buildInventoryOutNotification(): KlNotification | null {
   return {
     id: "inventory-out",
     type: "inventory_out",
-    title: "วัตถุดิบหมด",
+    title: "ของหมด",
     message: `มี ${outItems.length} รายการที่ของหมด`,
     href: "/inventory",
   };
@@ -40,7 +40,7 @@ function buildInventoryLowNotification(): KlNotification | null {
   return {
     id: "inventory-low",
     type: "inventory_low",
-    title: "วัตถุดิบใกล้หมด",
+    title: "ของใกล้หมด",
     message: `มี ${lowItems.length} รายการที่ใกล้หมด`,
     href: "/inventory",
   };
@@ -53,8 +53,8 @@ function buildProductionMissingNotification(today: string): KlNotification | nul
   return {
     id: `production-missing-${today}`,
     type: "production_missing",
-    title: "ยังไม่มีแผนผลิตวันนี้",
-    message: `ยังไม่ได้สร้างแผนผลิตสำหรับ ${formatProductionDate(today)}`,
+    title: "วันนี้ยังไม่ได้วางแผน",
+    message: `ยังไม่ได้วางแผนสำหรับ ${formatProductionDate(today)}`,
     href: "/production",
   };
 }
@@ -99,8 +99,8 @@ function buildBackupReminderNotification(): KlNotification | null {
     return {
       id: "backup-reminder",
       type: "backup_reminder",
-      title: "ควรสำรองข้อมูล",
-      message: `ไม่ได้สำรองข้อมูลมา ${elapsedDays} วันแล้ว`,
+    title: "ควรเก็บข้อมูลร้านไว้",
+    message: `ไม่ได้เก็บข้อมูลไว้มา ${elapsedDays} วันแล้ว`,
       href: "/settings/data",
     };
   }
@@ -108,8 +108,8 @@ function buildBackupReminderNotification(): KlNotification | null {
   return {
     id: "backup-reminder",
     type: "backup_reminder",
-    title: "ควรสำรองข้อมูล",
-    message: "ยังไม่เคยสำรองข้อมูล",
+    title: "ควรเก็บข้อมูลร้านไว้",
+    message: "ยังไม่เคยเก็บข้อมูลไว้",
     href: "/settings/data",
   };
 }

@@ -9,13 +9,15 @@
  */
 import { getIngredientById } from "../ingredients/IngredientRepository";
 import { calcLineCost } from "../ingredients/utils";
-import { getMenuById } from "../menu/MenuRepository";
+import { getEffectiveMenuById } from "../menu/menuAccess";
 import { getPackagingItemById } from "../packaging/PackagingItemRepository";
 import { getPackagingSetById } from "../packaging/PackagingSetRepository";
 import { getEffectivePlanById } from "../production/planAccess";
 import type { ProductionPlan } from "../production/types";
-import { getRecipeById } from "../recipes/RecipeRepository";
-import { getStandardRecipeCost } from "./costService";
+import {
+  getEffectiveRecipeLines,
+  getRecipeCostById,
+} from "../recipes/recipeAccess";
 import { getPerPortionOverhead } from "../settings/pricingAccess";
 
 export type ProductionMenuLineRollup = {
@@ -94,7 +96,7 @@ export function getProductionRollupForPlan(plan: ProductionPlan): ProductionRoll
   const overheadPerUnit = getPerPortionOverhead();
 
   for (const line of plan.lines) {
-    const menu = getMenuById(line.menuId);
+    const menu = getEffectiveMenuById(line.menuId);
 
     if (!menu) {
       throw new Error(
@@ -102,7 +104,7 @@ export function getProductionRollupForPlan(plan: ProductionPlan): ProductionRoll
       );
     }
 
-    const recipe = getRecipeById(menu.recipeId);
+    const recipe = getEffectiveRecipeLines(menu.recipeId);
 
     if (!recipe) {
       throw new Error(
@@ -116,7 +118,7 @@ export function getProductionRollupForPlan(plan: ProductionPlan): ProductionRoll
       );
     }
 
-    const recipeCostPerUnit = getStandardRecipeCost(recipe);
+    const recipeCostPerUnit = getRecipeCostById(menu.recipeId);
     const packagingCostPerUnit = getPackagingCostPerUnit(menu.packagingSetId);
     const totalCostPerUnit =
       recipeCostPerUnit + packagingCostPerUnit + overheadPerUnit;

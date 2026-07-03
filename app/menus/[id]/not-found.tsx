@@ -6,7 +6,7 @@ export default function MenuNotFound() {
   return (
     <AppShell
       title="ไม่พบเมนูขาย"
-      description="เมนูขายนี้อาจถูกลบหรือไม่มีในระบบ"
+      description="เมนูขายนี้อาจถูกลบหรือหาไม่เจอในร้านคุณ"
       backHref="/menus"
     >
       <EmptyState {...EMPTY_STATE.menus.notFound} />

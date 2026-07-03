@@ -1,15 +1,11 @@
 "use client";
 
-import { Plus } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../../components/layout/AppShell";
-import { KL_ICON_CLASS, KL_ICON_STROKE } from "../../components/layout/navConfig";
-import IconButton from "../../components/ui/IconButton";
 import SearchBar from "../../components/ui/SearchBar";
+import SectionLink from "../../components/ui/SectionLink";
 import SectionTitle from "../../components/ui/SectionTitle";
-import { getModuleIconWellClass } from "../../components/ui/semanticColors";
 import {
   getStandardRecipeCost,
   getRecipeReferencePrice,
@@ -70,7 +66,6 @@ export default function RecipesPage() {
   return (
     <AppShell
       title="สูตรอาหาร"
-      description="สูตรในครัว"
       backHref="/"
     >
       <SearchBar
@@ -79,28 +74,12 @@ export default function RecipesPage() {
         onChange={setSearch}
       />
 
-      <Link href="/recipes/builder" className="kl-section flex items-center gap-3 kl-pressable">
-        <div
-          className={`${getModuleIconWellClass("recipes")} pointer-events-none`}
-          aria-hidden
-        >
-          <Plus className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
-        </div>
-        <div>
-          <div className="kl-type-card-title">สร้างสูตรใหม่</div>
-          <p className="kl-type-helper mt-1">เริ่มสร้างสูตรอาหารและคำนวณต้นทุน</p>
-        </div>
-      </Link>
-
-      <Link href="/menus/new" className="kl-section flex items-center gap-3 kl-pressable">
-        <IconButton className="pointer-events-none" tabIndex={-1} aria-hidden>
-          <Plus className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
-        </IconButton>
-        <div>
-          <div className="kl-type-card-title">สร้างเมนูขาย</div>
-          <p className="kl-type-helper mt-1">ใช้สูตรที่มีอยู่เพื่อสร้างสินค้าที่ขายจริง</p>
-        </div>
-      </Link>
+      <SectionLink
+        variant="create"
+        href="/recipes/builder"
+        title="สร้างสูตรใหม่"
+        module="recipes"
+      />
 
       {!hasVisibleResults ? (
         hasSearch ? (
@@ -115,7 +94,7 @@ export default function RecipesPage() {
 
       {filteredSavedRecipes.length > 0 ? (
         <section className="space-y-3">
-          <SectionTitle module="recipes">สูตรที่ยังไม่เสร็จ</SectionTitle>
+          <SectionTitle module="recipes">สูตรที่กำลังทำอยู่</SectionTitle>
           <div className="space-y-3">
             {filteredSavedRecipes.map((recipe) => (
               <SavedRecipeLibraryCard

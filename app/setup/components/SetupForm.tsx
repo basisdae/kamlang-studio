@@ -1,6 +1,7 @@
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
-import type { KlCurrencyCode } from "../../settings/types";
+import FormField from "../../../components/ui/FormField";
+import SectionTitle from "../../../components/ui/SectionTitle";import type { KlCurrencyCode } from "../../settings/types";
 import {
   CURRENCY_OPTIONS,
   DEFAULT_GP_PERCENT,
@@ -21,8 +22,7 @@ type Props = {
   onSubmit: () => void;
 };
 
-const fieldClassName =
-  "mt-2 w-full rounded-xl border border-kl-border bg-kl-surface px-4 py-3 text-sm text-kl-brown outline-none placeholder:text-kl-muted";
+const fieldClassName = "kl-input mt-2";
 
 export default function SetupForm({
   businessName,
@@ -38,29 +38,22 @@ export default function SetupForm({
   onSubmit,
 }: Props) {
   return (
-    <Card className="space-y-5">
+    <Card className="space-y-4">
       <div>
-        <div className="font-semibold text-kl-brown">ข้อมูลร้าน</div>
-        <p className="mt-1 text-sm text-kl-muted">
-          ตั้งค่าพื้นฐานก่อนเริ่มใช้งาน
-        </p>
+        <SectionTitle>ข้อมูลร้าน</SectionTitle>
       </div>
 
       <div className="space-y-4">
-        <div>
-          <label className="text-sm font-semibold text-kl-muted">ชื่อร้าน</label>
+        <FormField label="ชื่อร้าน">
           <input
             value={businessName}
             onChange={(event) => onBusinessNameChange(event.target.value)}
             className={fieldClassName}
             placeholder="เช่น ร้านกะเพราป้าแดง"
           />
-        </div>
+        </FormField>
 
-        <div>
-          <label className="text-sm font-semibold text-kl-muted">
-            ประเภทร้าน
-          </label>
+        <FormField label="ประเภทร้าน">
           <select
             value={restaurantType}
             onChange={(event) => onRestaurantTypeChange(event.target.value)}
@@ -73,10 +66,9 @@ export default function SetupForm({
               </option>
             ))}
           </select>
-        </div>
+        </FormField>
 
-        <div>
-          <label className="text-sm font-semibold text-kl-muted">สกุลเงิน</label>
+        <FormField label="สกุลเงิน">
           <select
             value={currency}
             onChange={(event) =>
@@ -90,12 +82,9 @@ export default function SetupForm({
               </option>
             ))}
           </select>
-        </div>
+        </FormField>
 
-        <div>
-          <label className="text-sm font-semibold text-kl-muted">
-            ค่าเป้ากำไร (%)
-          </label>
+        <FormField label="เป้ากำไร (%)">
           <input
             type="number"
             inputMode="decimal"
@@ -106,17 +95,10 @@ export default function SetupForm({
             className={fieldClassName}
             placeholder={String(DEFAULT_GP_PERCENT)}
           />
-          <p className="mt-1 kl-caption">
-            ใช้คำนวณราคาขายแนะนำจากต้นทุน
-          </p>
-        </div>
+          <p className="mt-1 kl-caption">ใช้คิดราคาขายจากต้นทุน</p>
+        </FormField>
       </div>
-
-      {error ? (
-        <div className="rounded-xl border border-kl-danger bg-kl-danger px-4 py-3 text-sm text-kl-danger-text">
-          {error}
-        </div>
-      ) : null}
+      {error ? <div className="kl-alert-danger">{error}</div> : null}
 
       <Button type="button" fullWidth disabled={isSaving} onClick={onSubmit}>
         {isSaving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}

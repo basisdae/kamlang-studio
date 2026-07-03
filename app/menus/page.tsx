@@ -1,14 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../../components/layout/AppShell";
-import { KL_ICON_CLASS, KL_ICON_STROKE } from "../../components/layout/navConfig";
 import SearchBar from "../../components/ui/SearchBar";
+import SectionLink from "../../components/ui/SectionLink";
 import SectionTitle from "../../components/ui/SectionTitle";
-import { getModuleIconWellClass } from "../../components/ui/semanticColors";
 import { calculateMenuCost, getMenuCost } from "../lib/menuCostService";
 import { getAllMenus } from "../menu/MenuRepository";
 import type { SavedMenu } from "./builder/types";
@@ -96,7 +93,6 @@ export default function MenusPage() {
   return (
     <AppShell
       title="เมนูขาย"
-      description="เมนูที่ขายจริง"
       backHref="/"
     >
       <SearchBar
@@ -105,20 +101,12 @@ export default function MenusPage() {
         onChange={setSearch}
       />
 
-      <Link href="/menus/new" className="kl-section flex items-center gap-3 kl-pressable">
-        <div
-          className={`${getModuleIconWellClass("menus")} pointer-events-none`}
-          aria-hidden
-        >
-          <Plus className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
-        </div>
-        <div>
-          <div className="kl-type-card-title">สร้างเมนูขาย</div>
-          <p className="kl-type-helper mt-1">
-            เลือกสูตร ชุดบรรจุภัณฑ์ และราคาขาย
-          </p>
-        </div>
-      </Link>
+      <SectionLink
+        variant="create"
+        href="/menus/new"
+        title="สร้างเมนูขาย"
+        module="menus"
+      />
 
       {!hasVisibleResults ? (
         hasSearch ? (

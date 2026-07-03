@@ -146,7 +146,7 @@ export function upsertSavedProductionPlan(
 
     addActivity({
       type: "production_edit",
-      message: `แก้ไขแผนผลิตวันที่ ${plan.date}`,
+      message: `แก้ไขแผนวันที่ ${plan.date}`,
       entityType: "production",
       entityId: updated.id,
     });
@@ -161,7 +161,7 @@ export function upsertSavedProductionPlan(
 
   addActivity({
     type: "production_create",
-    message: `สร้างแผนผลิตวันที่ ${plan.date}`,
+    message: `สร้างแผนวันที่ ${plan.date}`,
     entityType: "production",
     entityId: plan.id,
   });
@@ -292,7 +292,7 @@ export function deleteProductionPlanForDate(
 
     addActivity({
       type: "production_delete",
-      message: `ลบแผนผลิตวันที่ ${normalized}`,
+      message: `ลบแผนวันที่ ${normalized}`,
       entityType: "production",
       entityId: saved.id,
     });
@@ -304,7 +304,7 @@ export function deleteProductionPlanForDate(
 
   addActivity({
     type: "production_delete",
-    message: `ลบแผนผลิตวันที่ ${normalized}`,
+    message: `ลบแผนวันที่ ${normalized}`,
     entityType: "production",
     entityId: normalized,
   });

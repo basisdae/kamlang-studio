@@ -1,9 +1,4 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import {
-  KL_ICON_CLASS,
-  KL_ICON_STROKE,
-} from "../../../components/layout/navConfig";
 import Badge from "../../../components/ui/Badge";
 import Card from "../../../components/ui/Card";
 import type { KlNotification, NotificationType } from "../types";
@@ -15,9 +10,9 @@ type Props = {
 const typeLabel: Record<NotificationType, string> = {
   inventory_low: "ของใกล้หมด",
   inventory_out: "ของหมด",
-  production_missing: "แผนผลิต",
+  production_missing: "แผนวันนี้",
   purchase_incomplete: "ซื้อของ",
-  backup_reminder: "สำรองข้อมูล",
+  backup_reminder: "เก็บข้อมูลไว้",
 };
 
 const typeTone: Record<
@@ -44,15 +39,6 @@ export default function NotificationCard({ notification }: Props) {
         <div className="kl-notification-entry">
           <h2 className="kl-type-card-title">{notification.title}</h2>
           <p className="kl-type-description mt-1.5">{notification.message}</p>
-        </div>
-
-        <div className="flex items-center gap-1 text-kl-brown">
-          <span className="kl-type-label">ไปดู</span>
-          <ChevronRight
-            className={KL_ICON_CLASS}
-            strokeWidth={KL_ICON_STROKE}
-            aria-hidden
-          />
         </div>
       </Card>
     </Link>

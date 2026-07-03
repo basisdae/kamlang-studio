@@ -13,11 +13,11 @@ export default function RecipeBuilderPage() {
 
   return (
     <AppShell
-      title="กำลัง...บิ้วเด้อ"
-      description="เพิ่มวัตถุดิบ ดูต้นทุนทันที"
+      title="สร้างสูตร"
       backHref="/recipes"
+      compact
     >
-      <div className="space-y-4 pb-40">
+      <div className="space-y-4 kl-builder-scroll">
         {builder.editingRecipeId ? (
           <VersionHistoryPanel
             entityType="saved_recipe"

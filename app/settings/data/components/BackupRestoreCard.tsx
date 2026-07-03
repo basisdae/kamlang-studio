@@ -33,7 +33,7 @@ export default function BackupRestoreCard({
         </p>
       </div>
 
-      <label className="flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-kl-accent bg-kl-surface px-4 py-5 kl-pressable">
+      <label className="kl-upload-zone kl-pressable">
         <input
           type="file"
           accept=".json,application/json"

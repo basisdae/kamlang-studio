@@ -23,7 +23,7 @@ export default function InventoryFilterBar({ value, onChange }: Props) {
             key={filter.value}
             type="button"
             onClick={() => onChange(filter.value)}
-            className={`kl-type-caption min-h-11 rounded-xl px-2 py-2 kl-pressable ${
+            className={`kl-segment-btn kl-pressable ${
               isActive
                 ? "bg-[rgb(36_50_74/0.08)] text-kl-primary ring-1 ring-[rgb(36_50_74/0.12)]"
                 : "bg-kl-surface text-kl-muted"

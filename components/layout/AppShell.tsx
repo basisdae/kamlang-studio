@@ -27,7 +27,9 @@ export default function AppShell({
   children,
   backHref,
 }: AppShellProps) {
-  const mainPadding = compact ? "pt-4 pb-5" : "py-7";
+  const mainPadding = compact
+    ? "kl-page-safe-top--compact pb-5"
+    : "kl-page-safe-top pb-7";
   const contentGap = compact ? "space-y-4" : "space-y-7";
 
   return (
@@ -37,21 +39,33 @@ export default function AppShell({
       >
         <div className={`mx-auto min-w-0 max-w-md ${contentGap}`}>
           {hidePageHeader ? (
-            headerAction ? (
-              <div className="flex justify-end">
-                <Link
-                  href={headerAction.href}
-                  className="kl-notification-pill kl-pressable"
-                >
-                  <span>{headerAction.label}</span>
-                  {headerAction.badge ? (
-                    <span className="kl-notification-pill-count">
-                      {headerAction.badge}
-                    </span>
-                  ) : null}
-                </Link>
-              </div>
-            ) : null
+            <>
+              {backHref ? (
+                <div className="flex items-center">
+                  <IconButtonLink href={backHref} aria-label="กลับ">
+                    <ChevronLeft
+                      className={KL_ICON_CLASS}
+                      strokeWidth={KL_ICON_STROKE}
+                    />
+                  </IconButtonLink>
+                </div>
+              ) : null}
+              {headerAction ? (
+                <div className="flex justify-end">
+                  <Link
+                    href={headerAction.href}
+                    className="kl-notification-pill kl-pressable"
+                  >
+                    <span>{headerAction.label}</span>
+                    {headerAction.badge ? (
+                      <span className="kl-notification-pill-count">
+                        {headerAction.badge}
+                      </span>
+                    ) : null}
+                  </Link>
+                </div>
+              ) : null}
+            </>
           ) : (
             <header className="flex items-start gap-3">
               {backHref && (

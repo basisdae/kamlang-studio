@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { KL_ICON_CLASS, KL_ICON_STROKE } from "../../../components/layout/navConfig";
 import ButtonLink from "../../../components/ui/ButtonLink";
@@ -27,16 +28,16 @@ export default function SetupCompleteCard({ businessName }: Props) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <ButtonLink href="/import" fullWidth>
-          โหลดจาก Excel
+      <ButtonLink href="/import" fullWidth>
+          นำเข้าจาก Excel
           <ArrowRight className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
         </ButtonLink>
 
-        <ButtonLink href="/" variant="secondary" fullWidth>
-          กลับหน้าแรก
-        </ButtonLink>
-      </div>
+        <p className="kl-type-label text-center">
+          <Link href="/" className="kl-tap-link text-kl-brown kl-pressable">
+            กลับหน้าแรก
+          </Link>
+        </p>
     </Card>
   );
 }

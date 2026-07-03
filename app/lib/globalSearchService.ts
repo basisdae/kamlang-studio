@@ -170,7 +170,7 @@ function searchProductionPlans(query: string): GlobalSearchResult[] {
     .map((plan) => ({
       id: `production-${plan.id}`,
       group: "production" as const,
-      title: `แผนผลิต ${formatProductionDate(plan.date)}`,
+      title: `แผนวันนี้ ${formatProductionDate(plan.date)}`,
       subtitle: getProductionPlanSubtitle(plan),
       href: `/production/edit?date=${encodeURIComponent(plan.date)}`,
     }));

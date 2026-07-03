@@ -1,5 +1,10 @@
 import type { Recipe } from "./types";
 
+export function formatRecipeStatus(status: Recipe["status"]): string {
+  if (status === "กำลังปรับ") return "กำลังแก้สูตร";
+  return status;
+}
+
 export function filterRecipes(recipes: Recipe[], search: string) {
   const query = search.trim().toLowerCase();
   if (!query) return recipes;

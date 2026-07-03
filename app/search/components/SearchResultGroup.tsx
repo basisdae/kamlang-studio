@@ -22,11 +22,9 @@ export default function SearchResultGroup({ group, results }: Props) {
         {results.map((result) => (
           <Link key={result.id} href={result.href} className="block kl-pressable">
             <Card className="space-y-1">
-              <div className="break-words font-bold text-kl-brown">{result.title}</div>
+              <div className="kl-type-card-title break-words">{result.title}</div>
               {result.subtitle ? (
-                <div className="break-words text-sm text-kl-muted">
-                  {result.subtitle}
-                </div>
+                <div className="kl-type-helper break-words">{result.subtitle}</div>
               ) : null}
             </Card>
           </Link>

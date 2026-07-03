@@ -133,8 +133,7 @@ export default function ImportPage() {
 
   return (
     <AppShell
-      title="โหลดจาก Excel"
-      description="ตรวจสอบไฟล์ก่อนบันทึกลงร้าน"
+      title="นำข้อมูลจาก Excel"
       backHref="/"
     >
       <ImportTypePicker value={importType} onChange={handleTypeChange} />
@@ -147,9 +146,7 @@ export default function ImportPage() {
       />
 
       {parseError ? (
-        <Card className="rounded-2xl bg-kl-danger px-4 py-3 text-sm text-kl-danger-text">
-          {parseError}
-        </Card>
+        <Card className="kl-alert-danger">{parseError}</Card>
       ) : null}
 
       {isParsing ? <ImportResultPanelSkeleton /> : null}
@@ -160,24 +157,24 @@ export default function ImportPage() {
 
       {writeSummary ? <ImportSuccessSummary summary={writeSummary} /> : null}
 
-      <Card className="space-y-3">
+      <div className="space-y-3">
         <Button
           type="button"
           fullWidth
           disabled={!canImport || isSaving || Boolean(writeSummary)}
           onClick={handleImportClick}
         >
-          {isSaving ? "กำลังบันทึก..." : "บันทึกลงร้าน"}
+          {isSaving ? "กำลังบันทึก..." : "เอาเข้าร้าน"}
         </Button>
 
-        <p className="text-center text-xs text-kl-muted">
+        <p className="kl-type-label text-center text-kl-muted">
           {writeSummary
-            ? "กำลังรีเฟรชหน้าเพื่อแสดงข้อมูลใหม่..."
+            ? "กำลังอัปเดตข้อมูล..."
             : canImport
-              ? "บันทึกเฉพาะข้อมูลที่คุณสร้าง — ไม่แตะข้อมูลตัวอย่าง"
+              ? "ไม่แตะข้อมูลตัวอย่าง"
               : "ตรวจสอบไฟล์ให้ผ่านก่อน จึงจะบันทึกได้"}
         </p>
-      </Card>
+      </div>
 
       {conflicts && conflicts.length > 0 ? (
         <ImportConflictSheet

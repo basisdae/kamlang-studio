@@ -19,7 +19,7 @@ export const SEARCH_GROUP_LABELS: Record<SearchResultGroup, string> = {
   ingredients: "วัตถุดิบ",
   recipes: "สูตรอาหาร",
   menus: "เมนูขาย",
-  production: "แผนผลิต",
+  production: "แผนวันนี้",
   inventory: "ของในครัว",
 };
 

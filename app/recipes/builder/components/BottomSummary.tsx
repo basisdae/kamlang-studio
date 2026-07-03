@@ -6,6 +6,8 @@ import {
   KL_ICON_STROKE,
 } from "../../../../components/layout/navConfig";
 import Button from "../../../../components/ui/Button";
+import ButtonLink from "../../../../components/ui/ButtonLink";
+import ActionBar from "../../../../components/ui/ActionBar";
 import type { BottomSummaryProps } from "../types";
 
 const SAVED_CONFIRMATION_MS = 1000;
@@ -38,8 +40,7 @@ export default function BottomSummary({
   }
 
   return (
-    <div className="kl-action-bar">
-      <div className="kl-action-bar-inner kl-card space-y-5">
+    <ActionBar innerClassName="kl-card space-y-5">
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
             <div className="kl-type-label">ต้นทุน</div>
@@ -47,7 +48,7 @@ export default function BottomSummary({
           </div>
 
           <div>
-            <div className="kl-type-label">ราคาขาย</div>
+            <div className="kl-type-label">ราคาแนะนำ</div>
             <div className="kl-type-metric mt-1">฿{suggestedPrice}</div>
           </div>
 
@@ -59,9 +60,14 @@ export default function BottomSummary({
         </div>
 
         {showSavedConfirmation ? (
-          <div className="kl-type-caption flex items-center justify-center gap-1.5 text-kl-success-text">
-            <Check className={KL_ICON_SM_CLASS} strokeWidth={KL_ICON_STROKE} />
-            บันทึกแล้ว
+          <div className="space-y-3">
+            <div className="kl-type-caption flex items-center justify-center gap-1.5 text-kl-success-text">
+              <Check className={KL_ICON_SM_CLASS} strokeWidth={KL_ICON_STROKE} />
+              บันทึกแล้ว
+            </div>
+            <ButtonLink href="/menus/new" variant="secondary" fullWidth>
+              สร้างเมนูขายต่อ
+            </ButtonLink>
           </div>
         ) : null}
 
@@ -69,7 +75,6 @@ export default function BottomSummary({
           <Save className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
           บันทึกสูตร
         </Button>
-      </div>
-    </div>
+    </ActionBar>
   );
 }

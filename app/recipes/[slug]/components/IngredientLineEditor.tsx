@@ -113,7 +113,7 @@ export default function IngredientLineEditor({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end kl-sheet-scrim px-4 pb-4"
+      className="kl-sheet-overlay fixed inset-0 z-50 flex items-end kl-sheet-scrim px-4"
       onClick={onClose}
     >
       <div

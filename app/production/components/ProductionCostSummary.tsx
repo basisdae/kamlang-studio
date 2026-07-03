@@ -18,11 +18,11 @@ export default function ProductionCostSummary({
       <div className="kl-details-body space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <StatCell
-            label="ต้นทุนสูตร"
+            label="ต้นทุนทำอาหาร"
             value={`฿${formatProductionBaht(totalRecipeCost)}`}
           />
           <StatCell
-            label="บรรจุภัณฑ์"
+            label="ของห่อกลับ"
             value={`฿${formatProductionBaht(totalPackagingCost)}`}
           />
         </div>

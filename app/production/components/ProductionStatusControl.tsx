@@ -26,7 +26,7 @@ export default function ProductionStatusControl({ status, onChange }: Props) {
               key={option}
               type="button"
               onClick={() => onChange(option)}
-              className={`kl-type-caption min-h-11 rounded-xl px-2 py-2 kl-pressable ${
+              className={`kl-segment-btn kl-pressable ${
                 isActive
                   ? `kl-badge-${tone === "inProgress" ? "inprogress" : tone} font-medium`
                   : "bg-kl-surface text-kl-muted"
@@ -37,6 +37,10 @@ export default function ProductionStatusControl({ status, onChange }: Props) {
           );
         })}
       </Card>
+
+      <p className="kl-type-helper px-1">
+        เสร็จแล้ว = ตัดของในครัวให้
+      </p>
     </section>
   );
 }

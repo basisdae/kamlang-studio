@@ -68,7 +68,7 @@ export default function SavedRecipeLibraryCard({
               fullWidth
               onClick={() => onDuplicate(recipe.id)}
             >
-              ทำสำเนา
+              คัดลอก
             </Button>
             <Button
               variant="secondary"

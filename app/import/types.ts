@@ -1,37 +1,42 @@
-import type { ImportEntityType } from "../lib/excelImport";
-
-export type ImportUiType = ImportEntityType;
-
-export type ImportTypeOption = {
-  id: ImportUiType;
-  label: string;
-  description: string;
-  sheets: string[];
-};
-
-export const IMPORT_TYPE_OPTIONS: ImportTypeOption[] = [
-  {
-    id: "ingredients",
-    label: "วัตถุดิบ",
-    description: "แท็บ ingredients ในไฟล์ Excel",
-    sheets: ["ingredients"],
-  },
-  {
-    id: "recipes",
-    label: "สูตรอาหาร",
-    description: "แท็บ recipes และ recipe_lines ในไฟล์ Excel",
-    sheets: ["recipes", "recipe_lines"],
-  },
-  {
-    id: "packaging",
-    label: "บรรจุภัณฑ์",
-    description: "แท็บ packaging ในไฟล์ Excel",
-    sheets: ["packaging"],
-  },
-  {
-    id: "menus",
-    label: "เมนูขาย",
-    description: "แท็บ menus ในไฟล์ Excel",
-    sheets: ["menus"],
-  },
-];
+import type { ImportEntityType } from "../lib/excelImport";
+
+export type ImportUiType = ImportEntityType;
+
+export type ImportTypeOption = {
+  id: ImportUiType;
+  label: string;
+  description: string;
+  sheets: string[];
+  sheetLabels: string[];
+};
+
+export const IMPORT_TYPE_OPTIONS: ImportTypeOption[] = [
+  {
+    id: "ingredients",
+    label: "วัตถุดิบ",
+    description: "ตารางวัตถุดิบในไฟล์ Excel",
+    sheets: ["ingredients"],
+    sheetLabels: ["วัตถุดิบ"],
+  },
+  {
+    id: "recipes",
+    label: "สูตรอาหาร",
+    description: "ตารางสูตรและรายการในสูตร",
+    sheets: ["recipes", "recipe_lines"],
+    sheetLabels: ["สูตร", "รายการในสูตร"],
+  },
+  {
+    id: "packaging",
+    label: "ของห่อกลับบ้าน",
+    description: "ตารางถุง กล่อง ช้อน ในไฟล์ Excel",
+    sheets: ["packaging"],
+    sheetLabels: ["ของห่อกลับบ้าน"],
+  },
+  {
+    id: "menus",
+    label: "เมนูขาย",
+    description: "ตารางเมนูขายในไฟล์ Excel",
+    sheets: ["menus"],
+    sheetLabels: ["เมนูขาย"],
+  },
+];

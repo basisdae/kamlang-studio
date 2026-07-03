@@ -21,8 +21,8 @@ export default function ImportResultPanelSkeleton() {
 
         <div className="space-y-2">
           <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-10 w-full rounded-2xl" />
-          <Skeleton className="h-10 w-full rounded-2xl" />
+          <Skeleton className="h-10 w-full rounded-[var(--kl-radius-btn)]" />
+          <Skeleton className="h-10 w-full rounded-[var(--kl-radius-btn)]" />
         </div>
       </Card>
     </section>

@@ -8,8 +8,8 @@ import ProductionEditPageContent from "./ProductionEditPageContent";
 function ProductionEditFallback() {
   return (
     <AppShell
-      title="แผนผลิต"
-      description="กำหนดวันที่ เป้าผลิต และจำนวนที่ต้องทำ"
+      title="แผนวันนี้"
+      description="เลือกเมนู ใส่จำนวน แล้วบันทึก"
       backHref="/production"
     >
       <ProductionBuilderPageSkeleton />

@@ -3,8 +3,10 @@ import type { PackagingSet } from "../../../packaging/types";
 import type { Recipe } from "../../../recipes/types";
 import type { MenuBuilderValidationErrors } from "../../builder/types";
 
+type RecipeOption = Pick<Recipe, "id" | "name" | "category">;
+
 type Props = {
-  recipes: Recipe[];
+  recipes: RecipeOption[];
   packagingSets: PackagingSet[];
   name: string;
   category: string;
@@ -86,7 +88,7 @@ export default function MenuBuilderForm({
 
       <div>
         <label className="kl-type-label">
-          ชุดบรรจุภัณฑ์
+          ของห่อกลับบ้าน
         </label>
         <select
           value={packagingSetId}

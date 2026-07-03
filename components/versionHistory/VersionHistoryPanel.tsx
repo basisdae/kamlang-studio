@@ -50,7 +50,7 @@ export default function VersionHistoryPanel({
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="flex min-h-11 w-full items-center justify-between rounded-2xl bg-kl-surface px-4 text-sm font-bold text-kl-brown kl-pressable"
+        className="kl-surface-toggle kl-pressable"
       >
         <span>ดูประวัติ</span>
         {isOpen ? (
@@ -68,7 +68,7 @@ export default function VersionHistoryPanel({
 
       {isOpen ? (
         versions.length === 0 ? (
-          <p className="text-center text-sm text-kl-muted">ยังไม่มีประวัติการแก้ไข</p>
+          <p className="kl-type-helper text-center">ยังไม่มีประวัติการแก้ไข</p>
         ) : (
           <div className="space-y-2">
             {versions.map((version) => (
@@ -79,7 +79,7 @@ export default function VersionHistoryPanel({
                 <div className="kl-caption">
                   {formatVersionTimestamp(version.createdAt)}
                 </div>
-                <div className="text-sm font-bold text-kl-brown">{version.note}</div>
+                <div className="kl-type-card-title">{version.note}</div>
                 <Button
                   type="button"
                   variant="secondary"

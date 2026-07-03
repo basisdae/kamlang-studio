@@ -24,6 +24,7 @@ type Props = {
   lines: RecipeLine[];
   yieldUnit: string;
   suggestedPrice: number;
+  showSave?: boolean;
 };
 
 export default function RecipeScaledSections({
@@ -33,6 +34,7 @@ export default function RecipeScaledSections({
   lines,
   yieldUnit,
   suggestedPrice,
+  showSave = true,
 }: Props) {
   const [batchSize, setBatchSize] = useState(1);
   const [overrides, setOverrides] = useState<Record<number, LineOverride>>({});
@@ -126,7 +128,7 @@ export default function RecipeScaledSections({
         ingredientCost={ingredientCost}
         suggestedPrice={suggestedPrice}
         gpPercent={gpPercent}
-        onSave={handleSave}
+        onSave={showSave ? handleSave : undefined}
         showSavedConfirmation={showSavedConfirmation}
       />
 

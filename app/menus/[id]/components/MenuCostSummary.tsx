@@ -14,11 +14,11 @@ export default function MenuCostSummary({ cost }: Props) {
         <div className="kl-details-body space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <StatCell
-              label="ต้นทุนสูตร"
+              label="ต้นทุนทำอาหาร"
               value={`฿${formatMenuBaht(cost.recipeCost)}`}
             />
             <StatCell
-              label="บรรจุภัณฑ์"
+              label="ของห่อกลับ"
               value={`฿${formatMenuBaht(cost.packagingCost)}`}
             />
           </div>

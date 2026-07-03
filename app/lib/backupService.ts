@@ -124,7 +124,7 @@ export function downloadUserBackup(): void {
 
   addActivity({
     type: "backup_export",
-    message: "ดาวน์โหลดไฟล์สำรองข้อมูล",
+    message: "บันทึกไฟล์เก็บข้อมูลร้าน",
     entityType: "backup",
     entityId: "export",
   });

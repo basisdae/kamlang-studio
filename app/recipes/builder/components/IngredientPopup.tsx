@@ -5,10 +5,20 @@ import {
 } from "../../../../components/layout/navConfig";
 import { useEffect, useRef, useState } from "react";
 import Button from "../../../../components/ui/Button";
+import BottomSheet from "../../../../components/ui/BottomSheet";
 import { formatIngredientPrice } from "../../../ingredients/utils";
 import type { IngredientPopupProps } from "../types";
 
 const ADDED_CONFIRMATION_MS = 1000;
+
+const UNIT_OPTIONS = [
+  { value: "g", label: "ก." },
+  { value: "kg", label: "กก." },
+  { value: "ml", label: "มล." },
+  { value: "liter", label: "ลิตร" },
+  { value: "piece", label: "ชิ้น" },
+  { value: "bunch", label: "มัด" },
+] as const;
 
 export default function IngredientPopup({
   isOpen,
@@ -71,14 +81,13 @@ export default function IngredientPopup({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end kl-sheet-scrim px-4 pb-4"
-      onClick={onClose}
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      surface="modal"
+      layer="builder"
+      scrollable={false}
     >
-      <div
-        className="kl-sheet kl-sheet--modal"
-        onClick={(e) => e.stopPropagation()}
-      >
         {selectedIngredient ? (
           <>
             <div className="kl-type-card-title">{selectedIngredient.name}</div>
@@ -99,12 +108,11 @@ export default function IngredientPopup({
                 onChange={(e) => onUnitChange(e.target.value)}
                 className="kl-input"
               >
-                <option value="g">g</option>
-                <option value="kg">kg</option>
-                <option value="ml">ml</option>
-                <option value="liter">liter</option>
-                <option value="piece">piece</option>
-                <option value="bunch">bunch</option>
+                {UNIT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -146,14 +154,13 @@ export default function IngredientPopup({
                 >
                   <div className="kl-type-card-title">{item.name}</div>
                   <div className="mt-1 kl-type-caption">
-                    {formatIngredientPrice(item)} • ใช้บ่อย
+                    {formatIngredientPrice(item)}
                   </div>
                 </button>
               ))}
             </div>
           </>
         )}
-      </div>
-    </div>
+    </BottomSheet>
   );
 }

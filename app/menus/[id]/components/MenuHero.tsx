@@ -20,12 +20,7 @@ export default function MenuHero({ menu, sellingPrice }: Props) {
           strokeWidth={KL_ICON_STROKE}
         />      </div>
 
-      <div className="space-y-4 p-5">
-        <div>
-          <h2 className="kl-type-display">{menu.name}</h2>
-          <p className="kl-type-description mt-1.5">{menu.category}</p>
-        </div>
-
+      <div className="space-y-4 kl-card-body">
         <div className="kl-card-emphasis text-center">
           <div className="kl-type-label">ราคาขาย</div>
           <div className="kl-type-metric-lg mt-1">

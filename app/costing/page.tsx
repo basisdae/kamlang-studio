@@ -28,20 +28,15 @@ export default function CostingPage() {
   return (
     <AppShell
       title="คำนวณราคา"
-      description="คำนวณต้นทุนต่อเมนู ราคาขาย และกำไร"
       backHref="/"
+      compact
     >
-      <Card className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="kl-type-label">เมนูที่เลือก</p>
-            <h2 className="kl-type-display mt-1.5">
-              {selectedRecipe.name}
-            </h2>
-          </div>
+      <Card className="kl-type-card-title text-kl-warning-text">
+        ตัวอย่าง — ไม่ใช่เมนูของคุณ
+      </Card>
 
-          <Badge tone="success">พร้อมขาย</Badge>
-        </div>
+      <Card className="space-y-4">
+        <h2 className="kl-type-display">{selectedRecipe.name}</h2>
 
         <div className="grid grid-cols-3 gap-2.5">
           <StatCell label="ต้นทุน" value={`฿${totalCost}`} size="lg" />
@@ -52,7 +47,7 @@ export default function CostingPage() {
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <div className="kl-type-label">สัดส่วนต้นทุนอาหาร</div>
+            <div className="kl-type-label">ต้นทุนวัตถุดิบเทียบราคาขาย</div>
             <div className="kl-type-metric-xl mt-1.5 text-kl-brown">
               {foodCost}%
             </div>
@@ -70,9 +65,8 @@ export default function CostingPage() {
           />
         </div>
 
-        <p className="kl-type-description">
-          เป้าหมายแนะนำคือสัดส่วนต้นทุนอาหารประมาณ 30–35% ถ้าสูงกว่านี้ควรปรับราคาขาย
-          หรือทบทวนต้นทุนวัตถุดิบ
+        <p className="kl-type-caption">
+          เป้า 30–35%
         </p>
       </Card>
 
@@ -100,7 +94,7 @@ export default function CostingPage() {
 
           <div className="flex items-center justify-between border-t border-kl-border pt-3">
             <div>
-              <div className="kl-type-body">บรรจุภัณฑ์</div>
+              <div className="kl-type-body">ของห่อกลับบ้าน</div>
               <div className="kl-type-caption mt-1">
                 กล่อง / ถุง / ช้อน
               </div>

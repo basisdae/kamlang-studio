@@ -11,10 +11,10 @@ export default function NewMenuPage() {
   return (
     <AppShell
       title="สร้างเมนูขาย"
-      description="เลือกสูตร ชุดบรรจุภัณฑ์ และราคาขาย"
       backHref="/menus"
+      compact
     >
-      <div className="space-y-4 pb-44">
+      <div className="space-y-4 kl-builder-scroll">
         <MenuBuilderForm
           recipes={builder.recipes}
           packagingSets={builder.packagingSets}

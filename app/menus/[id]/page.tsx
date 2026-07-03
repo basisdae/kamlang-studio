@@ -66,8 +66,8 @@ export default function MenuDetailPage() {
     return (
       <AppShell
         title="ไม่พบเมนูขาย"
-        description="เมนูขายนี้อาจถูกลบหรือไม่มีในระบบ"
         backHref="/menus"
+        hidePageHeader
       >
         <EmptyState {...EMPTY_STATE.menus.notFound} />
       </AppShell>
@@ -79,8 +79,9 @@ export default function MenuDetailPage() {
       title={detail.menu.name}
       description={detail.menu.category}
       backHref="/menus"
+      compact
     >
-      <div className="space-y-7 kl-scroll-above-tall-bottom-bar">
+      <div className="space-y-4 kl-scroll-above-tall-bottom-bar">
         {detail.isSavedMenu ? (
           <VersionHistoryPanel
             entityType="saved_menu"

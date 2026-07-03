@@ -2,10 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import EmptyState from "../../components/ui/EmptyState";
 import HeroCard from "../../components/ui/HeroCard";
 import AppShell from "../../components/layout/AppShell";
-import { EMPTY_STATE } from "../copy/emptyStates";
 import { PRODUCTION_UI } from "../production/copy";
 import { getProductionRollupForPlan } from "../lib/productionRollupService";
 import { getEffectivePlanByDate } from "../production/planAccess";
@@ -82,38 +80,22 @@ export default function StaffTodayPage() {
 
   const preparedCount = countChecked(allItemKeys, checkedStates);
   const totalCount = allItemKeys.length;
-  const remainingCount = totalCount - preparedCount;
 
   return (
-    <AppShell title="งานครัววันนี้" description="จากแผนผลิตวันนี้">
+    <AppShell title="งานครัววันนี้" compact>
       {!rollup ? (
         <StaffPrepEmpty />
       ) : (
-        <div className="space-y-7">
+        <div className="space-y-4">
           <HeroCard
             module="today"
             label="ความคืบหน้า"
             title={`${preparedCount}/${totalCount} รายการ`}
             subtitle={formatProductionDate(today)}
-          >
-            <div className="kl-hero-stats">
-              <div className="kl-hero-stat">
-                <div className="kl-hero-stat-value">{preparedCount}</div>
-                <div className="kl-hero-stat-label">
-                  {PRODUCTION_UI.progress.done}
-                </div>
-              </div>
-              <div className="kl-hero-stat">
-                <div className="kl-hero-stat-value">{remainingCount}</div>
-                <div className="kl-hero-stat-label">
-                  {PRODUCTION_UI.progress.remaining}
-                </div>
-              </div>
-            </div>
-          </HeroCard>
+          />
 
           <StaffPrepChecklistSection
-            title={PRODUCTION_UI.sections.preOrders}
+            title={PRODUCTION_UI.sections.targetsToday}
             progressLabel={PRODUCTION_UI.progress.produced}
             items={menuItems}
             checkedStates={checkedStates}
@@ -146,9 +128,6 @@ export default function StaffTodayPage() {
             onToggle={handleToggle}
           />
 
-          {packagingItems.length === 0 ? (
-            <EmptyState {...EMPTY_STATE.today.packaging} />
-          ) : null}
         </div>
       )}
     </AppShell>

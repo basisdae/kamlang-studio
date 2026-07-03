@@ -1,5 +1,5 @@
 /**
- * Home focus card — picks one calm next step from data the page already loads.
+ * Home focus — one clear next action from data the page already loads.
  */
 import { HOME_UI } from "../copy";
 
@@ -19,8 +19,8 @@ export function getHomeNextStep(input: {
   if (!input.hasPlan) {
     return {
       title: HOME_UI.production.createPlan,
-      hint: "เริ่มจากเมนูที่จะขายวันนี้",
-      href: "/production",
+      hint: HOME_UI.production.createHint,
+      href: "/production/edit",
     };
   }
 
@@ -37,14 +37,17 @@ export function getHomeNextStep(input: {
   if (input.stockAlertCount > 0) {
     return {
       title: HOME_UI.stock.checkStock,
-      hint: `${input.stockAlertCount} รายการ${HOME_UI.stock.title}`,
+      hint: HOME_UI.stock.alert(input.stockAlertCount),
       href: "/inventory",
     };
   }
 
   return {
-    title: HOME_UI.ready,
-    hint: HOME_UI.production.mustProduce(input.totalQuantity),
-    href: "/production",
+    title: HOME_UI.kitchen.open,
+    hint:
+      input.totalQuantity > 0
+        ? HOME_UI.kitchen.dishes(input.totalQuantity)
+        : HOME_UI.kitchen.noDishes,
+    href: "/today",
   };
 }

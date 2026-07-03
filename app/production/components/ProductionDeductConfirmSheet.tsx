@@ -1,7 +1,7 @@
 "use client";
 
-import Card from "../../../components/ui/Card";
-import Button from "../../../components/ui/Button";
+import BottomSheet from "../../../components/ui/BottomSheet";
+import SheetActions from "../../../components/ui/SheetActions";
 import { PRODUCTION_UI } from "../copy";
 import { getIngredientById } from "../../ingredients/IngredientRepository";
 import {
@@ -68,24 +68,20 @@ export default function ProductionDeductConfirmSheet({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="kl-sheet-overlay fixed inset-0 flex items-end kl-sheet-scrim px-4"
-      onClick={onClose}
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      innerClassName="space-y-4"
     >
-      <div
-        className="mx-auto max-h-[85vh] w-full max-w-md"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <Card className="max-h-[85vh] space-y-4 overflow-y-auto">
-        <div className="kl-type-card-title">ยืนยันหักของ</div>
+        <div className="kl-type-card-title">ยืนยันตัดของในครัว</div>
         <p className="kl-type-helper">
-          เปลี่ยนสถานะเป็น{PRODUCTION_UI.status.completed} และหักของตามแผนผลิต
+          เปลี่ยนสถานะเป็น{PRODUCTION_UI.status.completed} และตัดของตามแผนวันนี้
         </p>
 
         {shortages.length > 0 ? (
-          <Card className="space-y-2 rounded-2xl border border-kl-danger bg-kl-danger p-4">
+          <div className="kl-alert-danger space-y-2">
             <div className="kl-type-card-title text-kl-danger-text">
-              ของไม่พอ — หักไม่ได้
+              ของไม่พอ — ตัดไม่ได้
             </div>
             {shortages.map((item) => {
               const ingredient = getIngredientById(item.ingredientId);
@@ -103,7 +99,7 @@ export default function ProductionDeductConfirmSheet({
                 </div>
               );
             })}
-          </Card>
+          </div>
         ) : (
           <div className="space-y-2">
             {needs.map((item) => (
@@ -113,23 +109,19 @@ export default function ProductionDeductConfirmSheet({
               >
                 <div className="kl-type-card-title">{item.name}</div>
                 <div className="kl-type-caption mt-1 text-kl-muted">
-                  หัก {formatProductionQuantity(item.required)} {item.unit}
+                  ตัด {formatProductionQuantity(item.required)} {item.unit}
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            ยกเลิก
-          </Button>
-          <Button type="button" onClick={handleConfirm} disabled={!canConfirm}>
-            ยืนยันหักของ
-          </Button>
-        </div>
-        </Card>
-      </div>
-    </div>
+        <SheetActions
+          onCancel={onClose}
+          onConfirm={handleConfirm}
+          confirmLabel="ยืนยันตัดของ"
+          isConfirmDisabled={!canConfirm}
+        />
+    </BottomSheet>
   );
 }

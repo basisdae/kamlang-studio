@@ -107,7 +107,7 @@ export default function SettingsForm({
       </section>
 
       <section className="space-y-3">
-        <SectionTitle>ต้นทุนและราคา</SectionTitle>
+        <SectionTitle>คิดราคาขาย</SectionTitle>
         <Card className="space-y-4">
           <div>
             <label className="kl-type-label">
@@ -129,7 +129,7 @@ export default function SettingsForm({
 
           <div>
             <label className="kl-type-label">
-              ค่าแรงต่อเสิร์ฟ (บาท)
+              ค่าแรงต่อจาน (บาท)
             </label>
             <input
               type="number"
@@ -143,7 +143,7 @@ export default function SettingsForm({
 
           <div>
             <label className="kl-type-label">
-              ค่าแก๊สต่อเสิร์ฟ (บาท)
+              ค่าแก๊สต่อจาน (บาท)
             </label>
             <input
               type="number"
@@ -157,7 +157,7 @@ export default function SettingsForm({
 
           <div>
             <label className="kl-type-label">
-              ค่าไฟต่อเสิร์ฟ (บาท)
+              ค่าไฟต่อจาน (บาท)
             </label>
             <input
               type="number"

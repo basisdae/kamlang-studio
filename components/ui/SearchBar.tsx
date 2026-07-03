@@ -14,7 +14,7 @@ export default function SearchBar({
 }: SearchBarProps) {
   return (
     <div className="kl-search">
-      <Search className={`${KL_ICON_CLASS} text-kl-muted`} strokeWidth={KL_ICON_STROKE} />
+      <Search className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
       <input
         className="w-full bg-transparent text-[length:var(--kl-text-body)] text-kl-brown outline-none placeholder:text-kl-muted"
         placeholder={placeholder}

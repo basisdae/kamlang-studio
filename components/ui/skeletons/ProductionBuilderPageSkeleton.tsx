@@ -7,9 +7,9 @@ export default function ProductionBuilderPageSkeleton() {
   return (
     <>
       <div
-        className="space-y-7 pb-44"
+        className="space-y-7 kl-builder-scroll"
         aria-busy="true"
-        aria-label="กำลังโหลดแผนผลิต"
+        aria-label="กำลังโหลดแผนวันนี้"
       >
         <Card className="space-y-4">
           <SkeletonField />
@@ -24,7 +24,7 @@ export default function ProductionBuilderPageSkeleton() {
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={index}
-              className="space-y-3 rounded-2xl border border-kl-border bg-kl-surface p-4"
+              className="kl-nested-panel space-y-3"
             >
               <Skeleton className="h-3.5 w-20" />
               <SkeletonField />
@@ -36,7 +36,7 @@ export default function ProductionBuilderPageSkeleton() {
         <Card>
           <div className="kl-metric-grid">
             {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="h-14 w-full rounded-2xl" />
+              <Skeleton key={index} className="h-14 w-full rounded-[var(--kl-radius-inner)]" />
             ))}
           </div>
         </Card>

@@ -26,12 +26,12 @@ export default function RecipeLines({
         lines.map((item, index) => (
           <div
             key={`${item.ingredientId}-${index}`}
-            className="flex items-center justify-between border-b border-kl-border pb-3 last:border-0 last:pb-0"
+            className="flex min-h-11 items-center justify-between border-b border-kl-border pb-3 last:border-0 last:pb-0"
           >
             <button
               type="button"
               onClick={() => onEditLine(index)}
-              className="min-w-0 flex-1 text-left kl-pressable"
+              className="flex min-h-11 min-w-0 flex-1 items-center text-left kl-pressable"
             >
               <div className="kl-type-card-title">{item.name}</div>
               <div className="kl-type-caption mt-1">
@@ -44,7 +44,7 @@ export default function RecipeLines({
               <button
                 type="button"
                 onClick={() => onRemoveLine(index)}
-                className="kl-type-caption text-kl-muted kl-pressable"
+                className="kl-tap-link kl-type-caption text-kl-muted kl-pressable"
               >
                 ลบ
               </button>
@@ -56,7 +56,7 @@ export default function RecipeLines({
       <Button
         type="button"
         variant="secondary"
-        fullWidth
+        size="sm"
         onClick={onAddIngredient}
       >
         <Plus className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />

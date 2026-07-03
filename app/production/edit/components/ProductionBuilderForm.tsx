@@ -39,7 +39,7 @@ export default function ProductionBuilderForm({
     <div className="space-y-4">
       <Card className="space-y-4">
         <div>
-          <label className="kl-type-label">วันที่ผลิต</label>
+          <label className="kl-type-label">วันที่ทำ</label>
           <input
             type="date"
             value={date}
@@ -56,7 +56,7 @@ export default function ProductionBuilderForm({
 
       <Card className="space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="kl-type-card-title">เป้าผลิต (เมนูขาย)</div>
+          <div className="kl-type-card-title">เมนูที่จะทำวันนี้</div>
           <Button type="button" variant="secondary" size="sm" onClick={onAddLine}>
             <Plus className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
             เพิ่มเมนูขาย
@@ -71,7 +71,7 @@ export default function ProductionBuilderForm({
           {lines.map((line, index) => (
             <div
               key={line.key}
-              className="space-y-3 rounded-2xl border border-kl-border bg-kl-surface p-4"
+              className="kl-nested-panel space-y-3"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="kl-type-label">
@@ -80,7 +80,7 @@ export default function ProductionBuilderForm({
                 <button
                   type="button"
                   onClick={() => onRemoveLine(line.key)}
-                  className="kl-type-caption text-kl-muted kl-pressable"
+                  className="kl-tap-link kl-type-caption text-kl-muted kl-pressable"
                 >
                   ลบ
                 </button>

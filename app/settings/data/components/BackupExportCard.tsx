@@ -17,20 +17,17 @@ export default function BackupExportCard({ onExported }: Props) {
   return (
     <Card className="space-y-4">
       <div>
-        <div className="kl-type-card-title">ดาวน์โหลดไฟล์สำรอง</div>
-        <p className="kl-type-caption mt-1">
-          บันทึกข้อมูลร้านทั้งหมดเป็นไฟล์
-        </p>
+        <div className="kl-type-card-title">บันทึกไฟล์เก็บไว้</div>
       </div>
 
       <StatCell
         label="ข้อมูลที่บันทึกไว้"
-        value={hasData ? `${keyCount} ส่วน` : "ยังไม่มีข้อมูลที่บันทึก"}
+        value={hasData ? `${keyCount} อย่าง` : "ยังไม่มีข้อมูลที่บันทึก"}
         className="text-left"
       />
 
       <Button type="button" fullWidth onClick={handleExport}>
-        ดาวน์โหลดไฟล์สำรอง
+        บันทึกไฟล์
       </Button>
     </Card>
   );

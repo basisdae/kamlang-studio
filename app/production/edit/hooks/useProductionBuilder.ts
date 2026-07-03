@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getProductionRollupForPlan } from "../../../lib/productionRollupService";
-import { getAllMenus } from "../../../menu/MenuRepository";
+import { getAllEffectiveMenus } from "../../../menu/menuAccess";
 import { getEffectivePlanByDate } from "../../planAccess";
 import type {
   ProductionBuilderValidationErrors,
@@ -135,10 +135,7 @@ export function useProductionBuilder(
   duplicateFromDate?: string | null
 ) {
   const router = useRouter();
-  const menus = useMemo(
-    () => getAllMenus().filter((menu) => menu.isActive),
-    []
-  );
+  const menus = useMemo(() => getAllEffectiveMenus(), []);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

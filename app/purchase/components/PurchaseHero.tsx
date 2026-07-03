@@ -20,16 +20,14 @@ export default function PurchaseHero({
       title={`ซื้อแล้ว ${boughtCount}/${totalCount}`}
       subtitle={dateLabel}
     >
-      <div className="kl-hero-stats">
-        <div className="kl-hero-stat">
-          <div className="kl-hero-stat-value">{remaining}</div>
-          <div className="kl-hero-stat-label">ยังเหลือ</div>
+      {remaining > 0 ? (
+        <div className="kl-hero-stats">
+          <div className="kl-hero-stat">
+            <div className="kl-hero-stat-value">{remaining}</div>
+            <div className="kl-hero-stat-label">ยังเหลือ</div>
+          </div>
         </div>
-        <div className="kl-hero-stat">
-          <div className="kl-hero-stat-value">{totalCount}</div>
-          <div className="kl-hero-stat-label">รายการ</div>
-        </div>
-      </div>
+      ) : null}
     </HeroCard>
   );
 }

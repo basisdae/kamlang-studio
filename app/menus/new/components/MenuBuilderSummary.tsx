@@ -49,12 +49,12 @@ export default function MenuBuilderSummary({
         {preview ? (
           <div className="grid grid-cols-3 gap-2">
             <StatCell
-              label="ต้นทุนสูตร"
+              label="ต้นทุนทำอาหาร"
               value={`฿${formatMenuBaht(preview.recipeCost)}`}
               size="sm"
             />
             <StatCell
-              label="บรรจุภัณฑ์"
+              label="ของห่อกลับ"
               value={`฿${formatMenuBaht(preview.packagingCost)}`}
               size="sm"
             />

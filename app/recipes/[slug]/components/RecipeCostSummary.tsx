@@ -40,10 +40,6 @@ export default function RecipeCostSummary({
           <StatCell label="กำไร %" value={`${gpPercent}%`} />
         </div>
 
-        <p className="kl-type-helper text-center">
-          ราคาขายอ้างอิงจากช่องทางหลัก หรือคำนวณจากเป้าต้นทุน
-        </p>
-
         {onSave ? (
           <>
             {showSavedConfirmation ? (

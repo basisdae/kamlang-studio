@@ -29,7 +29,7 @@ export default function SearchResults({ query, results, onClearQuery }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {SEARCH_GROUP_ORDER.map((group) => (
         <SearchResultGroup
           key={group}

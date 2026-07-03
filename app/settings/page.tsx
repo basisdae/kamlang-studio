@@ -68,24 +68,24 @@ export default function SettingsPage() {
       return;
     }
 
-    const labour = parseNonNegative(labourPerPortion, "ค่าแรงต่อเสิร์ฟ");
+    const labour = parseNonNegative(labourPerPortion, "ค่าแรงต่อจาน");
     if (labour === null) {
-      setError("ค่าแรงต่อเสิร์ฟต้องเป็นตัวเลขที่ไม่ติดลบ");
+      setError("ค่าแรงต่อจานต้องเป็นตัวเลขที่ไม่ติดลบ");
       return;
     }
 
-    const gas = parseNonNegative(gasPerPortion, "ค่าแก๊สต่อเสิร์ฟ");
+    const gas = parseNonNegative(gasPerPortion, "ค่าแก๊สต่อจาน");
     if (gas === null) {
-      setError("ค่าแก๊สต่อเสิร์ฟต้องเป็นตัวเลขที่ไม่ติดลบ");
+      setError("ค่าแก๊สต่อจานต้องเป็นตัวเลขที่ไม่ติดลบ");
       return;
     }
 
     const electricity = parseNonNegative(
       electricityPerPortion,
-      "ค่าไฟต่อเสิร์ฟ"
+      "ค่าไฟต่อจาน"
     );
     if (electricity === null) {
-      setError("ค่าไฟต่อเสิร์ฟต้องเป็นตัวเลขที่ไม่ติดลบ");
+      setError("ค่าไฟต่อจานต้องเป็นตัวเลขที่ไม่ติดลบ");
       return;
     }
 
@@ -122,7 +122,6 @@ export default function SettingsPage() {
   return (
     <AppShell
       title="ตั้งค่า"
-      description="ข้อมูลร้าน"
       backHref="/"
     >
       <SettingsForm
@@ -147,15 +146,22 @@ export default function SettingsPage() {
       />
 
       <Card>
-        <div className="kl-type-card-title">สำรองข้อมูล</div>
-        <p className="kl-type-caption mt-1">
-          ดาวน์โหลดหรือเอาข้อมูลกลับมา
-        </p>
+        <div className="kl-type-card-title">เก็บข้อมูลร้านไว้</div>
         <Link
           href="/settings/data"
-          className="kl-type-caption mt-3 inline-flex items-center gap-1 text-kl-brown kl-pressable"
+          className="kl-tap-link kl-type-caption mt-2 inline-flex items-center gap-1 text-kl-brown kl-pressable"
         >
-          ไปสำรองข้อมูล
+          ไปเก็บข้อมูลไว้
+        </Link>
+      </Card>
+
+      <Card>
+        <div className="kl-type-card-title">บันทึกล่าสุด</div>
+        <Link
+          href="/activity"
+          className="kl-tap-link kl-type-caption mt-2 inline-flex items-center gap-1 text-kl-brown kl-pressable"
+        >
+          ดูบันทึกล่าสุด
         </Link>
       </Card>
     </AppShell>

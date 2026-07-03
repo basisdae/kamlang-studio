@@ -14,7 +14,6 @@ export default function NotificationsPage() {
   return (
     <AppShell
       title="สิ่งที่ต้องจัดการ"
-      description="เรื่องที่ควรเช็คตอนนี้"
       backHref="/"
     >
       <NotificationList notifications={notifications} />

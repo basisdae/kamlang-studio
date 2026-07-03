@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Button from "../../../../components/ui/Button";
+import ActionBar from "../../../../components/ui/ActionBar";
 import ButtonLink from "../../../../components/ui/ButtonLink";
 import {
   deleteSavedMenu,
@@ -41,10 +42,19 @@ export default function MenuActionBar({ menuId, isEditable }: Props) {
     });
   }
 
+  if (!isEditable) {
+    return (
+      <ActionBar>
+          <ButtonLink href="/menus/new" fullWidth>
+            สร้างเมนูของคุณจากตัวอย่าง
+          </ButtonLink>
+      </ActionBar>
+    );
+  }
+
   if (confirmDelete && isEditable) {
     return (
-      <div className="kl-action-bar">
-        <div className="kl-action-bar-inner space-y-2">
+      <ActionBar innerClassName="space-y-2">
           <p className="kl-text-caption text-center">ลบเมนูขายนี้ถาวร?</p>
           <div className="flex gap-2">
             <Button variant="danger" fullWidth onClick={handleDelete}>
@@ -58,22 +68,20 @@ export default function MenuActionBar({ menuId, isEditable }: Props) {
               ยกเลิก
             </Button>
           </div>
-        </div>
-      </div>
+      </ActionBar>
     );
   }
 
   return (
-    <div className="kl-action-bar">
-      <div className="kl-action-bar-inner space-y-2">
+    <ActionBar innerClassName="space-y-2">
         <div className="flex gap-2">
           {isEditable ? (
             <Button variant="secondary" fullWidth onClick={handleDuplicate}>
-              ทำสำเนา
+              คัดลอก
             </Button>
           ) : (
             <Button variant="secondary" fullWidth disabled>
-              ทำสำเนา
+              คัดลอก
             </Button>
           )}
 
@@ -101,7 +109,6 @@ export default function MenuActionBar({ menuId, isEditable }: Props) {
             ลบเมนูขาย
           </Button>
         )}
-      </div>
-    </div>
+    </ActionBar>
   );
 }

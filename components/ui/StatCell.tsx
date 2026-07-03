@@ -17,7 +17,7 @@ export default function StatCell({
   return (
     <div className={`kl-stat ${className}`}>
       <div className="kl-type-label">{label}</div>
-      <div className={`mt-1.5 ${metricClass}`}>{value}</div>
+      <div className={`mt-1 ${metricClass}`}>{value}</div>
     </div>
   );
 }

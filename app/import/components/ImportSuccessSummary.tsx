@@ -18,7 +18,7 @@ export default function ImportSuccessSummary({ summary }: Props) {
 
   return (
     <section className="space-y-3">
-      <SectionTitle>สรุปการโหลด</SectionTitle>
+      <SectionTitle>เอาเข้าร้านแล้ว</SectionTitle>
 
       <Card className="space-y-4">
         <div className="text-center">
@@ -27,7 +27,7 @@ export default function ImportSuccessSummary({ summary }: Props) {
             strokeWidth={KL_ICON_STROKE}
           />
           <div className="kl-type-card-title mt-2 text-kl-success-text">
-            บันทึกสำเร็จ
+            เอาเข้าร้านสำเร็จ
           </div>
           <p className="kl-type-description mt-1.5 text-kl-success-text/80">
             รวม {total} รายการจากไฟล์
@@ -36,7 +36,7 @@ export default function ImportSuccessSummary({ summary }: Props) {
 
         <div className="kl-metric-grid">
           <StatCell label="เพิ่มใหม่" value={summary.imported} size="lg" />
-          <StatCell label="แทนที่" value={summary.replaced} size="lg" />
+          <StatCell label="ใช้ของใหม่" value={summary.replaced} size="lg" />
           <StatCell
             label="เพิ่มเป็นรายการใหม่"
             value={summary.addedNew}
@@ -44,10 +44,6 @@ export default function ImportSuccessSummary({ summary }: Props) {
           />
           <StatCell label="ข้าม" value={summary.skipped} size="lg" />
         </div>
-
-        <p className="kl-type-helper text-center text-kl-success-text/70">
-          หน้าที่เกี่ยวข้องจะแสดงข้อมูลหลังรีเฟรช
-        </p>
       </Card>
     </section>
   );

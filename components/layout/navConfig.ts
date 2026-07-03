@@ -20,7 +20,7 @@ export type NavItem = {
 
 export const primaryNavItems: NavItem[] = [
   { href: "/", label: "หน้าแรก", icon: Home },
-  { href: "/production", label: "แผนผลิต", icon: ClipboardList },
+  { href: "/production", label: "แผนวันนี้", icon: ClipboardList },
   { href: "/purchase", label: "ซื้อของ", icon: ShoppingCart },
   { href: "/recipes", label: "สูตร", icon: Soup },
 ];
@@ -28,7 +28,7 @@ export const primaryNavItems: NavItem[] = [
 export const moreNavItems: NavItem[] = [
   { href: "/menus", label: "เมนูขาย", icon: UtensilsCrossed },
   { href: "/ingredients", label: "วัตถุดิบ", icon: Beef },
-  { href: "/inventory", label: "สต๊อก", icon: Package },
+  { href: "/inventory", label: "ของในครัว", icon: Package },
   { href: "/search", label: "ค้นหา", icon: Search },
   { href: "/settings", label: "ตั้งค่า", icon: Settings },
 ];

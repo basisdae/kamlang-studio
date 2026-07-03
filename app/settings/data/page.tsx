@@ -27,7 +27,7 @@ export default function SettingsDataPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function handleExported() {
-    setExportMessage("ดาวน์โหลดไฟล์สำรองแล้ว");
+    setExportMessage("บันทึกไฟล์เก็บไว้แล้ว");
     setSuccessMessage(null);
     setRestoreErrors([]);
   }
@@ -100,8 +100,7 @@ export default function SettingsDataPage() {
 
   return (
     <AppShell
-      title="สำรองข้อมูล"
-      description="ดาวน์โหลดหรือเอาข้อมูลกลับมา"
+      title="เก็บข้อมูลร้านไว้"
       backHref="/"
     >
       <BackupExportCard onExported={handleExported} />
@@ -121,14 +120,11 @@ export default function SettingsDataPage() {
       {successMessage ? (
         <Card className="kl-type-caption text-kl-success-text">
           {successMessage}
-          <p className="kl-type-label mt-1 text-kl-success-text/75">
-            กดย้อนกลับภายใน 8 วินาทีได้ หรือรอให้หน้ารีเฟรชอัตโนมัติ
-          </p>
         </Card>
       ) : null}
 
       {restoreErrors.length > 0 ? (
-        <Card className="kl-type-caption space-y-2 rounded-2xl bg-kl-danger px-4 py-3 text-kl-danger-text">
+        <Card className="kl-alert-danger space-y-2">
           <div className="kl-type-card-title">เอาข้อมูลกลับมาไม่ได้</div>
           <ul className="space-y-1">
             {restoreErrors.map((error) => (

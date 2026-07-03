@@ -18,8 +18,8 @@ export default function EditMenuPage() {
     return (
       <AppShell
         title="แก้ไขเมนูขาย"
-        description="ปรับสูตร บรรจุภัณฑ์ และราคาขาย"
         backHref={`/menus/${params.id}`}
+        compact
       >
         <MenuBuilderPageSkeleton />
       </AppShell>
@@ -30,8 +30,8 @@ export default function EditMenuPage() {
     return (
       <AppShell
         title="ไม่พบเมนูขาย"
-        description="เมนูขายนี้แก้ไขไม่ได้"
         backHref="/menus"
+        hidePageHeader
       >
         <EmptyState {...EMPTY_STATE.menus.editNotFound} />
       </AppShell>
@@ -41,10 +41,10 @@ export default function EditMenuPage() {
   return (
     <AppShell
       title="แก้ไขเมนูขาย"
-      description="ปรับสูตร บรรจุภัณฑ์ และราคาขาย"
       backHref={`/menus/${params.id}`}
+      compact
     >
-      <div className="space-y-4 pb-44">
+      <div className="space-y-4 kl-builder-scroll">
         <VersionHistoryPanel
           entityType="saved_menu"
           entityId={params.id}

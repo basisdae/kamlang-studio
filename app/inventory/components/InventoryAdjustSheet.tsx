@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Button from "../../../components/ui/Button";
+import BottomSheet from "../../../components/ui/BottomSheet";
+import FormField from "../../../components/ui/FormField";
+import SheetActions from "../../../components/ui/SheetActions";
 import { getIngredientById } from "../../ingredients/IngredientRepository";
 import { getEffectiveInventoryByIngredientId } from "../inventoryAccess";
 import Badge from "../../../components/ui/Badge";
@@ -112,14 +114,11 @@ export default function InventoryAdjustSheet({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="kl-sheet-overlay fixed inset-0 flex items-end kl-sheet-scrim px-4"
-      onClick={onClose}
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      surface="panel"
     >
-      <div
-        className="kl-sheet kl-sheet--scroll"
-        onClick={(event) => event.stopPropagation()}
-      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="kl-caption">ปรับจำนวนของ</div>
@@ -154,10 +153,7 @@ export default function InventoryAdjustSheet({
         </div>
 
         <div className="mt-5 space-y-4">
-          <div>
-            <label className="kl-type-label">
-              คงเหลือ
-            </label>
+          <FormField label="คงเหลือ">
             <input
               type="number"
               inputMode="decimal"
@@ -166,12 +162,9 @@ export default function InventoryAdjustSheet({
               onChange={(event) => setStockQuantity(event.target.value)}
               className={fieldClassName}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="kl-type-label">
-              ขั้นต่ำ
-            </label>
+          <FormField label="เตือนเมื่อเหลือน้อยกว่า">
             <input
               type="number"
               inputMode="decimal"
@@ -180,12 +173,9 @@ export default function InventoryAdjustSheet({
               onChange={(event) => setMinQuantity(event.target.value)}
               className={fieldClassName}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="kl-type-label">
-              หมายเหตุ (ถ้ามี)
-            </label>
+          <FormField label="หมายเหตุ (ถ้ามี)">
             <input
               type="text"
               value={note}
@@ -193,26 +183,25 @@ export default function InventoryAdjustSheet({
               placeholder="เช่น นับของเช้า, ซื้อเพิ่มแล้ว"
               className={fieldClassName}
             />
-          </div>
+          </FormField>
 
           {error ? (
             <div className="kl-type-caption text-kl-danger-text">{error}</div>
           ) : null}
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          <Button variant="secondary" fullWidth onClick={onClose}>
-            ยกเลิก
-          </Button>
-          <Button fullWidth onClick={handleSave}>
-            บันทึก
-          </Button>
+        <div className="mt-5">
+          <SheetActions
+            className="grid grid-cols-2 gap-2"
+            onCancel={onClose}
+            onConfirm={handleSave}
+            confirmLabel="บันทึก"
+          />
         </div>
 
         <div className="mt-3 text-center kl-caption">
           แตะบันทึกเพื่ออัปเดตของในครัว
         </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 }

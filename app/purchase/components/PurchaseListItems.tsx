@@ -75,7 +75,7 @@ export default function PurchaseListItems({
                           {name}
                         </div>
                         {isReceived ? (
-                          <Badge tone="completed">รับเข้าแล้ว</Badge>
+                          <Badge tone="completed">เอาเข้าครัวแล้ว</Badge>
                         ) : null}
                       </div>
 
@@ -88,9 +88,9 @@ export default function PurchaseListItems({
 
                       {isReceived && state.receivedQuantity !== undefined ? (
                         <div className="kl-type-caption mt-1">
-                          รับเข้า{" "}
+                          เอาเข้าครัว{" "}
                           {formatProductionQuantity(state.receivedQuantity)}{" "}
-                          หน่วยในครัว
+                          {line.unit}
                         </div>
                       ) : null}
 

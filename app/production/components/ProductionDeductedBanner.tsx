@@ -27,12 +27,12 @@ export default function ProductionDeductedBanner({ plan }: Props) {
   if (!plan.deducted) return null;
 
   return (
-    <Card className="rounded-2xl bg-kl-surface px-4 py-3">
-      <div className="kl-type-card-title">หักของแล้ว</div>
+    <Card className="bg-kl-surface">
+      <div className="kl-type-card-title">ตัดของในครัวแล้ว</div>
       <div className="kl-type-caption mt-1 text-kl-muted">
         {plan.deductedAt
-          ? `หักของเมื่อ ${formatDeductedAt(plan.deductedAt)}`
-          : "แผนนี้หักของในครัวไปแล้ว"}
+          ? `ตัดของเมื่อ ${formatDeductedAt(plan.deductedAt)}`
+          : "แผนนี้ตัดของในครัวไปแล้ว"}
       </div>
     </Card>
   );

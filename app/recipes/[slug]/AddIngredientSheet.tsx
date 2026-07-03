@@ -1,14 +1,10 @@
 "use client";
 
-import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import {
-  KL_ICON_SM_CLASS,
-  KL_ICON_STROKE,
-} from "../../../components/layout/navConfig";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import CategoryChip from "../../../components/ui/CategoryChip";
+import SearchBar from "../../../components/ui/SearchBar";
 import { Ingredient } from "./types";
 import { formatMoney } from "./utils";
 
@@ -42,9 +38,6 @@ const categories: { key: Category; label: string }[] = [
   { key: "Other", label: "อื่น ๆ" },
 ];
 
-const searchFieldClassName =
-  "kl-type-body w-full border-none bg-transparent outline-none placeholder:text-kl-muted";
-
 export default function AddIngredientSheet({ onClose, onAdd }: Props) {
   const [keyword, setKeyword] = useState("");
 
@@ -59,7 +52,7 @@ export default function AddIngredientSheet({ onClose, onAdd }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end kl-sheet-scrim px-4 pb-4"
+      className="kl-sheet-overlay fixed inset-0 z-50 flex items-end kl-sheet-scrim px-4"
       onClick={onClose}
     >
       <div
@@ -74,18 +67,11 @@ export default function AddIngredientSheet({ onClose, onAdd }: Props) {
           <p className="kl-type-helper mt-1">ค้นหาแล้วแตะเพื่อเพิ่มเข้ารายการ</p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-xl border border-kl-border bg-kl-surface px-4 py-3">
-          <Search
-            className={`${KL_ICON_SM_CLASS} shrink-0 text-kl-muted`}
-            strokeWidth={KL_ICON_STROKE}
-          />
-          <input
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            placeholder="ค้นหา เช่น หมู กะเพรา ซอส"
-            className={searchFieldClassName}
-          />
-        </div>
+        <SearchBar
+          placeholder="ค้นหา เช่น หมู กะเพรา ซอส"
+          value={keyword}
+          onChange={setKeyword}
+        />
 
         <div className="max-h-[44vh] space-y-4 overflow-y-auto">
           {categories.map((category) => {
@@ -101,13 +87,13 @@ export default function AddIngredientSheet({ onClose, onAdd }: Props) {
                   <CategoryChip category={category.key} label={category.label} />
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-kl-border">
+                <div className="kl-nested-panel overflow-hidden p-0">
                   {items.map((item, index) => (
                     <button
                       type="button"
                       key={item.name}
                       onClick={() => onAdd(item)}
-                      className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left kl-pressable ${
+                      className={`flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left kl-pressable ${
                         index > 0 ? "border-t border-kl-border" : ""
                       }`}
                     >

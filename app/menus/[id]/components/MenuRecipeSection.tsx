@@ -20,7 +20,6 @@ export default function MenuRecipeSection({ recipe }: Props) {
         <Card className="flex items-center justify-between gap-3">
           <div>
             <div className="kl-type-card-title">{recipe.name}</div>
-            <p className="kl-type-caption mt-1">{recipe.category}</p>
           </div>
 
           <ChevronRight

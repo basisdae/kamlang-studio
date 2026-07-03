@@ -2,25 +2,18 @@
 
 import { useMemo, useState } from "react";
 import AppShell from "../../components/layout/AppShell";
-import Badge from "../../components/ui/Badge";
 import Card from "../../components/ui/Card";
 import CategoryChip from "../../components/ui/CategoryChip";
 import EmptyState from "../../components/ui/EmptyState";
 import SearchBar from "../../components/ui/SearchBar";
+import SectionLink from "../../components/ui/SectionLink";
 import { EMPTY_STATE } from "../copy/emptyStates";
 import { getAllIngredients } from "./IngredientRepository";
-import type { Ingredient, IngredientStatus } from "./types";
+import type { Ingredient } from "./types";
 import {
   formatIngredientPrice,
   getIngredientDisplayUnit,
-  getIngredientStatusLabel,
 } from "./utils";
-
-function getStatusTone(status: IngredientStatus) {
-  if (status === "low") return "draft" as const;
-  if (status === "out") return "critical" as const;
-  return "ready" as const;
-}
 
 function filterBySearch(ingredients: Ingredient[], search: string) {
   const query = search.trim().toLowerCase();
@@ -45,13 +38,21 @@ export default function IngredientsPage() {
   return (
     <AppShell
       title="วัตถุดิบ"
-      description="รายการวัตถุดิบในร้าน"
+      description="รายการและราคาซื้อ"
       backHref="/"
+      compact
     >
       <SearchBar
         placeholder="ค้นหาวัตถุดิบ..."
         value={search}
         onChange={setSearch}
+      />
+
+      <SectionLink
+        variant="nav"
+        href="/import"
+        label="เพิ่มวัตถุดิบ"
+        title="นำเข้าจาก Excel"
       />
 
       <div className="space-y-3">
@@ -66,27 +67,14 @@ export default function IngredientsPage() {
           )
         ) : (
           filteredIngredients.map((item) => (
-            <Card key={item.id} className="space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <h2 className="kl-type-card-title break-words">{item.name}</h2>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                    <CategoryChip category={item.category} />
-                    <span className="kl-type-caption">
-                      หน่วยใช้ {getIngredientDisplayUnit(item)}
-                    </span>
-                  </div>
-                </div>
-
-                <Badge tone={getStatusTone(item.status)}>
-                  {getIngredientStatusLabel(item.status)}
-                </Badge>
-              </div>
-
-              <div className="kl-card-emphasis">
-                <div className="kl-type-label">คงเหลือ</div>
-                <div className="kl-type-metric-lg mt-1">
-                  {item.stockQuantity} {item.stockUnit}
+            <Card key={item.id} className="space-y-2">
+              <div className="min-w-0">
+                <h2 className="kl-type-card-title break-words">{item.name}</h2>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  <CategoryChip category={item.category} />
+                  <span className="kl-type-caption">
+                    หน่วยใช้ {getIngredientDisplayUnit(item)}
+                  </span>
                 </div>
               </div>
 

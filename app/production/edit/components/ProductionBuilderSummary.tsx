@@ -49,7 +49,7 @@ export default function ProductionBuilderSummary({ preview, onSave }: Props) {
               size="sm"
             />
             <StatCell
-              label="บรรจุภัณฑ์"
+              label="ของห่อกลับ"
               value={`${preview.packagingTotals.length} รายการ`}
               size="sm"
             />
@@ -61,7 +61,7 @@ export default function ProductionBuilderSummary({ preview, onSave }: Props) {
           </div>
         ) : (
           <p className="kl-type-helper text-center">
-            เพิ่มเป้าผลิตเพื่อดูสรุป
+            เพิ่มเมนูเพื่อดูสรุป
           </p>
         )}
 
@@ -74,7 +74,7 @@ export default function ProductionBuilderSummary({ preview, onSave }: Props) {
 
         <Button type="button" fullWidth className="mt-4" onClick={handleSave}>
           <Save className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
-          บันทึกแผนผลิต
+          บันทึกแผนวันนี้
         </Button>
       </div>
     </div>

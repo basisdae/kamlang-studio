@@ -101,9 +101,9 @@ export default function InventoryPage() {
 
   return (
     <AppShell
-      title="สต๊อก"
-      description="เช็คของที่เหลือ"
+      title="ของในครัว"
       backHref="/"
+      compact
     >
       <InventoryHero
         totalItems={totalItems}

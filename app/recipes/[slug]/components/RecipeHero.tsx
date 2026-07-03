@@ -6,14 +6,13 @@ import {
 import Card from "../../../../components/ui/Card";import Badge from "../../../../components/ui/Badge";
 import StatCell from "../../../../components/ui/StatCell";
 import type { Recipe } from "../../types";
+import { formatRecipeStatus } from "../../utils";
 
 type Props = {
   recipe: Recipe;
 };
 
 export default function RecipeHero({ recipe }: Props) {
-  const totalTime = recipe.prepTimeMinutes + recipe.cookTimeMinutes;
-
   return (
     <Card className="overflow-hidden p-0">
       <div className="flex aspect-[16/10] items-center justify-center bg-kl-surface">
@@ -23,15 +22,8 @@ export default function RecipeHero({ recipe }: Props) {
         />
       </div>
 
-      <div className="space-y-5 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="kl-type-display">{recipe.name}</h2>
-            {recipe.category ? (
-              <p className="kl-type-description mt-1.5">{recipe.category}</p>
-            ) : null}
-          </div>
-
+      <div className="space-y-5 kl-card-body">
+        <div className="flex items-start justify-end gap-3">
           <Badge
             tone={
               recipe.status === "พร้อมใช้"
@@ -41,7 +33,7 @@ export default function RecipeHero({ recipe }: Props) {
                   : "draft"
             }
           >
-            {recipe.status}
+            {formatRecipeStatus(recipe.status)}
           </Badge>
         </div>
 
@@ -74,12 +66,6 @@ export default function RecipeHero({ recipe }: Props) {
             }
           />
         </div>
-
-        {totalTime > 0 ? (
-          <p className="kl-type-helper text-center">
-            รวมเวลาประมาณ {totalTime} นาที
-          </p>
-        ) : null}
       </div>
     </Card>
   );

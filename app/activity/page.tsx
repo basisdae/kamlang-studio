@@ -17,7 +17,6 @@ export default function ActivityPage() {
   return (
     <AppShell
       title="บันทึกล่าสุด"
-      description="สิ่งที่เพิ่งทำในร้าน"
       backHref="/"
     >
       <ActivityTimeline activities={activities} />

@@ -19,8 +19,9 @@ export default function SearchPage() {
   return (
     <AppShell
       title="ค้นหา"
-      description="ค้นหาในร้าน"
       backHref="/"
+      hidePageHeader
+      compact
     >
       <SearchBar
         placeholder="ค้นหาวัตถุดิบ สูตร เมนูขาย..."

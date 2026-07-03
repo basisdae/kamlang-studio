@@ -18,7 +18,7 @@ export default function BatchSizeControl({
 }: Props) {
   return (
     <Card className="flex items-center justify-between gap-4">
-      <span className="kl-type-card-title">ผลิต</span>
+      <span className="kl-type-card-title">ทำกี่เสิร์ฟ</span>
 
       <div className="flex items-center gap-2.5">
         <StepperButton

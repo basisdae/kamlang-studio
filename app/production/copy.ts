@@ -1,27 +1,22 @@
 /**
  * Production UI terminology (display copy only).
- *
- * - รายการสั่งล่วงหน้า — confirmed customer orders (kitchen / staff view)
- * - เป้าผลิต — production targets (owner plan view)
- * - ผลิตแล้ว — completed production / dishes made
- * - เตรียมแล้ว — prep done (ingredients, packaging)
  */
 export const PRODUCTION_UI = {
   status: {
-    draft: "แบบร่าง",
-    preparing: "กำลังผลิต",
+    draft: "ยังไม่เริ่ม",
+    preparing: "กำลังทำ",
     completed: "เสร็จแล้ว",
   },
   sections: {
-    targetsToday: "เป้าผลิตวันนี้",
+    targetsToday: "เมนูที่ต้องทำวันนี้",
     preOrders: "รายการสั่งล่วงหน้า",
     ingredientsToPrep: "ของที่ต้องเตรียม",
-    packagingToPrep: "บรรจุภัณฑ์ที่ต้องเตรียม",
+    packagingToPrep: "ของห่อกลับบ้านที่ต้องเตรียม",
     productionStatus: "ขั้นตอนวันนี้",
   },
   progress: {
     prepared: "เตรียมแล้ว",
-    produced: "ผลิตแล้ว",
+    produced: "ทำแล้ว",
     done: "ทำแล้ว",
     remaining: "ยังเหลือ",
   },

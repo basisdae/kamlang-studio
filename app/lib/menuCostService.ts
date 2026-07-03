@@ -7,11 +7,10 @@
  * PackagingItemRepository, and costService.
  * Does not modify any repository.
  */
-import { getMenuById } from "../menu/MenuRepository";
+import { getEffectiveMenuById } from "../menu/menuAccess";
 import { getPackagingItemById } from "../packaging/PackagingItemRepository";
 import { getPackagingSetById } from "../packaging/PackagingSetRepository";
-import { getRecipeById } from "../recipes/RecipeRepository";
-import { getStandardRecipeCost } from "./costService";
+import { getRecipeCostById } from "../recipes/recipeAccess";
 import { getPerPortionCosts } from "../settings/pricingAccess";
 
 export type MenuCostBreakdown = {
@@ -55,17 +54,11 @@ function getPackagingSetCost(packagingSetId?: string): number {
 }
 
 export function calculateMenuCost(input: MenuCostInput): MenuCostBreakdown {
-  const recipe = getRecipeById(input.recipeId);
-
-  if (!recipe) {
-    throw new Error(`Recipe not found: "${input.recipeId}"`);
-  }
-
   if (input.packagingSetId && !getPackagingSetById(input.packagingSetId)) {
     throw new Error(`Packaging set not found: "${input.packagingSetId}"`);
   }
 
-  const recipeCost = getStandardRecipeCost(recipe);
+  const recipeCost = getRecipeCostById(input.recipeId);
   const packagingCost = getPackagingSetCost(input.packagingSetId);
   const { labourCost, gasCost, electricityCost } = getPerPortionCosts();
   const totalCost =
@@ -89,18 +82,10 @@ export function calculateMenuCost(input: MenuCostInput): MenuCostBreakdown {
 }
 
 export function getMenuCost(menuId: string): MenuCostBreakdown {
-  const menu = getMenuById(menuId);
+  const menu = getEffectiveMenuById(menuId);
 
   if (!menu) {
     throw new Error(`Menu not found: "${menuId}"`);
-  }
-
-  const recipe = getRecipeById(menu.recipeId);
-
-  if (!recipe) {
-    throw new Error(
-      `Menu "${menu.name}" (${menu.id}) references unknown recipe "${menu.recipeId}"`
-    );
   }
 
   if (menu.packagingSetId && !getPackagingSetById(menu.packagingSetId)) {
