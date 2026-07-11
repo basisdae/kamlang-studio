@@ -77,7 +77,9 @@ import {
   SEED_ASSET_TIMELINES,
   isAssetOwned,
   isAssetPlannedSpend,
+  isAssetOrdered,
   isAssetActualSpend,
+  assetHasNoPrice,
 } from "./assets";
 
 export type {
@@ -103,7 +105,9 @@ export {
   SEED_ASSET_TIMELINES,
   isAssetOwned,
   isAssetPlannedSpend,
+  isAssetOrdered,
   isAssetActualSpend,
+  assetHasNoPrice,
 };
 
 export type InitialStockItem = {

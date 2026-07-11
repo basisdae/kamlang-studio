@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getNotificationCount } from "../../app/lib/notificationService";
 import AppNavMoreSheet from "./AppNavMoreSheet";
 import {
@@ -21,12 +21,11 @@ export default function AppNav() {
   const [moreOpenForPath, setMoreOpenForPath] = useState<string | null>(null);
   const isMoreOpen = moreOpenForPath === pathname;
   const tabItems = getMobileTabItems();
-  const notificationCount = useMemo(
-    () => getNotificationCount(),
-    // Recompute when route changes (localStorage-backed counts)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pathname]
-  );
+  // Defer localStorage read until after mount — avoids SSR/client hydration mismatch
+  const [notificationCount, setNotificationCount] = useState(0);
+  useEffect(() => {
+    setNotificationCount(getNotificationCount());
+  }, [pathname]);
   const isMoreActive = isMoreNavActive(pathname);
 
   return (

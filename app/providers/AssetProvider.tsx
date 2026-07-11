@@ -11,7 +11,9 @@ import {
   type ReactNode,
 } from "react";
 import {
+  assetHasNoPrice,
   isAssetOwned as seedIsAssetOwned,
+  isAssetPlannedSpend,
   type AssetDecisionGroup,
   type AssetItem,
   type AssetPurchaseRecord,
@@ -502,12 +504,10 @@ export function isAssetOwned(status: AssetStatus) {
 
 export function getAssetsSummary(assets: AssetItem[]) {
   const owned = assets.filter((a) => isAssetOwned(a.status));
-  const needBuy = assets.filter((a) => !isAssetOwned(a.status));
-  const noPrice = assets.filter(
-    (a) => a.estimatedPrice == null && a.actualPrice == null
-  );
+  const needBuy = assets.filter((a) => isAssetPlannedSpend(a.status));
+  const noPrice = assets.filter((a) => assetHasNoPrice(a));
   const totalValue = assets.reduce((sum, a) => {
-    const unit = a.actualPrice ?? a.estimatedPrice;
+    const unit = a.estimatedPrice;
     return sum + (unit != null ? unit * a.quantity : 0);
   }, 0);
   return {

@@ -1,6 +1,7 @@
 import { getBiRepositories } from "../repositories";
 import type { Asset, AssetDecisionGroup } from "../types/asset";
 import type { BudgetItem, BudgetSummary } from "../types/budget";
+import { buildInventoryBuckets } from "./inventoryRollup";
 
 function isAcquired(status: BudgetItem["status"]) {
   return (
@@ -145,6 +146,12 @@ export class BudgetService {
       }
     }
 
+    const inventory = this.calculateInventoryRollup(assets);
+    const moneyNeededAll =
+      assets.length > 0 ? inventory.inventoryNeed : moneyNeeded(false);
+    const moneyNeededMust =
+      assets.length > 0 ? inventory.inventoryNeed : moneyNeeded(true);
+
     return {
       readyPercent:
         must.total === 0
@@ -156,14 +163,44 @@ export class BudgetService {
       shouldTotal: should.total,
       niceReady: nice.ready,
       niceTotal: nice.total,
-      moneyNeededAll: moneyNeeded(false),
-      moneyNeededMust: moneyNeeded(true),
-      unknownPriceAll: unknown(false),
-      unknownPriceMust: unknown(true),
-      minimumBudget: this.calculateMinimumBudget(items, assets, groups),
-      maximumBudget: this.calculateMaximumBudget(items, assets, groups),
+      moneyNeededAll,
+      moneyNeededMust,
+      unknownPriceAll:
+        assets.length > 0 ? inventory.inventoryUnknownNeed : unknown(false),
+      unknownPriceMust:
+        assets.length > 0 ? inventory.inventoryUnknownNeed : unknown(true),
+      minimumBudget:
+        assets.length > 0
+          ? inventory.inventoryNeed
+          : this.calculateMinimumBudget(items, assets, groups),
+      maximumBudget:
+        assets.length > 0
+          ? inventory.inventoryTotal
+          : this.calculateMaximumBudget(items, assets, groups),
       uncertainBudget: this.calculateUncertainBudget(items, assets, groups),
       decisionHints,
+      ...inventory,
+    };
+  }
+
+  /**
+   * Opening inventory from live assets:
+   * total · owned (มีแล้ว=in_use) · need (ต้องจัดหา) · actual spend (=0 until purchase)
+   */
+  calculateInventoryRollup(assets: Asset[]): {
+    inventoryTotal: number;
+    inventoryOwned: number;
+    inventoryNeed: number;
+    inventoryActualSpend: number;
+    inventoryUnknownNeed: number;
+  } {
+    const b = buildInventoryBuckets(assets);
+    return {
+      inventoryTotal: b.inventoryTotal,
+      inventoryOwned: b.inventoryOwned,
+      inventoryNeed: b.inventoryNeed,
+      inventoryActualSpend: b.inventoryActualSpend,
+      inventoryUnknownNeed: b.inventoryUnknownNeed,
     };
   }
 

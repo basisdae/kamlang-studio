@@ -1,9 +1,9 @@
 export type DataSource = "sample" | "seed" | "real";
 
 export const DATA_SOURCE_LABELS: Record<DataSource, string> = {
-  sample: "กำลังโหลด...",
-  seed: "ยังไม่ออนไลน์",
-  real: "Supabase · Online",
+  sample: "กำลังโหลด",
+  seed: "ใช้ข้อมูลแคช",
+  real: "ออนไลน์",
 };
 
 /**

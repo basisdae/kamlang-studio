@@ -23,18 +23,28 @@ import {
   ASSET_CATEGORIES,
   ASSET_PRIORITY_LABELS,
   ASSET_STATUS_LABELS,
+  assetHasNoPrice,
+  isAssetOrdered,
+  isAssetOwned,
+  isAssetPlannedSpend,
   type AssetPriority,
   type AssetStatus,
 } from "../../../data/seed/tangtao";
 import { formatBaht } from "../sampleData";
 import { useWorkspace } from "../../providers/WorkspaceProvider";
-import { getAssetsSummary, isAssetOwned, useAssets } from "./AssetsProvider";
+import { getAssetsSummary, useAssets } from "./AssetsProvider";
 import AssetCompactRow from "./components/AssetCompactRow";
 import AssetListCard from "./components/AssetListCard";
 
 type ViewMode = "card" | "list";
 type FilterAll = "all";
-type OwnFilter = FilterAll | "owned" | "need_buy" | "no_price";
+type UxFilter =
+  | FilterAll
+  | "owned"
+  | "need"
+  | "ordered"
+  | "received"
+  | "no_price";
 
 /**
  * Assets hub — trial-ready checklist surface
@@ -69,7 +79,7 @@ function OpeningAssetsInner() {
   const [category, setCategory] = useState<FilterAll | string>("all");
   const [status, setStatus] = useState<FilterAll | AssetStatus>("all");
   const [priority, setPriority] = useState<FilterAll | AssetPriority>("all");
-  const [ownFilter, setOwnFilter] = useState<OwnFilter>("all");
+  const [ownFilter, setOwnFilter] = useState<UxFilter>("all");
 
   function setViewPersist(next: ViewMode) {
     setView(next);
@@ -108,13 +118,12 @@ function OpeningAssetsInner() {
       if (status !== "all" && item.status !== status) return false;
       if (priority !== "all" && item.priority !== priority) return false;
       if (ownFilter === "owned" && !isAssetOwned(item.status)) return false;
-      if (ownFilter === "need_buy" && isAssetOwned(item.status)) return false;
-      if (
-        ownFilter === "no_price" &&
-        !(item.estimatedPrice == null && item.actualPrice == null)
-      ) {
+      if (ownFilter === "need" && !isAssetPlannedSpend(item.status))
         return false;
-      }
+      if (ownFilter === "ordered" && !isAssetOrdered(item.status))
+        return false;
+      if (ownFilter === "received" && item.status !== "received") return false;
+      if (ownFilter === "no_price" && !assetHasNoPrice(item)) return false;
       if (!q) return true;
       const hay =
         `${item.name} ${item.brand} ${item.model} ${item.supplier} ${item.category}`.toLowerCase();
@@ -124,9 +133,10 @@ function OpeningAssetsInner() {
 
   const focus = filtered.find(
     (a) =>
+      assetHasNoPrice(a) ||
       a.status === "planned" ||
       a.status === "awaiting_quote" ||
-      (a.estimatedPrice == null && a.actualPrice == null)
+      a.status === "ready_to_buy"
   );
 
   const hasActiveFilter =
@@ -210,9 +220,14 @@ function OpeningAssetsInner() {
             <div className="grid grid-cols-2 gap-2">
               <Metric label="รายการทั้งหมด" value={`${summary.total}`} />
               <Metric label="มีแล้ว" value={`${summary.owned}`} />
-              <Metric label="ต้องซื้อ" value={`${summary.needBuy}`} />
+              <Metric label="ต้องจัดหา" value={`${summary.needBuy}`} />
               <Metric label="ยังไม่มีราคา" value={`${summary.noPrice}`} />
             </div>
+            {summary.noPrice > 0 ? (
+              <p className="kl-type-helper">
+                งบประมาณยังไม่ครบ เพราะมี {summary.noPrice} รายการที่ยังไม่มีราคา
+              </p>
+            ) : null}
             <div>
               <p className="kl-type-label">มูลค่าประเมินรวม</p>
               <p className="kl-type-metric mt-1">
@@ -278,6 +293,32 @@ function OpeningAssetsInner() {
               onChange={setQuery}
             />
 
+            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              {(
+                [
+                  ["all", "ทั้งหมด"],
+                  ["owned", "มีแล้ว"],
+                  ["need", "ต้องจัดหา"],
+                  ["ordered", "สั่งแล้ว"],
+                  ["received", "ได้รับแล้ว"],
+                  ["no_price", "ไม่มีราคา"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setOwnFilter(value)}
+                  className={`kl-segment-btn shrink-0 whitespace-nowrap kl-pressable ${
+                    ownFilter === value
+                      ? "bg-[var(--bi-lemon)] text-[var(--bi-text-primary)]"
+                      : "bg-kl-surface text-kl-muted"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
             <div className="flex gap-2 overflow-x-auto pb-1">
               <FilterSelect
                 label="หมวด"
@@ -314,17 +355,6 @@ function OpeningAssetsInner() {
                       string,
                     ][]
                   ).map(([value, label]) => ({ value, label })),
-                ]}
-              />
-              <FilterSelect
-                label="มีแล้ว/ต้องซื้อ"
-                value={ownFilter}
-                onChange={(v) => setOwnFilter(v as OwnFilter)}
-                options={[
-                  { value: "all", label: "ทั้งหมด" },
-                  { value: "owned", label: "มีแล้ว" },
-                  { value: "need_buy", label: "ต้องซื้อ" },
-                  { value: "no_price", label: "ยังไม่มีราคา" },
                 ]}
               />
             </div>

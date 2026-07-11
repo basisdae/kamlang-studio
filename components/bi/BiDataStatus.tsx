@@ -49,11 +49,11 @@ export function resolveBiDataStatus(input: BiDataStatusInput): BiDataStatusKind 
 }
 
 const BADGE_LABEL: Record<BiDataStatusKind, string> = {
-  loading: "กำลังโหลด...",
-  online: "Supabase · Online",
-  empty: "ออนไลน์ · ว่าง",
-  error: "โหลดไม่สำเร็จ",
-  cached: "แคชสำรอง",
+  loading: "กำลังโหลด",
+  online: "ออนไลน์",
+  empty: "ไม่มีข้อมูล",
+  error: "เกิดข้อผิดพลาด",
+  cached: "ใช้ข้อมูลแคช",
   unconfigured: "ยังไม่ตั้งค่า",
   offline: "ออฟไลน์",
 };

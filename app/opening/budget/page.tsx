@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import AppShell from "../../../components/layout/AppShell";
 import BudgetItemCard from "../../../components/bi/BudgetItemCard";
 import BiDataStatus from "../../../components/bi/BiDataStatus";
@@ -27,8 +28,13 @@ import {
 import { useAssets } from "../assets/AssetsProvider";
 import { useBudget } from "../../providers/BudgetProvider";
 import { useWorkspace } from "../../providers/WorkspaceProvider";
+import {
+  buildInventoryBuckets,
+  type InventoryLine,
+} from "../../../lib/services/inventoryRollup";
 
 type ContentFilter = "all" | BudgetStatus;
+type DrillTab = "all" | "owned" | "need" | "no_price";
 
 /**
  * Budget decision page — live bi_budget_items + bi_assets + decision groups
@@ -40,6 +46,9 @@ export default function OpeningBudgetPage() {
     assets,
     decisionGroups,
     ready: assetsReady,
+    loading: assetsLoading,
+    online: assetsOnline,
+    error: assetsError,
   } = useAssets();
   const {
     items,
@@ -53,9 +62,18 @@ export default function OpeningBudgetPage() {
     ready,
   } = useBudget();
   const [filter, setFilter] = useState<ContentFilter>("all");
+  const [drill, setDrill] = useState<DrillTab>("all");
 
-  const showSkeleton = loading && !ready;
-  const blockOnError = Boolean(error) && items.length === 0 && !showSkeleton;
+  const inventory = useMemo(() => buildInventoryBuckets(assets), [assets]);
+
+  const showSkeleton = (loading || assetsLoading) && !ready && !assetsReady;
+  const blockOnError =
+    Boolean(error || assetsError) &&
+    items.length === 0 &&
+    assets.length === 0 &&
+    !showSkeleton;
+  const pageOnline = online && assetsOnline;
+  const pageError = error || assetsError;
 
   const readyPercent =
     liveSummary?.readyPercent ?? getBudgetReadyPercent(items);
@@ -112,17 +130,45 @@ export default function OpeningBudgetPage() {
     : "ตรวจรายการตรวจสอบก่อนเปิดร้าน";
 
   const showEmpty =
-    ready && !loading && !error && online && items.length === 0;
+    ready &&
+    assetsReady &&
+    !loading &&
+    !assetsLoading &&
+    !pageError &&
+    pageOnline &&
+    assets.length === 0;
 
   const sourceHint = showSkeleton
-    ? "กำลังดึง bi_budget_items..."
-    : online
-      ? "แหล่งข้อมูล: Supabase · bi_budget_items + bi_assets"
-      : error
+    ? "กำลังดึง bi_assets..."
+    : pageOnline
+      ? `แหล่งข้อมูล: bi_assets · ${inventory.countAll} รายการ`
+      : pageError
         ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-        : items.length > 0
+        : assets.length > 0
           ? "แหล่งข้อมูล: แคชสำรอง"
           : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
+
+  const allLines = useMemo(() => {
+    const map = new Map<string, InventoryLine>();
+    for (const row of [
+      ...inventory.owned,
+      ...inventory.need,
+      ...inventory.noPrice,
+      ...inventory.allPriced,
+    ]) {
+      map.set(row.id, row);
+    }
+    return Array.from(map.values()).sort((a, b) =>
+      a.name.localeCompare(b.name, "th")
+    );
+  }, [inventory]);
+
+  const visibleDrill = useMemo(() => {
+    if (drill === "owned") return inventory.owned;
+    if (drill === "need") return inventory.need;
+    if (drill === "no_price") return inventory.noPrice;
+    return allLines;
+  }, [allLines, drill, inventory]);
 
   return (
     <AppShell title="" hidePageHeader compact backHref="/opening">
@@ -133,23 +179,85 @@ export default function OpeningBudgetPage() {
       />
 
       <BiDataStatus
-        loading={loading}
-        ready={ready}
+        loading={loading || assetsLoading}
+        ready={ready && assetsReady}
         configured={configured}
-        online={online}
+        online={pageOnline}
         browserOffline={browserOffline}
-        error={error}
+        error={pageError}
         empty={showEmpty}
-        hasCachedData={!online && items.length > 0}
-        emptyTitle="ยังไม่มีรายการงบ"
-        emptyHint="ยังไม่มีรายการใน bi_budget_items"
+        hasCachedData={!pageOnline && assets.length > 0}
+        emptyTitle="ยังไม่มีรายการ"
+        emptyHint="ยังไม่มีรายการใน bi_assets"
         sourceHint={sourceHint}
         skeletonRows={4}
         onRetry={() => void retry()}
       />
 
-      {!showSkeleton && !blockOnError && (online || items.length > 0) ? (
+      {!showSkeleton && !blockOnError && (pageOnline || assets.length > 0) ? (
         <>
+          <SummaryCard title="งบจากรายการจริง">
+            <div className="grid grid-cols-2 gap-2">
+              <Metric
+                label="มูลค่ารวมทั้งหมด"
+                value={formatBaht(inventory.inventoryTotal)}
+              />
+              <Metric
+                label="มูลค่าของที่มีแล้ว"
+                value={formatBaht(inventory.inventoryOwned)}
+              />
+              <Metric
+                label="งบที่ยังต้องจัดหา"
+                value={formatBaht(inventory.inventoryNeed)}
+              />
+              <Metric
+                label="ซื้อจริง"
+                value={formatBaht(inventory.inventoryActualSpend)}
+              />
+            </div>
+            {inventory.countNoPrice > 0 ? (
+              <p className="kl-type-helper">
+                งบประมาณยังไม่ครบ เพราะมี {inventory.countNoPrice}{" "}
+                รายการที่ยังไม่มีราคา
+              </p>
+            ) : null}
+            <p className="kl-type-caption">
+              {inventory.countAll} รายการ · มีแล้ว {inventory.countOwned} ·
+              ต้องจัดหา {inventory.countNeed} · ไม่มีราคา{" "}
+              {inventory.countNoPrice}
+            </p>
+          </SummaryCard>
+
+          <section className="space-y-3">
+            <SectionHeader title="ดูรายละเอียดงบ" />
+            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              {(
+                [
+                  ["all", `รายการทั้งหมด (${inventory.countAll})`],
+                  ["owned", `ของที่มีแล้ว (${inventory.countOwned})`],
+                  ["need", `ยังต้องจัดหา (${inventory.countNeed})`],
+                  ["no_price", `ไม่มีราคา (${inventory.countNoPrice})`],
+                ] as const
+              ).map(([key, label]) => (
+                <FilterChip
+                  key={key}
+                  active={drill === key}
+                  label={label}
+                  onClick={() => setDrill(key)}
+                />
+              ))}
+            </div>
+            {visibleDrill.length === 0 ? (
+              <EmptyState title="ไม่มีรายการในกลุ่มนี้" hint="ลองเลือกกลุ่มอื่น" />
+            ) : (
+              <Card className="!overflow-hidden !p-0">
+                {visibleDrill.map((row) => (
+                  <InventoryDrillRow key={row.id} row={row} />
+                ))}
+              </Card>
+            )}
+          </section>
+
           <SummaryCard title="วันนี้ต้องรู้ 4 ข้อ">
             <div className="space-y-4">
               <div>
@@ -426,5 +534,50 @@ function FilterChip({
     >
       {label}
     </button>
+  );
+}
+
+function InventoryDrillRow({ row }: { row: InventoryLine }) {
+  const noPrice = row.unitPrice == null;
+  return (
+    <div className="flex min-h-[2.75rem] items-start gap-3 border-b border-[var(--kl-border)] px-3 py-2.5 last:border-b-0">
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="kl-type-card-title truncate">{row.name}</p>
+          {noPrice ? (
+            <span className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-0.5 kl-type-caption">
+              ยังไม่ใส่ราคา
+            </span>
+          ) : null}
+        </div>
+        <p className="kl-type-helper mt-0.5">
+          {row.quantity} {row.unit}
+          {noPrice
+            ? " · —"
+            : ` · ${formatBaht(row.unitPrice!)} / หน่วย`}
+        </p>
+        <p className="kl-type-caption mt-0.5">{row.statusLabel}</p>
+      </div>
+      <div className="shrink-0 text-right space-y-1">
+        <p className="kl-type-body tabular-nums">
+          {noPrice ? "ยังไม่ใส่ราคา" : formatBaht(row.lineTotal!)}
+        </p>
+        {noPrice ? (
+          <Link
+            href={`/opening/assets/${row.id}/edit`}
+            className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline"
+          >
+            ใส่ราคา
+          </Link>
+        ) : (
+          <Link
+            href={`/opening/assets/${row.id}`}
+            className="kl-type-caption text-[var(--bi-text-primary)] underline"
+          >
+            ดู
+          </Link>
+        )}
+      </div>
+    </div>
   );
 }

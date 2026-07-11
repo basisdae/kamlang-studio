@@ -49,4 +49,10 @@ export type BudgetSummary = {
   maximumBudget: number;
   uncertainBudget: number;
   decisionHints: string[];
+  /** Opening inventory rollup from live assets */
+  inventoryTotal: number;
+  inventoryOwned: number;
+  inventoryNeed: number;
+  inventoryActualSpend: number;
+  inventoryUnknownNeed: number;
 };

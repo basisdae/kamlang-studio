@@ -94,6 +94,11 @@ export type AssetItem = {
 };
 
 export const ASSET_CATEGORIES = [
+  "ซอสและเครื่องปรุง",
+  "เนื้อสัตว์และของแปรรูป",
+  "วัตถุดิบเพิ่มเติม",
+  "อุปกรณ์ผสมแป้ง",
+  "อุปกรณ์ทำขนมโตเกียว",
   "อุปกรณ์ทำอาหาร",
   "ตู้และการจัดเก็บ",
   "ระบบและ POS",
@@ -110,6 +115,13 @@ export const ASSET_UNITS = [
   "เครื่อง",
   "อัน",
   "คู่",
+  "ขวด",
+  "กระปุก",
+  "แพ็ค",
+  "กิโลกรัม",
+  "ฝัก",
+  "ถัง",
+  "กล่อง",
 ] as const;
 
 export const ASSET_PRIORITY_LABELS: Record<AssetPriority, string> = {
@@ -119,16 +131,16 @@ export const ASSET_PRIORITY_LABELS: Record<AssetPriority, string> = {
 };
 
 export const ASSET_STATUS_LABELS: Record<AssetStatus, string> = {
-  planned: "วางแผน",
-  awaiting_quote: "รอราคา",
-  ready_to_buy: "พร้อมซื้อ",
-  ordered: "สั่งซื้อแล้ว",
-  awaiting_delivery: "รอจัดส่ง",
+  planned: "ต้องจัดหา",
+  awaiting_quote: "ต้องจัดหา",
+  ready_to_buy: "ต้องจัดหา",
+  ordered: "สั่งแล้ว",
+  awaiting_delivery: "สั่งแล้ว",
   received: "ได้รับแล้ว",
-  in_use: "ใช้งานอยู่",
+  in_use: "มีแล้ว",
   repairing: "ส่งซ่อม",
   broken: "เสีย",
-  retired: "เลิกใช้",
+  retired: "ยกเลิก",
 };
 
 export const ASSET_STATUS_FLOW: AssetStatus[] = [
@@ -152,18 +164,12 @@ export const ASSET_CHANNEL_LABELS: Record<AssetPurchaseChannel, string> = {
   "": "—",
 };
 
-/** Owned / on-hand for opening */
+/** มีแล้ว = in_use only (red-check items) */
 export function isAssetOwned(status: AssetStatus) {
-  return (
-    status === "ordered" ||
-    status === "awaiting_delivery" ||
-    status === "received" ||
-    status === "in_use" ||
-    status === "repairing"
-  );
+  return status === "in_use";
 }
 
-/** Counts toward planned budget */
+/** Counts toward “ยังต้องจัดหา” budget */
 export function isAssetPlannedSpend(status: AssetStatus) {
   return (
     status === "planned" ||
@@ -172,14 +178,21 @@ export function isAssetPlannedSpend(status: AssetStatus) {
   );
 }
 
-/** Counts toward actual spend */
+/** สั่งแล้ว */
+export function isAssetOrdered(status: AssetStatus) {
+  return status === "ordered" || status === "awaiting_delivery";
+}
+
+/** Counts toward actual spend (ซื้อจริง) — only after purchase recorded */
 export function isAssetActualSpend(status: AssetStatus) {
-  return (
-    status === "ordered" ||
-    status === "awaiting_delivery" ||
-    status === "received" ||
-    status === "in_use"
-  );
+  return status === "ordered" || status === "awaiting_delivery";
+}
+
+export function assetHasNoPrice(item: {
+  estimatedPrice?: number | null;
+  actualPrice?: number | null;
+}) {
+  return item.estimatedPrice == null && item.actualPrice == null;
 }
 
 function base(partial: Partial<AssetItem> & Pick<AssetItem, "id" | "name" | "category" | "quantity" | "unit" | "priority" | "status">): AssetItem {
