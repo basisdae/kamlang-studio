@@ -1,16 +1,30 @@
 # KL Builder (กำลัง...บิ้วเด้อ) — Engineering
 
-Mobile-first recipe builder for restaurant owners.
+> **Product direction update:** This repo is evolving into **Business Insight** (workspace: ตั้งเตา).  
+> **Primary guideline:** `docs/01-vision.md` (Philosophy · UI Principles · Future Direction).  
+> See also `docs/00-naming.md` … `docs/06-feature-list.md`.  
+> Legacy kitchen builder rules below still apply to Recipe / Menu / Production code — do not change those formulas without approval.
 
-**Product:** `docs/PRODUCT.md` · **Glossary:** `docs/GLOSSARY.md` · **Decisions:** `docs/DECISIONS.md` · **Roadmap:** `docs/TASKS.md`
+Mobile-first recipe builder for restaurant owners (legacy) + Business Operating System for opening and growth (Business Insight).
+
+**Business Insight:** `docs/01-vision.md` (main) · `docs/00-naming.md` · **Design:** `docs/03-design-system.md` · **Rules:** `docs/04-business-rules.md`  
+**Legacy product:** `docs/PRODUCT.md` · **Glossary:** `docs/GLOSSARY.md` · **Decisions:** `docs/DECISIONS.md` · **Roadmap:** `docs/TASKS.md`
 
 ---
 
 # Golden Rule
 
+**Primary guideline:** `docs/01-vision.md`
+
 Every UI decision must answer:
 
-**"Will this help a restaurant owner work faster and feel less stressed?"**
+**"Will this help a restaurant owner decide faster and feel less stressed?"**
+
+And:
+
+**"แล้วเราควรทำอะไรต่อ?"**
+
+Every page needs: ภาพรวม · สิ่งที่ควรทำต่อ · รายละเอียด · Action.
 
 If not, do not add it.
 
@@ -22,19 +36,18 @@ This overrides decoration, feature creep, and "nice to have" polish.
 
 DO
 
-- Keep existing color palette
-- Keep typography
-- Keep spacing consistent
-- Use existing Card component
-- Use existing AppShell
+- Prefer Business Insight tokens (Lemon / White / Light Gray) for new screens
+- Keep typography and spacing consistent
+- Use existing Card / AppShell / BI components
 - Reuse components whenever possible
 
 DON'T
 
-- Redesign screens
-- Change theme
+- Redesign legacy kitchen screens without need
+- Use large lemon backgrounds
 - Introduce unnecessary animations
 - Increase visual complexity
+- Use emoji as primary icons
 
 ---
 
@@ -42,25 +55,9 @@ DON'T
 
 Prefer small reusable components.
 
-Target structure:
+New BI UI lives under `components/bi/`.
 
-builder/
-
-page.tsx
-
-components/
-
-HeaderForm.tsx
-
-RecipeLines.tsx
-
-IngredientPopup.tsx
-
-BottomSummary.tsx
-
-types.ts
-
-utils.ts
+Opening Plan lives under `app/opening/`.
 
 Keep page.tsx small.
 
@@ -101,6 +98,8 @@ Never modify pricing rules.
 Never change Food Cost formulas without approval.
 
 See `docs/GLOSSARY.md` for domain term definitions.
+
+Business Insight financial logic is sample-only until approved.
 
 ---
 

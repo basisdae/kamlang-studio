@@ -1,0 +1,16 @@
+Screenshots 32-40 (Online v0.2)
+
+Auto-captured via Chrome headless (virtual-time). Re-run after data is warm:
+
+  node scripts/capture-online-v02-chrome.mjs
+
+Manual multi-browser check (39):
+1. Browser A: /opening/assets → เพิ่มอุปกรณ์
+2. Browser B: refresh → เห็นรายการเดียวกัน
+3. Browser B: แก้ราคา → save
+4. Browser A: refresh → ราคาใหม่
+5. ซื้อเพิ่ม + เพิ่มประวัติซ่อม
+6. /opening/budget เปลี่ยนตาม
+7. ปิดเปิด browser → ข้อมูลยังอยู่
+
+Viewport: 390×844

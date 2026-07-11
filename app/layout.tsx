@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Noto_Sans_Thai } from "next/font/google";
 import UndoToastHost from "../components/ui/UndoToastHost";
+import BiInfoToastHost from "../components/ui/BiInfoToastHost";
+import { AuthProvider } from "./auth/AuthProvider";
 import "./globals.css";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -21,8 +23,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "กำลัง...บิ้วเด้อ",
-  description: "กำลัง...บิ้วเด้อ",
+  title: "Business Insight",
+  description:
+    "Every number tells a story. — วางแผนงบประมาณและวิเคราะห์ธุรกิจร้านอาหาร",
 };
 
 export const viewport = {
@@ -42,8 +45,11 @@ export default function RootLayout({
       className={`${notoSansThai.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-kl-ivory text-kl-text font-sans antialiased">
-        {children}
-        <UndoToastHost />
+        <AuthProvider>
+          {children}
+          <UndoToastHost />
+          <BiInfoToastHost />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -4,11 +4,12 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import {
+  getLegacyNavItems,
+  getMobileMoreItems,
   getNavIconStroke,
   isNavActive,
   KL_ICON_CLASS,
-  moreNavItems,
-  type NavItem,
+  type NavigationItem,
 } from "./navConfig";
 
 type Props = {
@@ -22,7 +23,7 @@ function MoreNavRow({
   pathname,
   onNavigate,
 }: {
-  item: NavItem;
+  item: NavigationItem;
   pathname: string;
   onNavigate: () => void;
 }) {
@@ -40,8 +41,11 @@ function MoreNavRow({
         <Icon className={KL_ICON_CLASS} strokeWidth={getNavIconStroke()} />
       </span>
       <span className="min-w-0 flex-1 text-[length:var(--kl-text-body)] font-medium">
-        {item.label}
+        {item.title}
       </span>
+      {item.badge != null ? (
+        <span className="kl-type-label shrink-0">{item.badge}</span>
+      ) : null}
       <ChevronRight
         className={`${KL_ICON_CLASS} text-kl-muted`}
         strokeWidth={getNavIconStroke()}
@@ -68,6 +72,9 @@ export default function AppNavMoreSheet({ isOpen, pathname, onClose }: Props) {
     return null;
   }
 
+  const moreItems = getMobileMoreItems();
+  const legacyItems = getLegacyNavItems();
+
   return (
     <>
       <button
@@ -78,14 +85,31 @@ export default function AppNavMoreSheet({ isOpen, pathname, onClose }: Props) {
       />
 
       <div className="kl-nav-more-sheet" role="dialog" aria-label="เมนูเพิ่มเติม">
-        <div className="kl-nav-more-panel">
+        <div className="kl-nav-more-panel max-h-[70vh] overflow-y-auto">
           <div className="px-5 py-4">
             <div className="kl-text-body font-semibold">เพิ่มเติม</div>
           </div>
           <nav>
-            {moreNavItems.map((item) => (
+            {moreItems.map((item) => (
               <MoreNavRow
-                key={item.href}
+                key={item.id}
+                item={item}
+                pathname={pathname}
+                onNavigate={onClose}
+              />
+            ))}
+          </nav>
+
+          <div className="border-t border-[var(--kl-border)] px-5 py-3">
+            <div className="kl-type-label">Legacy</div>
+            <p className="kl-type-helper mt-1">
+              เครื่องมือครัวจาก Kamlang Studio — เก็บไว้ใช้ต่อ
+            </p>
+          </div>
+          <nav>
+            {legacyItems.map((item) => (
+              <MoreNavRow
+                key={item.id}
                 item={item}
                 pathname={pathname}
                 onNavigate={onClose}

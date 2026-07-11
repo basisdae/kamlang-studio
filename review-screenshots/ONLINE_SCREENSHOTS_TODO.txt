@@ -1,0 +1,1 @@
+Screenshots 26-31 require NEXT_PUBLIC_SUPABASE_* in .env.local\nThen open /dev/supabase-check, /opening/assets, create, detail, budget, and error (bad key).\nViewport targets: 375 / 390 / 430 — Mobile First, no horizontal scroll.

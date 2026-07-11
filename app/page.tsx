@@ -1,3 +1,3 @@
-import HomeTodayPage from "./home/HomeTodayPage";
+import OverviewPage from "./overview/OverviewPage";
 
-export default HomeTodayPage;
+export default OverviewPage;
