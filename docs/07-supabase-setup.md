@@ -19,6 +19,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
 
+**สำคัญ:** URL ต้องเป็น Project URL อย่างเดียว  
+ห้ามใส่ `/rest/v1` หรือ path อื่น — จะทำให้ error `Invalid path specified in request URL`  
+โค้ดจะ normalize ตัด `/rest/v1` ให้อัตโนมัติ แต่ควรตั้งค่าให้ถูกบน Vercel ด้วย
+
 4. Restart `npm run dev`
 
 ## Keys (Vercel)

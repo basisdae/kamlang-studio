@@ -5,9 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { LayoutGrid, List, Plus, RefreshCw } from "lucide-react";
 import AppShell from "../../../components/layout/AppShell";
-import BiConnectionBanner from "../../../components/bi/BiConnectionBanner";
+import BiDataStatus from "../../../components/bi/BiDataStatus";
 import BiListSkeleton from "../../../components/bi/BiListSkeleton";
-import DataSourceBadge from "../../../components/bi/DataSourceBadge";
 import NextStepCard from "../../../components/bi/NextStepCard";
 import PageHeader from "../../../components/bi/PageHeader";
 import SectionHeader from "../../../components/bi/SectionHeader";
@@ -43,12 +42,11 @@ type OwnFilter = FilterAll | "owned" | "need_buy" | "no_price";
 function OpeningAssetsInner() {
   const searchParams = useSearchParams();
   const shotEmpty = searchParams.get("shot") === "empty";
-  const { workspaceName, dataSource } = useWorkspace();
+  const { workspaceName } = useWorkspace();
   const {
     assets,
     ready,
     loading,
-    mode,
     online,
     configured,
     browserOffline,
@@ -83,7 +81,16 @@ function OpeningAssetsInner() {
   }
 
   const showSkeleton = loading && !ready;
-  const blockOnError = Boolean(error) && assets.length === 0;
+  const blockOnError = Boolean(error) && assets.length === 0 && !showSkeleton;
+  const sourceHint = showSkeleton
+    ? "กำลังดึง bi_assets..."
+    : online
+      ? "แหล่งข้อมูล: Supabase · bi_assets"
+      : error
+        ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+        : assets.length > 0
+          ? "แหล่งข้อมูล: แคชสำรอง"
+          : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
 
   const displayAssets = useMemo(
     () => (shotEmpty ? [] : assets),
@@ -136,29 +143,22 @@ function OpeningAssetsInner() {
         workspace={workspaceName}
         subtitle="ทรัพย์สิน"
       />
-      <DataSourceBadge source={dataSource} />
-      <p className="kl-type-caption -mt-1">
-        แหล่งข้อมูล:{" "}
-        {online
-          ? "Supabase · bi_assets"
-          : mode === "offline"
-            ? "แคชชั่วคราว / ออฟไลน์"
-            : "กำลังเชื่อมต่อ"}
-        {loading ? " · กำลังโหลด..." : ""}
-      </p>
 
-      {showSkeleton ? (
-        <BiListSkeleton rows={5} />
-      ) : (
-        <BiConnectionBanner
-          configured={configured}
-          online={online}
-          browserOffline={browserOffline}
-          error={error}
-          empty={false}
-          onRetry={() => void retry()}
-        />
-      )}
+      <BiDataStatus
+        loading={loading}
+        ready={ready}
+        configured={configured}
+        online={online}
+        browserOffline={browserOffline}
+        error={error}
+        empty={ready && !loading && !error && online && assets.length === 0}
+        hasCachedData={!online && assets.length > 0}
+        emptyTitle="ยังไม่มีทรัพย์สิน"
+        emptyHint="เพิ่มรายการใหม่ — ข้อมูลจะบันทึกใน Supabase"
+        sourceHint={sourceHint}
+        skeletonRows={5}
+        onRetry={() => void retry()}
+      />
 
       {warning ? (
         <Card className="!p-3.5 border border-[var(--bi-lemon)]">

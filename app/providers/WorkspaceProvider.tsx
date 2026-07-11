@@ -11,7 +11,7 @@ import {
 } from "react";
 import { getSupabaseEnvStatus } from "../../lib/supabase/env";
 import { getBrowserOnline } from "../../lib/supabase/service";
-import { userFacingMessage } from "../../lib/supabase/errors";
+import { biDevError, userFacingMessage } from "../../lib/supabase/errors";
 import { workspaceService } from "../../lib/services/workspaceService";
 import type { Workspace } from "../../lib/types/workspace";
 import type { DataSource } from "../../components/bi/dataSource";
@@ -84,6 +84,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       writeCache(ws);
       setOnline(true);
     } catch (e) {
+      biDevError("WorkspaceProvider", "getCurrentWorkspace", e);
       setError(userFacingMessage(e));
       setOnline(false);
       setWorkspace(readCache());
@@ -110,8 +111,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [load]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const value = useMemo<WorkspaceContextValue>(
-    () => ({
+  const value = useMemo<WorkspaceContextValue>(() => {
+    let dataSource: DataSource = "seed";
+    if (!configured) dataSource = "seed";
+    else if (loading) dataSource = "sample";
+    else if (online) dataSource = "real";
+    else dataSource = "seed";
+
+    return {
       workspace,
       workspaceId: workspace?.id ?? "11111111-1111-1111-1111-111111111111",
       workspaceName: workspace?.name ?? "ตั้งเตา",
@@ -121,20 +128,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       online,
       browserOffline,
       error,
-      dataSource: configured ? "real" : "seed",
+      dataSource,
       retry: load,
-    }),
-    [
-      workspace,
-      ready,
-      loading,
-      configured,
-      online,
-      browserOffline,
-      error,
-      load,
-    ]
-  );
+    };
+  }, [
+    workspace,
+    ready,
+    loading,
+    configured,
+    online,
+    browserOffline,
+    error,
+    load,
+  ]);
 
   return (
     <WorkspaceContext.Provider value={value}>

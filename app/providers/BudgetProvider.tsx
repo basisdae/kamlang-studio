@@ -13,7 +13,7 @@ import type { BudgetItem } from "../../data/seed/tangtao";
 import type { AssetDecisionGroup } from "../../data/seed/tangtao";
 import { getSupabaseEnvStatus } from "../../lib/supabase/env";
 import { getBrowserOnline } from "../../lib/supabase/service";
-import { userFacingMessage } from "../../lib/supabase/errors";
+import { biDevError, userFacingMessage } from "../../lib/supabase/errors";
 import { budgetService } from "../../lib/services/budgetService";
 import type { BudgetSummary } from "../../lib/types/budget";
 import {
@@ -107,6 +107,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       writeCache(uiItems);
       setOnline(true);
     } catch (e) {
+      biDevError("BudgetProvider", "listItems + decisionGroups", e);
       setError(userFacingMessage(e));
       setOnline(false);
       // Cache only — never silent seed

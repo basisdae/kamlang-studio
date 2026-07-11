@@ -6,7 +6,7 @@ Project name: `business-insight`
 
 | Name | Required | Notes |
 |------|----------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | yes | From kn-queue project Settings → API |
+| `NEXT_PUBLIC_SUPABASE_URL` | yes | Project URL only: `https://xxxx.supabase.co` — **no** `/rest/v1` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | anon/public key only |
 | `NEXT_PUBLIC_APP_URL` | recommended | e.g. `https://business-insight.vercel.app` |
 

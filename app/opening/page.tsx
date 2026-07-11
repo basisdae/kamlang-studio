@@ -3,8 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import AppShell from "../../components/layout/AppShell";
-import BiConnectionBanner from "../../components/bi/BiConnectionBanner";
-import DataSourceBadge from "../../components/bi/DataSourceBadge";
+import BiDataStatus from "../../components/bi/BiDataStatus";
 import NextStepCard from "../../components/bi/NextStepCard";
 import PageHeader from "../../components/bi/PageHeader";
 import ReadinessCard from "../../components/bi/ReadinessCard";
@@ -41,7 +40,6 @@ const OPENING_LINKS = [
 export default function OpeningPlanPage() {
   const {
     workspaceName,
-    dataSource,
     loading: wsLoading,
     configured,
     online: wsOnline,
@@ -52,6 +50,7 @@ export default function OpeningPlanPage() {
   const {
     assets,
     loading: assetsLoading,
+    ready: assetsReady,
     online: assetsOnline,
     error: assetsError,
     retry: retryAssets,
@@ -59,6 +58,7 @@ export default function OpeningPlanPage() {
   const {
     items: budgetItems,
     loading: budgetLoading,
+    ready: budgetReady,
     online: budgetOnline,
     error: budgetError,
     retry: retryBudget,
@@ -67,9 +67,10 @@ export default function OpeningPlanPage() {
   const summary = getBusinessReadinessSummary();
   const focus = summary.focus;
   const assetSummary = getAssetsSummary(assets);
-  const budgetReady = getBudgetReadyPercent(budgetItems);
+  const budgetReadyPct = getBudgetReadyPercent(budgetItems);
 
   const loading = wsLoading || assetsLoading || budgetLoading;
+  const ready = !wsLoading && assetsReady && budgetReady;
   const online = wsOnline && assetsOnline && budgetOnline;
   const error = wsError ?? assetsError ?? budgetError;
 
@@ -87,16 +88,30 @@ export default function OpeningPlanPage() {
         subtitle="Business Readiness"
       />
       <p className="kl-type-helper -mt-1">
-        ความพร้อมเปิดร้าน · ข้อมูลจาก Supabase (ตั้งเตา)
+        ความพร้อมเปิดร้าน · ตั้งเตา
       </p>
-      <DataSourceBadge source={dataSource} />
 
-      <BiConnectionBanner
+      <BiDataStatus
         loading={loading}
+        ready={ready}
         configured={configured}
         online={online}
         browserOffline={browserOffline}
         error={error}
+        empty={false}
+        hasCachedData={
+          Boolean(error) && (assets.length > 0 || budgetItems.length > 0)
+        }
+        sourceHint={
+          online
+            ? "แหล่งข้อมูล: Supabase"
+            : error
+              ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+              : loading
+                ? "กำลังเชื่อมต่อ..."
+                : "แหล่งข้อมูล: ยังไม่ออนไลน์"
+        }
+        skeleton={false}
         onRetry={() => void retry()}
       />
 
@@ -118,7 +133,7 @@ export default function OpeningPlanPage() {
             label="อุปกรณ์ (ออนไลน์)"
             value={`${assetSummary.owned}/${assetSummary.total}`}
           />
-          <Metric label="งบ Must พร้อม" value={`${budgetReady}%`} />
+          <Metric label="งบ Must พร้อม" value={`${budgetReadyPct}%`} />
         </div>
       </SummaryCard>
 

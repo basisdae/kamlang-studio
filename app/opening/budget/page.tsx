@@ -3,9 +3,7 @@
 import { useMemo, useState } from "react";
 import AppShell from "../../../components/layout/AppShell";
 import BudgetItemCard from "../../../components/bi/BudgetItemCard";
-import BiConnectionBanner from "../../../components/bi/BiConnectionBanner";
-import BiListSkeleton from "../../../components/bi/BiListSkeleton";
-import DataSourceBadge from "../../../components/bi/DataSourceBadge";
+import BiDataStatus from "../../../components/bi/BiDataStatus";
 import PageHeader from "../../../components/bi/PageHeader";
 import NextStepCard from "../../../components/bi/NextStepCard";
 import SectionHeader from "../../../components/bi/SectionHeader";
@@ -34,9 +32,10 @@ type ContentFilter = "all" | BudgetStatus;
 
 /**
  * Budget decision page — live bi_budget_items + bi_assets + decision groups
+ * (Summary formulas left as-is — readiness/budget refactor is a later sprint.)
  */
 export default function OpeningBudgetPage() {
-  const { workspaceName, dataSource } = useWorkspace();
+  const { workspaceName } = useWorkspace();
   const {
     assets,
     decisionGroups,
@@ -56,7 +55,7 @@ export default function OpeningBudgetPage() {
   const [filter, setFilter] = useState<ContentFilter>("all");
 
   const showSkeleton = loading && !ready;
-  const blockOnError = Boolean(error) && items.length === 0;
+  const blockOnError = Boolean(error) && items.length === 0 && !showSkeleton;
 
   const readyPercent =
     liveSummary?.readyPercent ?? getBudgetReadyPercent(items);
@@ -115,6 +114,16 @@ export default function OpeningBudgetPage() {
   const showEmpty =
     ready && !loading && !error && online && items.length === 0;
 
+  const sourceHint = showSkeleton
+    ? "กำลังดึง bi_budget_items..."
+    : online
+      ? "แหล่งข้อมูล: Supabase · bi_budget_items + bi_assets"
+      : error
+        ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+        : items.length > 0
+          ? "แหล่งข้อมูล: แคชสำรอง"
+          : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
+
   return (
     <AppShell title="" hidePageHeader compact backHref="/opening">
       <PageHeader
@@ -122,29 +131,22 @@ export default function OpeningBudgetPage() {
         workspace={workspaceName}
         subtitle="งบประมาณ"
       />
-      <DataSourceBadge source={dataSource} />
-      <p className="kl-type-caption -mt-1">
-        แหล่งข้อมูล:{" "}
-        {online
-          ? "Supabase · bi_budget_items + bi_assets"
-          : "แคช / ยังไม่ออนไลน์"}
-        {loading ? " · กำลังโหลด..." : ""}
-      </p>
 
-      {showSkeleton ? (
-        <BiListSkeleton rows={4} />
-      ) : (
-        <BiConnectionBanner
-          configured={configured}
-          online={online}
-          browserOffline={browserOffline}
-          error={error}
-          empty={showEmpty}
-          emptyTitle="ยังไม่มีรายการงบ"
-          emptyHint="ตรวจ seed ใน Supabase หรือกดลองใหม่"
-          onRetry={() => void retry()}
-        />
-      )}
+      <BiDataStatus
+        loading={loading}
+        ready={ready}
+        configured={configured}
+        online={online}
+        browserOffline={browserOffline}
+        error={error}
+        empty={showEmpty}
+        hasCachedData={!online && items.length > 0}
+        emptyTitle="ยังไม่มีรายการงบ"
+        emptyHint="ยังไม่มีรายการใน bi_budget_items"
+        sourceHint={sourceHint}
+        skeletonRows={4}
+        onRetry={() => void retry()}
+      />
 
       {!showSkeleton && !blockOnError && (online || items.length > 0) ? (
         <>

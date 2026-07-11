@@ -20,7 +20,7 @@ import {
 } from "../../data/seed/tangtao";
 import { getSupabaseEnvStatus } from "../../lib/supabase/env";
 import { getBrowserOnline } from "../../lib/supabase/service";
-import { userFacingMessage } from "../../lib/supabase/errors";
+import { biDevError, userFacingMessage } from "../../lib/supabase/errors";
 import { assetService } from "../../lib/services/assetService";
 import {
   assetToUiItem,
@@ -150,9 +150,8 @@ export function AssetProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(configured);
   const [saving, setSaving] = useState(false);
   const [ready, setReady] = useState(!configured);
-  const [mode, setMode] = useState<"online" | "offline">(
-    configured ? "online" : "offline"
-  );
+  // Never claim online until query succeeds
+  const [mode, setMode] = useState<"online" | "offline">("offline");
   const [error, setError] = useState<string | null>(
     configured ? null : getSupabaseEnvStatus().error
   );
@@ -194,6 +193,7 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       persistAssets(uiAssets);
       setStorageError(null);
     } catch (e) {
+      biDevError("AssetProvider", "list + decisionGroups", e);
       setError(userFacingMessage(e));
       setMode("offline");
       // Cache only — never silent seed fallback

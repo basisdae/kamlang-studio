@@ -52,24 +52,36 @@ export function normalizeError(error: unknown): BiError {
     const e = error as PostgrestLike;
     const msg = e.message ?? "เกิดข้อผิดพลาด";
     const code = e.code ?? "";
+    const lower = msg.toLowerCase();
 
     if (
-      msg.toLowerCase().includes("fetch") ||
-      msg.toLowerCase().includes("network") ||
-      msg.toLowerCase().includes("failed to fetch")
+      lower.includes("invalid path specified") ||
+      lower.includes("invalid path")
+    ) {
+      return new BiError(
+        "config",
+        "ที่อยู่ฐานข้อมูลไม่ถูกต้อง — ตรวจ NEXT_PUBLIC_SUPABASE_URL บน Vercel ต้องเป็น https://xxxx.supabase.co โดยไม่มี /rest/v1",
+        msg
+      );
+    }
+
+    if (
+      lower.includes("fetch") ||
+      lower.includes("network") ||
+      lower.includes("failed to fetch")
     ) {
       return new BiError("network", "เชื่อมต่อฐานข้อมูลไม่ได้", msg);
     }
 
-    if (code === "PGRST116" || msg.toLowerCase().includes("0 rows")) {
+    if (code === "PGRST116" || lower.includes("0 rows")) {
       return new BiError("not_found", "ไม่พบข้อมูล", msg);
     }
 
     if (
       code === "42501" ||
-      msg.toLowerCase().includes("permission") ||
-      msg.toLowerCase().includes("row-level security") ||
-      msg.toLowerCase().includes("rls")
+      lower.includes("permission") ||
+      lower.includes("row-level security") ||
+      lower.includes("rls")
     ) {
       return new BiError(
         "permission",
@@ -82,6 +94,14 @@ export function normalizeError(error: unknown): BiError {
   }
 
   if (error instanceof Error) {
+    const lower = error.message.toLowerCase();
+    if (lower.includes("invalid path specified") || lower.includes("invalid path")) {
+      return new BiError(
+        "config",
+        "ที่อยู่ฐานข้อมูลไม่ถูกต้อง — ตรวจ NEXT_PUBLIC_SUPABASE_URL บน Vercel ต้องเป็น https://xxxx.supabase.co โดยไม่มี /rest/v1",
+        error.message
+      );
+    }
     return new BiError("unknown", error.message);
   }
 
@@ -95,5 +115,19 @@ export function userFacingMessage(error: unknown): string {
   if (bi.code === "permission") return "ยังไม่มีสิทธิ์เขียนข้อมูล (ตรวจ RLS / preview policy)";
   if (bi.code === "not_found") return bi.message;
   if (bi.code === "validation") return bi.message;
+  // Production UI: avoid dumping raw technical strings when possible
+  if (
+    bi.message.toLowerCase().includes("invalid path") ||
+    bi.message.toLowerCase().includes("postgrest")
+  ) {
+    return "โหลดข้อมูลไม่สำเร็จ — กดลองใหม่ หรือตรวจการตั้งค่าฐานข้อมูล";
+  }
   return bi.message || "โหลดหรือบันทึกไม่สำเร็จ";
+}
+
+/** Development-only diagnostics — never logs keys. */
+export function biDevError(page: string, query: string, error: unknown) {
+  if (process.env.NODE_ENV !== "development") return;
+  const bi = normalizeError(error);
+  console.error(`[BI] ${page} · ${query}`, bi.code, bi.message);
 }
