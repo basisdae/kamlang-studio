@@ -8,7 +8,6 @@ import {
   KL_ICON_CLASS,
   KL_ICON_STROKE,
 } from "../layout/navConfig";
-import { formatBaht } from "../../app/opening/sampleData";
 import type { OpeningSummary } from "../../app/opening/lib/openingDomain";
 
 type Props = {
@@ -83,18 +82,23 @@ export default function OpeningHeroCard({
             label="เหลืออีก"
             value={`${summary.remainingCount}`}
             hint={`${summary.readyCount}/${summary.totalCount} พร้อม`}
+            tone={summary.remainingCount > 0 ? "accent" : "success"}
             className="!px-2 !py-1.5"
           />
           <SummaryMetric
             label="งบที่ต้องจัดหา"
-            value={formatBaht(summary.moneyNeeded)}
-            hint={
-              summary.noPriceCount > 0
-                ? `ยังไม่มีราคา ${summary.noPriceCount}`
-                : undefined
-            }
+            amount={summary.moneyNeeded}
+            tone="accent"
             className="!px-2 !py-1.5"
           />
+          {summary.noPriceCount > 0 ? (
+            <SummaryMetric
+              label="ยังไม่มีราคา"
+              value={`${summary.noPriceCount} รายการ`}
+              warning
+              className="!px-2 !py-1.5"
+            />
+          ) : null}
         </div>
       </div>
 

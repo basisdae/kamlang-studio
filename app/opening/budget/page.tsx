@@ -290,30 +290,36 @@ export default function OpeningBudgetPage() {
             <div className="grid grid-cols-2 gap-2">
               <SummaryMetric
                 label="มูลค่ารวมทั้งหมด"
-                value={formatBaht(inventory.inventoryTotal)}
+                amount={inventory.inventoryTotal}
+                tone="primary"
                 align="start"
               />
               <SummaryMetric
                 label="มูลค่าของที่มีแล้ว"
-                value={formatBaht(inventory.inventoryOwned)}
+                amount={inventory.inventoryOwned}
+                tone="success"
                 align="start"
               />
               <SummaryMetric
                 label="งบที่ยังต้องจัดหา"
-                value={formatBaht(inventory.inventoryNeed)}
+                amount={inventory.inventoryNeed}
+                tone="accent"
                 align="start"
               />
               <SummaryMetric
                 label="ประเมินรวม (Checklist)"
-                value={formatBaht(smartBudget.estimatedTotal)}
+                amount={smartBudget.estimatedTotal}
+                tone="primary"
                 align="start"
               />
             </div>
             {inventory.countNoPrice > 0 ? (
-              <p className="kl-type-helper">
-                งบประมาณยังไม่ครบ เพราะมี {inventory.countNoPrice}{" "}
-                รายการที่ยังไม่มีราคา
-              </p>
+              <SummaryMetric
+                label="ยังไม่มีราคา"
+                value={`${inventory.countNoPrice} รายการ`}
+                warning
+                align="start"
+              />
             ) : null}
             <p className="kl-type-caption">
               {inventory.countAll} รายการ · มีแล้ว {inventory.countOwned} ·

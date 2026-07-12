@@ -18,15 +18,24 @@ export default function SmartBudgetVarianceCard({ report }: Props) {
       <div className="grid grid-cols-2 gap-2">
         <SummaryMetric
           label="ประเมิน (Estimated)"
-          value={formatBaht(report.estimatedTotal)}
+          amount={report.estimatedTotal}
+          tone="primary"
         />
         <SummaryMetric
           label="ซื้อจริง (Actual)"
-          value={formatBaht(report.actualTotal)}
+          amount={report.actualTotal}
+          tone={report.actualTotal > 0 ? "success" : "muted"}
         />
         <SummaryMetric
           label="ส่วนต่าง (Difference)"
-          value={`${report.difference > 0 ? "+" : ""}${formatBaht(report.difference)}`}
+          value={`${report.difference > 0 ? "+" : report.difference < 0 ? "−" : ""}${Math.abs(report.difference).toLocaleString("th-TH")} บาท`}
+          tone={
+            report.difference > 0
+              ? "accent"
+              : report.difference < 0
+                ? "success"
+                : "muted"
+          }
         />
         <SummaryMetric
           label="Variance"
@@ -34,6 +43,13 @@ export default function SmartBudgetVarianceCard({ report }: Props) {
             report.variancePct == null
               ? "—"
               : `${report.variancePct > 0 ? "+" : ""}${report.variancePct}%`
+          }
+          tone={
+            report.variancePct == null
+              ? "muted"
+              : report.variancePct > 0
+                ? "accent"
+                : "neutral"
           }
         />
       </div>
@@ -48,10 +64,15 @@ export default function SmartBudgetVarianceCard({ report }: Props) {
       </p>
       <p className="kl-type-caption">
         ยังต้องจัดหา {formatBaht(report.needTotal)}
-        {report.unknownPriceCount > 0
-          ? ` · ไม่มีราคา ${report.unknownPriceCount} รายการ`
-          : ""}
       </p>
+      {report.unknownPriceCount > 0 ? (
+        <SummaryMetric
+          label="ยังไม่มีราคา"
+          value={`${report.unknownPriceCount} รายการ`}
+          warning
+          align="start"
+        />
+      ) : null}
     </SummaryCard>
   );
 }

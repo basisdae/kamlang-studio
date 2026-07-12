@@ -20,9 +20,7 @@ export default function LabLandingComposition() {
   return (
     <div className="min-w-0 space-y-3">
       <WorkspaceLandingHeader
-        icon={FlaskConical}
-        accent="lab"
-        title="วิจัยและพัฒนา"
+        title="ภาพรวม"
         description="สูตร · วัตถุดิบ · ต้นทุน"
       />
 

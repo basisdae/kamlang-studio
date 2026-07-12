@@ -48,9 +48,7 @@ export default function OperationsLandingComposition() {
   return (
     <div className="min-w-0 space-y-3">
       <WorkspaceLandingHeader
-        icon={Store}
-        accent="operations"
-        title="ดำเนินกิจการ"
+        title="ภาพรวม"
         description="จัดซื้อ · สต๊อก · ผลิต"
       />
 

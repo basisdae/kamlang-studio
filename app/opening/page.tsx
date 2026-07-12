@@ -10,6 +10,7 @@ import OpeningHubSkeleton from "../../components/bi/OpeningHubSkeleton";
 import OpeningRecentActivity from "../../components/bi/OpeningRecentActivity";
 import RecommendationPanel from "../../components/bi/RecommendationPanel";
 import ButtonLink from "../../components/ui/ButtonLink";
+import WorkspaceLandingHeader from "../../components/workspaces/WorkspaceLandingHeader";
 import { useWorkspace } from "../providers/WorkspaceProvider";
 import { useAssets } from "./assets/AssetsProvider";
 import {
@@ -19,8 +20,7 @@ import {
 } from "./lib/openingDomain";
 
 /**
- * Opening Hub — data first on ~390px:
- * Workspace chip · Summary · Ring · CTA (แล้วค่อยรายละเอียดด้านล่าง)
+ * Opening Hub — Context (Switcher) once, then Content title ภาพรวม.
  */
 export default function OpeningHubPage() {
   const {
@@ -75,6 +75,11 @@ export default function OpeningHubPage() {
 
   return (
     <AppShell title="" hidePageHeader compact>
+      <WorkspaceLandingHeader
+        title="ภาพรวม"
+        description="รายการเตรียม · งบประมาณ · พร้อมเปิด"
+      />
+
       {showStatusPanel ? (
         <BiDataStatus
           loading={false}

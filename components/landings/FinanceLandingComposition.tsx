@@ -11,7 +11,6 @@ import SectionLink from "../ui/SectionLink";
 import { useWorkspace } from "../../app/providers/WorkspaceProvider";
 import { useAssets } from "../../app/opening/assets/AssetsProvider";
 import { buildOpeningSummary } from "../../app/opening/lib/openingDomain";
-import { formatBaht } from "../../app/opening/sampleData";
 import { getPartnersSummary } from "../../app/partners/sampleData";
 import { getDecisionsSummary } from "../../app/decisions/sampleData";
 
@@ -47,9 +46,7 @@ export default function FinanceLandingComposition() {
   return (
     <div className="min-w-0 space-y-3">
       <WorkspaceLandingHeader
-        icon={Wallet}
-        accent="finance"
-        title="การเงิน"
+        title="ภาพรวม"
         description="งบประมาณ · Partners · Quotes · Decisions"
       />
 
@@ -77,27 +74,36 @@ export default function FinanceLandingComposition() {
           <div className="grid grid-cols-2 gap-2">
             <SummaryMetric
               label="งบประมาณรวม"
-              value={formatBaht(summary.inventoryTotal)}
+              amount={summary.inventoryTotal}
+              tone="primary"
             />
             <SummaryMetric
               label="ของที่มีแล้ว"
-              value={formatBaht(summary.inventoryOwned)}
+              amount={summary.inventoryOwned}
+              tone="success"
             />
             <SummaryMetric
               label="งบที่ยังต้องจัดหา"
-              value={formatBaht(summary.moneyNeeded)}
+              amount={summary.moneyNeeded}
+              tone="accent"
             />
             <SummaryMetric
               label="ซื้อจริง"
-              value={formatBaht(summary.inventoryActualSpend)}
+              amount={summary.inventoryActualSpend}
+              tone={
+                summary.inventoryActualSpend > 0 ? "success" : "muted"
+              }
             />
           </div>
-          <SummaryMetric
-            label="รายการที่ยังไม่มีราคา"
-            value={summary.noPriceCount}
-            align="start"
-            className="!px-3"
-          />
+          {summary.noPriceCount > 0 ? (
+            <SummaryMetric
+              label="ยังไม่มีราคา"
+              value={`${summary.noPriceCount} รายการ`}
+              warning
+              align="start"
+              className="!px-3"
+            />
+          ) : null}
         </Card>
       ) : null}
 

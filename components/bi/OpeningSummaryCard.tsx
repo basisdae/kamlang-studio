@@ -2,7 +2,6 @@
 
 import SummaryCard from "./SummaryCard";
 import SummaryMetric from "./SummaryMetric";
-import { formatBaht } from "../../app/opening/sampleData";
 import type { OpeningSummary } from "../../app/opening/lib/openingDomain";
 
 type Props = {
@@ -25,10 +24,15 @@ export default function OpeningSummaryCard({
     <SummaryCard title={title}>
       <div className="grid grid-cols-3 gap-2">
         <SummaryMetric label="พร้อมแล้ว" value={`${summary.readyPercent}%`} />
-        <SummaryMetric label="เหลืออีก" value={`${summary.remainingCount}`} />
+        <SummaryMetric
+          label="เหลืออีก"
+          value={`${summary.remainingCount}`}
+          tone={summary.remainingCount > 0 ? "accent" : "success"}
+        />
         <SummaryMetric
           label="ต้องใช้งบอีก"
-          value={formatBaht(summary.moneyNeeded)}
+          amount={summary.moneyNeeded}
+          tone="accent"
         />
       </div>
       <div className="kl-progress-track mt-3">
@@ -39,27 +43,40 @@ export default function OpeningSummaryCard({
       </div>
       <p className="kl-type-caption mt-2">
         พร้อม {summary.readyCount}/{summary.totalCount} รายการ
-        {summary.noPriceCount > 0
-          ? ` · งบยังไม่ครบ เพราะมี ${summary.noPriceCount} รายการที่ยังไม่มีราคา`
-          : ""}
       </p>
+      {summary.noPriceCount > 0 ? (
+        <div className="mt-2">
+          <SummaryMetric
+            label="ยังไม่มีราคา"
+            value={`${summary.noPriceCount} รายการ`}
+            warning
+            align="start"
+          />
+        </div>
+      ) : null}
       {variant === "full" ? (
         <div className="mt-3 grid grid-cols-2 gap-2">
           <SummaryMetric
             label="มูลค่ารวม"
-            value={formatBaht(summary.inventoryTotal)}
+            amount={summary.inventoryTotal}
+            tone="primary"
           />
           <SummaryMetric
             label="มีแล้ว"
-            value={formatBaht(summary.inventoryOwned)}
+            amount={summary.inventoryOwned}
+            tone="success"
           />
           <SummaryMetric
             label="ยังต้องจัดหา"
-            value={formatBaht(summary.moneyNeeded)}
+            amount={summary.moneyNeeded}
+            tone="accent"
           />
           <SummaryMetric
             label="ซื้อจริง"
-            value={formatBaht(summary.inventoryActualSpend)}
+            amount={summary.inventoryActualSpend}
+            tone={
+              summary.inventoryActualSpend > 0 ? "success" : "muted"
+            }
           />
         </div>
       ) : null}

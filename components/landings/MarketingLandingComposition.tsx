@@ -15,10 +15,8 @@ export default function MarketingLandingComposition() {
   return (
     <div className="min-w-0 space-y-3">
       <WorkspaceLandingHeader
-        icon={Megaphone}
-        accent="marketing"
-        title="การตลาด"
-        description="พื้นที่การตลาดกำลังเริ่มต้น"
+        title="ภาพรวม"
+        description="แคมเปญ · Timeline · เอกสาร"
       />
 
       <EmptyState
