@@ -55,24 +55,26 @@ export default function AppShell({
         <main
           className={`kl-page-above-nav min-h-screen overflow-x-hidden bg-kl-ivory px-4 text-kl-brown sm:px-5 ${mainPadding}`}
         >
-            <div className="mx-auto w-full min-w-0 max-w-[var(--bi-app-width)]">
-              <WorkspaceSwitcher />
-            </div>
-            <div
-              className={`mx-auto w-full min-w-0 max-w-[var(--bi-app-width)] ${contentGap}`}
-            >
+          <div
+            className={`mx-auto w-full min-w-0 max-w-[var(--bi-app-width)] ${contentGap}`}
+          >
             {hidePageHeader ? (
               <>
-                {backHref ? (
-                  <div className="flex items-center">
+                <div className="flex items-center gap-2">
+                  {backHref ? (
                     <IconButtonLink href={backHref} aria-label="กลับ">
                       <ChevronLeft
                         className={KL_ICON_CLASS}
                         strokeWidth={KL_ICON_STROKE}
                       />
                     </IconButtonLink>
+                  ) : (
+                    <span className="min-w-0 flex-1" />
+                  )}
+                  <div className="ml-auto min-w-0 shrink">
+                    <WorkspaceSwitcher />
                   </div>
-                ) : null}
+                </div>
                 {headerAction ? (
                   <div className="flex justify-end">
                     <Link
@@ -101,7 +103,14 @@ export default function AppShell({
                 ) : null}
 
                 <div className="min-w-0 flex-1">
-                  <h1 className="kl-type-page-title">{title}</h1>
+                  <div className="flex items-start gap-2">
+                    <h1 className="min-w-0 flex-1 kl-type-page-title">
+                      {title}
+                    </h1>
+                    <div className="shrink-0 pt-0.5">
+                      <WorkspaceSwitcher />
+                    </div>
+                  </div>
                   {description ? (
                     <p className="kl-type-description mt-2">{description}</p>
                   ) : null}

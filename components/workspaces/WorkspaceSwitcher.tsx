@@ -16,7 +16,8 @@ import Button from "../ui/Button";
 import Card from "../ui/Card";
 
 /**
- * Compact single-line Workspace control — icon + label, no emoji.
+ * Secondary context control — quiet name + chevron (not a primary CTA).
+ * Aligns end so page title / summary stay first in visual hierarchy.
  */
 export default function WorkspaceSwitcher() {
   const router = useRouter();
@@ -59,47 +60,24 @@ export default function WorkspaceSwitcher() {
   }, [open]);
 
   if (!isHydrated || !isWorkspaceSelected || !config) return null;
-
-  // Chooser entry — never show Switcher here
   if (pathname === "/modes" || pathname.startsWith("/modes/")) return null;
-
-  const Icon = config.icon;
-  const chipStyle = workspaceAccentStyle(config.accent) as CSSProperties;
 
   return (
     <>
-      <div className="sticky top-0 z-30 -mx-4 bg-kl-ivory/95 px-4 py-1.5 backdrop-blur-sm sm:-mx-5 sm:px-5">
+      <div className="flex justify-end">
         <button
           type="button"
-          className="inline-flex min-h-[2.25rem] max-w-full items-center gap-1.5 rounded-full border bg-kl-card px-3 kl-pressable"
-          style={{
-            ...chipStyle,
-            borderColor:
-              "color-mix(in srgb, var(--ws-accent) 40%, var(--kl-border))",
-          }}
+          className="inline-flex max-w-[70%] items-center gap-0.5 py-0.5 kl-pressable text-kl-muted"
           aria-haspopup="dialog"
           aria-expanded={open}
-          aria-label={`Workspace: ${config.label}`}
+          aria-label={`เปลี่ยน Workspace · ${config.label}`}
           onClick={() => setOpen(true)}
         >
-          <span
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-            style={{
-              background: "var(--ws-accent-soft)",
-              color: "var(--ws-accent)",
-            }}
-            aria-hidden
-          >
-            <Icon
-              className={KL_ICON_SM_CLASS}
-              strokeWidth={KL_ICON_STROKE}
-            />
-          </span>
-          <span className="truncate kl-type-label font-medium">
+          <span className="truncate kl-type-caption font-medium text-kl-muted">
             {config.label}
           </span>
           <ChevronDown
-            className={`${KL_ICON_SM_CLASS} shrink-0 text-kl-muted`}
+            className={`${KL_ICON_SM_CLASS} shrink-0 opacity-70`}
             strokeWidth={KL_ICON_STROKE}
             aria-hidden
           />
