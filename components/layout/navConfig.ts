@@ -402,12 +402,8 @@ export function isNavActive(pathname: string, href: string) {
   /** Workspace hub landings — exact match only */
   const exactLandings = new Set([
     "/opening",
-    "/operations",
-    "/ops",
-    "/lab",
-    "/marketing",
-    "/finance",
-    "/explorer",
+    "/home",
+    "/modes",
   ]);
   if (exactLandings.has(href)) {
     return pathname === href;

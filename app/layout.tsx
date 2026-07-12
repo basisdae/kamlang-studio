@@ -5,6 +5,7 @@ import UndoToastHost from "../components/ui/UndoToastHost";
 import BiInfoToastHost from "../components/ui/BiInfoToastHost";
 import { AuthProvider } from "./auth/AuthProvider";
 import { AppWorkspaceProvider } from "./providers/AppWorkspaceProvider";
+import { CurrentBusinessProvider } from "./providers/CurrentBusinessProvider";
 import WorkspaceGate from "../components/workspaces/WorkspaceGate";
 import "./globals.css";
 
@@ -48,11 +49,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-kl-ivory text-kl-text font-sans antialiased">
         <AuthProvider>
-          <AppWorkspaceProvider>
-            <WorkspaceGate>{children}</WorkspaceGate>
-            <UndoToastHost />
-            <BiInfoToastHost />
-          </AppWorkspaceProvider>
+          <CurrentBusinessProvider>
+            <AppWorkspaceProvider>
+              <WorkspaceGate>{children}</WorkspaceGate>
+              <UndoToastHost />
+              <BiInfoToastHost />
+            </AppWorkspaceProvider>
+          </CurrentBusinessProvider>
         </AuthProvider>
       </body>
     </html>

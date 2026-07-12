@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import AppShell from "../../../components/layout/AppShell";
 import BudgetItemCard from "../../../components/bi/BudgetItemCard";
@@ -43,6 +43,8 @@ import {
   type ListSortKey,
 } from "../lib/listPolish";
 import { buildSmartBudget } from "../lib/smartBudget";
+import { useModuleViewConfig } from "../../../lib/workspaces/moduleViewConfig";
+import { PLATFORM_LANDING_PATH } from "../../../lib/workspaces/appWorkspaces";
 import SmartBudgetBreakdown from "./components/SmartBudgetBreakdown";
 import SmartBudgetExportButton from "./components/SmartBudgetExportButton";
 import SmartBudgetVarianceCard from "./components/SmartBudgetVarianceCard";
@@ -52,11 +54,14 @@ type ContentFilter = "all" | BudgetStatus;
 type DrillTab = "all" | "owned" | "need" | "no_price";
 
 /**
- * Budget view — outcome of the same bi_assets Checklist data.
- * Not a separate planning system (One Thing, One Place · Zero Duplicate).
+ * Budget Platform Module — same route for every Workspace.
+ * View angle comes from ModuleViewConfig.summaryMode (opening | finance).
  */
 export default function OpeningBudgetPage() {
   const { workspaceName } = useWorkspace();
+  const view = useModuleViewConfig("opening-budget");
+  const financeView = view.summaryMode === "finance";
+  const backHref = financeView ? PLATFORM_LANDING_PATH : "/opening";
   const {
     assets,
     decisionGroups,
@@ -80,6 +85,11 @@ export default function OpeningBudgetPage() {
   const [drill, setDrill] = useState<DrillTab>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<ListSortKey>("name");
+
+  useEffect(() => {
+    if (view.defaultFilter === "need") setDrill("need");
+    else if (!financeView) setDrill("all");
+  }, [view.defaultFilter, financeView]);
 
   const openingSummary = useMemo(() => buildOpeningSummary(assets), [assets]);
   const smartBudget = useMemo(() => buildSmartBudget(assets), [assets]);
@@ -163,13 +173,12 @@ export default function OpeningBudgetPage() {
     pageOnline &&
     assets.length === 0;
 
-  const sourceHint = showSkeleton
-    ? "กำลังดึง bi_assets..."
-    : pageOnline
-      ? `แหล่งข้อมูล: bi_assets · ${inventory.countAll} รายการ`
-      : pageError
-        ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-        : "กำลังเชื่อมต่อ...";
+  const sourceHint =
+    pageError
+      ? "โหลดไม่สำเร็จ — กดลองใหม่"
+      : showSkeleton
+        ? "กำลังโหลด…"
+        : undefined;
 
   const allLines = useMemo(() => {
     const map = new Map<string, InventoryLine>();
@@ -231,14 +240,16 @@ export default function OpeningBudgetPage() {
   }, [allLines, drill, inventory, query, sort, assetsById, statusOrder]);
 
   return (
-    <AppShell title="" hidePageHeader compact backHref="/opening">
+    <AppShell title="" hidePageHeader compact backHref={backHref}>
       <PageHeader
-        title="เปิดร้าน"
+        title={financeView ? "งบประมาณ" : "เปิดร้าน"}
         workspace={workspaceName}
-        subtitle="งบประมาณ"
+        subtitle={financeView ? "มุมเงินจากรายการจริง" : "งบประมาณ"}
       />
       <p className="kl-type-helper -mt-1">
-        ผลลัพธ์จากรายการเตรียมเปิดร้าน · ไม่ใช้เงินลงทุนเป็นฐาน
+        {financeView
+          ? "Budget Module · โฟกัสมูลค่า จัดหา และรายการที่ยังไม่มีราคา"
+          : "ผลลัพธ์จากรายการเตรียมเปิดร้าน · ไม่ใช้เงินลงทุนเป็นฐาน"}
       </p>
 
       <BiDataStatus
@@ -261,7 +272,9 @@ export default function OpeningBudgetPage() {
 
       {!showSkeleton && !blockOnError && pageOnline ? (
         <>
-          <OpeningSummaryCard summary={openingSummary} variant="full" />
+          {!financeView ? (
+            <OpeningSummaryCard summary={openingSummary} variant="full" />
+          ) : null}
 
           <SmartBudgetWaterfall report={smartBudget} />
           <SmartBudgetVarianceCard report={smartBudget} />
@@ -271,7 +284,9 @@ export default function OpeningBudgetPage() {
             workspaceName={workspaceName}
           />
 
-          <SummaryCard title="งบจากรายการจริง">
+          <SummaryCard
+            title={financeView ? "สรุปเงิน" : "งบจากรายการจริง"}
+          >
             <div className="grid grid-cols-2 gap-2">
               <SummaryMetric
                 label="มูลค่ารวมทั้งหมด"
@@ -355,8 +370,11 @@ export default function OpeningBudgetPage() {
             )}
           </section>
 
-          <SummaryCard title="วันนี้ต้องรู้ 4 ข้อ">
+          <SummaryCard
+            title={financeView ? "ต้องรู้ตอนนี้" : "วันนี้ต้องรู้ 4 ข้อ"}
+          >
             <div className="space-y-4">
+              {!financeView ? (
               <div>
                 <p className="kl-type-label">1. Readiness Score</p>
                 <p className="kl-type-metric-lg mt-1">{readyPercent}%</p>
@@ -384,9 +402,12 @@ export default function OpeningBudgetPage() {
                   />
                 </div>
               </div>
+              ) : null}
 
               <div>
-                <p className="kl-type-label">2. ต้องเตรียมเงินอีกเท่าไร</p>
+                <p className="kl-type-label">
+                  {financeView ? "1. ต้องเตรียมเงินอีกเท่าไร" : "2. ต้องเตรียมเงินอีกเท่าไร"}
+                </p>
                 <div className="mt-2 space-y-3">
                   <div className="rounded-[var(--kl-radius-inner)] bg-kl-surface p-3">
                     <p className="kl-type-caption">ซื้อทั้งหมด</p>
@@ -412,12 +433,16 @@ export default function OpeningBudgetPage() {
               </div>
 
               <div>
-                <p className="kl-type-label">3. วันนี้ต้องตัดสินใจอะไร</p>
+                <p className="kl-type-label">
+                  {financeView ? "2. วันนี้ต้องตัดสินใจอะไร" : "3. วันนี้ต้องตัดสินใจอะไร"}
+                </p>
                 <p className="kl-type-card-title mt-1">{todayDecideText}</p>
               </div>
 
               <div>
-                <p className="kl-type-label">4. วันนี้ควรทำอะไร</p>
+                <p className="kl-type-label">
+                  {financeView ? "3. วันนี้ควรทำอะไร" : "4. วันนี้ควรทำอะไร"}
+                </p>
                 <p className="kl-type-card-title mt-1">{todayDoText}</p>
               </div>
             </div>

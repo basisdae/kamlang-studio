@@ -1,16 +1,22 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useAppWorkspace } from "../../app/providers/AppWorkspaceProvider";
 
 /**
- * Hide sidebar / bottom nav until a Workspace is selected (Chooser mode).
+ * In-workspace chrome only (sidebar / bottom nav).
+ * Hidden on Chooser entry (/modes) — Chooser ≠ Switcher.
  */
 export default function WorkspaceChrome({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const { isHydrated, isWorkspaceSelected } = useAppWorkspace();
-  if (!isHydrated || !isWorkspaceSelected) return null;
+  const onChooser =
+    pathname === "/modes" || pathname.startsWith("/modes/");
+
+  if (!isHydrated || !isWorkspaceSelected || onChooser) return null;
   return <>{children}</>;
 }

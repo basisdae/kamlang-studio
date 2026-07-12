@@ -32,6 +32,9 @@ export const BI_UI_PREF_KEYS = [
   "bi.activity.comments",
   "bi.appWorkspace.v1",
   "bi.appWorkspace.v2",
+  "bi.appWorkspace.v3",
+  "bi.currentWorkspace.v1",
+  "bi.currentBusiness.v1",
 ] as const;
 
 const BUSINESS_PREFIXES = [

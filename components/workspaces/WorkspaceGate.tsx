@@ -50,7 +50,18 @@ export default function WorkspaceGate({
     );
   }
 
-  if (needsChooser || (pathname === "/modes" && !isWorkspaceSelected)) {
+  // /modes is always Chooser entry — even if a Workspace is already selected
+  if (pathname === "/modes" || pathname.startsWith("/modes/")) {
+    return (
+      <div className="min-h-screen bg-kl-ivory px-4 py-8 text-kl-brown">
+        <div className="mx-auto w-full max-w-[var(--bi-app-width)]">
+          <WorkspaceChooser />
+        </div>
+      </div>
+    );
+  }
+
+  if (needsChooser) {
     return (
       <div className="min-h-screen bg-kl-ivory px-4 py-8 text-kl-brown">
         <div className="mx-auto w-full max-w-[var(--bi-app-width)]">

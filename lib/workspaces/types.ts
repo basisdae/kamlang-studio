@@ -9,10 +9,9 @@ export type AppWorkspaceId =
   | "operations"
   | "lab"
   | "marketing"
-  | "finance"
-  | "explorer";
+  | "finance";
 
-/** Master nav item ids (and future module keys). Explorer = all. */
+/** Master nav item ids (and future module keys). */
 export type ModuleId = string;
 
 export type WorkspaceShortcut = {
@@ -31,19 +30,24 @@ export type ModuleViewConfig = {
   summaryMode?: string;
 };
 
+export type WorkspaceAccent =
+  | "opening"
+  | "operations"
+  | "lab"
+  | "marketing"
+  | "finance";
+
 export type AppWorkspaceConfig = {
   id: AppWorkspaceId;
   label: string;
-  /** Short mark for compact switcher (single grapheme / emoji) */
-  mark: string;
   description: string;
   icon: LucideIcon;
   defaultLanding: string;
-  /** Nav / module ids visible in this workspace. Empty + explorer flag via id. */
+  /** Nav / module ids visible in this workspace. */
   visibleModules: ModuleId[] | "all";
   shortcuts: WorkspaceShortcut[];
-  /** Optional per-module view config (P0: mostly unused) */
+  /** View hints passed into Platform Modules (never AppWorkspaceId) */
   moduleConfig?: Partial<Record<ModuleId, ModuleViewConfig>>;
-  /** Soft accent token name for chooser card */
-  accent?: "lemon" | "neutral";
+  /** Soft accent for chooser / switcher / landing — icon + color, no emoji */
+  accent: WorkspaceAccent;
 };

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { useAppWorkspace } from "../../app/providers/AppWorkspaceProvider";
+import { useCurrentBusiness } from "../../app/providers/CurrentBusinessProvider";
 import { getWorkspaceDesktopNav } from "../../lib/workspaces/filterNavigation";
 import {
   getNavIconStroke,
@@ -14,6 +15,7 @@ import {
 export default function DesktopSidebar() {
   const pathname = usePathname();
   const { config } = useAppWorkspace();
+  const { currentBusiness } = useCurrentBusiness();
   const visibleModules = config?.visibleModules ?? "all";
   const items = useMemo(
     () => getWorkspaceDesktopNav(visibleModules),
@@ -24,7 +26,9 @@ export default function DesktopSidebar() {
     <aside className="kl-sidebar" aria-label="เมนูหลัก">
       <div className="kl-sidebar-brand">
         <div className="kl-sidebar-brand-name">Business Insight</div>
-        <div className="kl-sidebar-brand-workspace">ร้าน: ตั้งเตา</div>
+        <div className="kl-sidebar-brand-workspace">
+          Business: {currentBusiness.name}
+        </div>
       </div>
 
       <nav className="flex flex-col gap-0.5">

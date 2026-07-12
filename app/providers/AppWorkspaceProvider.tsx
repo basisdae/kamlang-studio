@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import {
-  APP_WORKSPACE_STORAGE_KEY,
+  CURRENT_WORKSPACE_STORAGE_KEY,
   getAppWorkspaceConfig,
   isAppWorkspaceId,
 } from "../../lib/workspaces/appWorkspaces";
@@ -22,6 +22,7 @@ import type {
 type AppWorkspaceContextValue = {
   /** false until localStorage read — avoid hydration mismatch */
   isHydrated: boolean;
+  /** App work Context (Opening / Lab / …) — not Business / Tenant */
   currentWorkspace: AppWorkspaceId | null;
   config: AppWorkspaceConfig | null;
   isWorkspaceSelected: boolean;
@@ -33,12 +34,27 @@ const AppWorkspaceContext = createContext<AppWorkspaceContextValue | null>(
   null
 );
 
+const LEGACY_WORKSPACE_KEYS = [
+  "bi.appWorkspace.v1",
+  "bi.appWorkspace.v2",
+  "bi.appWorkspace.v3",
+] as const;
+
 function readStoredWorkspace(): AppWorkspaceId | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(APP_WORKSPACE_STORAGE_KEY);
-    if (!raw) return null;
-    return isAppWorkspaceId(raw) ? raw : null;
+    const raw = window.localStorage.getItem(CURRENT_WORKSPACE_STORAGE_KEY);
+    if (raw && isAppWorkspaceId(raw)) return raw;
+
+    for (const key of LEGACY_WORKSPACE_KEYS) {
+      const legacy = window.localStorage.getItem(key);
+      if (legacy && isAppWorkspaceId(legacy)) {
+        window.localStorage.setItem(CURRENT_WORKSPACE_STORAGE_KEY, legacy);
+        window.localStorage.removeItem(key);
+        return legacy;
+      }
+    }
+    return null;
   } catch {
     return null;
   }
@@ -48,15 +64,19 @@ function writeStoredWorkspace(id: AppWorkspaceId | null) {
   if (typeof window === "undefined") return;
   try {
     if (id == null) {
-      window.localStorage.removeItem(APP_WORKSPACE_STORAGE_KEY);
+      window.localStorage.removeItem(CURRENT_WORKSPACE_STORAGE_KEY);
     } else {
-      window.localStorage.setItem(APP_WORKSPACE_STORAGE_KEY, id);
+      window.localStorage.setItem(CURRENT_WORKSPACE_STORAGE_KEY, id);
     }
   } catch {
     /* preference only */
   }
 }
 
+/**
+ * App Workspace = Context (Opening / Lab / Finance).
+ * Storage is independent from currentBusiness (Tenant).
+ */
 export function AppWorkspaceProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] =

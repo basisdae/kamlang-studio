@@ -1,27 +1,29 @@
 import { Lightbulb } from "lucide-react";
 import AppShell from "../../components/layout/AppShell";
-import DataSourceBadge from "../../components/bi/DataSourceBadge";
-import { OPENING_DATA_SOURCE } from "../../components/bi/dataSource";
 import EmptyState from "../../components/ui/EmptyState";
 import ButtonLink from "../../components/ui/ButtonLink";
 
+/**
+ * Business Insight — Observer / Analysis layer.
+ * Reads Shared Core; does not own data or duplicate Module forms.
+ * Outside Workspace → Landing → Module.
+ */
 export default function InsightPage() {
   return (
     <AppShell
       title="Business Insight"
-      description="Every number tells a story."
+      description="Observer · อ่านจาก Shared Core"
       compact
     >
-      <DataSourceBadge source={OPENING_DATA_SOURCE} />
       <EmptyState
         icon={Lightbulb}
         title="Insight กำลังจะมา"
-        hint="Command Center ของทั้งแพลตฟอร์ม — อ่านและสรุปจาก Shared Core ไม่ใช่ที่กรอกข้อมูล"
-        actionLabel="ไปเปิดร้าน"
-        actionHref="/opening"
+        hint="ชั้นวิเคราะห์ของแพลตฟอร์ม — อ่านและสรุปจาก Shared Core ไม่สร้างฟอร์มซ้ำกับ Module และไม่อยู่ในสาย Workspace"
+        actionLabel="เลือก Workspace"
+        actionHref="/modes"
       />
-      <ButtonLink href="/modes" variant="secondary" fullWidth>
-        เปลี่ยน Workspace
+      <ButtonLink href="/opening" variant="secondary" fullWidth>
+        ไป Opening Landing
       </ButtonLink>
     </AppShell>
   );

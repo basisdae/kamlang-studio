@@ -6,7 +6,7 @@ import { WorkspaceProvider } from "./WorkspaceProvider";
 import { AssetProvider } from "./AssetProvider";
 import { BudgetProvider } from "./BudgetProvider";
 
-/** Workspace → Assets → Budget (shared Tang Tao online data) */
+/** Shared BI online providers for Business tenant data (Opening + Platform landings). */
 export function BiDataProviders({ children }: { children: ReactNode }) {
   return (
     <BiCacheBootstrap>

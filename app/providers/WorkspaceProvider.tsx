@@ -15,6 +15,7 @@ import { biRuntimeError, userFacingMessage } from "../../lib/supabase/errors";
 import { workspaceService } from "../../lib/services/workspaceService";
 import type { Workspace } from "../../lib/types/workspace";
 import type { DataSource } from "../../components/bi/dataSource";
+import { useCurrentBusiness } from "./CurrentBusinessProvider";
 
 type WorkspaceContextValue = {
   workspace: Workspace | null;
@@ -35,6 +36,7 @@ const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 const FALLBACK_WORKSPACE_ID = "11111111-1111-1111-1111-111111111111";
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
+  const { setCurrentBusiness } = useCurrentBusiness();
   const configured = getSupabaseEnvStatus().configured;
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(configured);
@@ -64,6 +66,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const ws = await workspaceService.getCurrentWorkspace();
       setWorkspace(ws);
       setOnline(true);
+      // Sync Business preference only — never touch currentWorkspace
+      setCurrentBusiness({
+        id: ws.id,
+        slug: ws.slug,
+        name: ws.name,
+      });
     } catch (e) {
       biRuntimeError("WorkspaceProvider", "getCurrentWorkspace", e, {
         table: "bi_workspaces",
@@ -76,7 +84,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       setReady(true);
     }
-  }, []);
+  }, [setCurrentBusiness]);
 
   /* eslint-disable react-hooks/set-state-in-effect -- hydrate workspace via service */
   useEffect(() => {
