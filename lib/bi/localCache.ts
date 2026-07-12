@@ -25,7 +25,12 @@ export const BI_BUSINESS_CACHE_KEYS = [
  * Allowed UI preference keys (Opening).
  * Keep this list short — anything else under bi.* / business-insight.* is purged.
  */
-export const BI_UI_PREF_KEYS = ["bi.assets.view"] as const;
+export const BI_UI_PREF_KEYS = [
+  "bi.assets.view",
+  "bi.activity.favorites",
+  "bi.activity.pins",
+  "bi.activity.comments",
+] as const;
 
 const BUSINESS_PREFIXES = [
   "business-insight.assets",

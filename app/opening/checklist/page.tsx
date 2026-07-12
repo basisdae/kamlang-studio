@@ -8,6 +8,7 @@ import BiDataStatus from "../../../components/bi/BiDataStatus";
 import NextStepCard from "../../../components/bi/NextStepCard";
 import OpeningSummaryCard from "../../../components/bi/OpeningSummaryCard";
 import PageHeader from "../../../components/bi/PageHeader";
+import RecommendationPanel from "../../../components/bi/RecommendationPanel";
 import SectionHeader from "../../../components/bi/SectionHeader";
 import ButtonLink from "../../../components/ui/ButtonLink";
 import {
@@ -78,13 +79,17 @@ export default function OpeningChecklistPage() {
 
       {!loading && !error ? (
         <>
-          <OpeningSummaryCard summary={summary} variant="compact" />
+          <div className="kl-sticky-summary">
+            <OpeningSummaryCard summary={summary} variant="compact" />
+          </div>
 
           <NextStepCard
             message={focus.message}
             href={focus.href}
             actionLabel="ไปทำต่อ"
           />
+
+          <RecommendationPanel assets={assets} limit={4} />
 
           <section className="space-y-3">
             <SectionHeader title="หมวด" />
@@ -93,12 +98,14 @@ export default function OpeningChecklistPage() {
                 <Link
                   key={row.topic.id}
                   href={row.topic.href}
-                  className="kl-section block space-y-2 kl-pressable"
+                  className="kl-section block min-w-0 space-y-2 kl-pressable"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="kl-type-card-title">{row.topic.title}</p>
+                    <p className="kl-type-card-title min-w-0 truncate">
+                      {row.topic.title}
+                    </p>
                     <ChevronRight
-                      className={KL_ICON_CLASS}
+                      className={`${KL_ICON_CLASS} shrink-0`}
                       strokeWidth={KL_ICON_STROKE}
                       aria-hidden
                     />
@@ -125,6 +132,12 @@ export default function OpeningChecklistPage() {
               ))}
             </div>
           </section>
+
+          {assets.length === 0 ? (
+            <ButtonLink href="/opening/assets/new" fullWidth>
+              + เพิ่มรายการ
+            </ButtonLink>
+          ) : null}
 
           <ButtonLink href="/opening" variant="secondary" fullWidth>
             กลับภาพรวมเปิดร้าน

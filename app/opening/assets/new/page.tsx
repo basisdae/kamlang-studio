@@ -20,11 +20,20 @@ function NewAssetInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shotValidation = searchParams.get("shot") === "validation";
+  const prefillName = searchParams.get("name")?.trim() ?? "";
+  const prefillCategory = searchParams.get("category")?.trim() ?? "";
   const { workspaceName, dataSource } = useWorkspace();
   const { addAsset, findSimilar, saving, error: providerError } = useAssets();
   const [pending, setPending] = useState<AssetFormValues | null>(null);
   const [similar, setSimilar] = useState<AssetItem[]>([]);
   const [saveError, setSaveError] = useState("");
+
+  const initialForm = (() => {
+    const base = emptyAssetForm();
+    if (prefillName) base.name = prefillName;
+    if (prefillCategory) base.category = prefillCategory;
+    return base;
+  })();
 
   function save(values: AssetFormValues) {
     if (saving) return;
@@ -171,7 +180,7 @@ function NewAssetInner() {
         </Card>
       ) : (
         <AssetForm
-          initial={emptyAssetForm()}
+          initial={initialForm}
           mode="create"
           modeHint={
             saving

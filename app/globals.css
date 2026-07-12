@@ -211,6 +211,32 @@ body {
   padding-bottom: calc(var(--kl-nav-height) + env(safe-area-inset-bottom, 0px) + 8.25rem);
 }
 
+/* Sticky summary strip — Opening Checklist polish */
+.kl-sticky-summary {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding: 0.5rem 1rem 0.75rem;
+  background: color-mix(in srgb, var(--kl-ivory) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--kl-border);
+}
+
+/* Sticky toolbar — Quick Add + search/filter stay visible */
+.kl-sticky-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 16;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding: 0.5rem 1rem 0.75rem;
+  background: color-mix(in srgb, var(--kl-ivory) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--kl-border);
+}
+
 .kl-builder-scroll {
   padding-bottom: calc(
     var(--kl-builder-scroll-pad) + env(safe-area-inset-bottom, 0px)

@@ -17,17 +17,20 @@ import NextStepCard from "../../../../components/bi/NextStepCard";
 import PageHeader from "../../../../components/bi/PageHeader";
 import SectionHeader from "../../../../components/bi/SectionHeader";
 import SummaryCard from "../../../../components/bi/SummaryCard";
+import StatusBadge from "../../../../components/bi/StatusBadge";
+import ArchiveConfirm from "../../../../components/bi/ArchiveConfirm";
 import Button from "../../../../components/ui/Button";
 import ButtonLink from "../../../../components/ui/ButtonLink";
 import Card from "../../../../components/ui/Card";
 import FormField from "../../../../components/ui/FormField";
+import SegmentChip from "../../../../components/ui/SegmentChip";
+import { KL_FIELD_CLASS } from "../../../../components/ui/designLock";
 import {
   KL_ICON_CLASS,
   KL_ICON_STROKE,
 } from "../../../../components/layout/navConfig";
 import {
   ASSET_CHANNEL_LABELS,
-  ASSET_PRIORITY_LABELS,
   ASSET_STATUS_FLOW,
   ASSET_STATUS_LABELS,
   type AssetItem,
@@ -216,12 +219,8 @@ export default function OpeningAssetDetailPage() {
         {brandModel || asset.category}
       </p>
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-[var(--kl-radius-inner)] bg-[rgb(231_246_91/0.45)] px-2.5 py-1 kl-type-caption">
-          {ASSET_STATUS_LABELS[asset.status]}
-        </span>
-        <span className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2.5 py-1 kl-type-caption">
-          {ASSET_PRIORITY_LABELS[asset.priority]}
-        </span>
+        <StatusBadge assetStatus={asset.status} />
+        <StatusBadge priority={asset.priority} />
       </div>
       <DataSourceBadge source={dataSource} />
 
@@ -298,16 +297,11 @@ export default function OpeningAssetDetailPage() {
         <SectionHeader title="สถานะการใช้งาน" />
         <Card className="flex flex-wrap gap-2 !p-3">
           {ASSET_STATUS_FLOW.map((s) => (
-            <span
+            <SegmentChip
               key={s}
-              className={`rounded-[var(--kl-radius-inner)] px-2.5 py-1.5 kl-type-caption ${
-                asset.status === s
-                  ? "bg-[var(--bi-lemon)]"
-                  : "bg-kl-surface text-kl-muted"
-              }`}
-            >
-              {ASSET_STATUS_LABELS[s]}
-            </span>
+              label={ASSET_STATUS_LABELS[s]}
+              active={asset.status === s}
+            />
           ))}
         </Card>
       </section>
@@ -478,7 +472,7 @@ export default function OpeningAssetDetailPage() {
           </div>
           <FormField label="วันที่แจ้งเสีย">
             <input
-              className="mt-1.5 w-full min-h-[2.75rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3"
+              className={KL_FIELD_CLASS}
               type="date"
               value={repairForm.reportedAt}
               onChange={(e) =>
@@ -488,7 +482,7 @@ export default function OpeningAssetDetailPage() {
           </FormField>
           <FormField label="อาการ">
             <textarea
-              className="mt-1.5 w-full min-h-[4rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3 py-2"
+              className={`${KL_FIELD_CLASS} min-h-[4rem] py-2`}
               value={repairForm.symptom}
               onChange={(e) =>
                 setRepairForm((f) => ({ ...f, symptom: e.target.value }))
@@ -497,7 +491,7 @@ export default function OpeningAssetDetailPage() {
           </FormField>
           <FormField label="ผู้รับซ่อม">
             <input
-              className="mt-1.5 w-full min-h-[2.75rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3"
+              className={KL_FIELD_CLASS}
               value={repairForm.repairer}
               onChange={(e) =>
                 setRepairForm((f) => ({ ...f, repairer: e.target.value }))
@@ -506,7 +500,7 @@ export default function OpeningAssetDetailPage() {
           </FormField>
           <FormField label="ค่าใช้จ่าย">
             <input
-              className="mt-1.5 w-full min-h-[2.75rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3"
+              className={KL_FIELD_CLASS}
               inputMode="decimal"
               value={repairForm.cost}
               onChange={(e) =>
@@ -516,7 +510,7 @@ export default function OpeningAssetDetailPage() {
           </FormField>
           <FormField label="วันที่กลับมาใช้งาน">
             <input
-              className="mt-1.5 w-full min-h-[2.75rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3"
+              className={KL_FIELD_CLASS}
               type="date"
               value={repairForm.returnedAt}
               onChange={(e) =>
@@ -526,7 +520,7 @@ export default function OpeningAssetDetailPage() {
           </FormField>
           <FormField label="ผลการซ่อม">
             <input
-              className="mt-1.5 w-full min-h-[2.75rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3"
+              className={KL_FIELD_CLASS}
               value={repairForm.result}
               onChange={(e) =>
                 setRepairForm((f) => ({ ...f, result: e.target.value }))
@@ -535,7 +529,7 @@ export default function OpeningAssetDetailPage() {
           </FormField>
           <FormField label="หมายเหตุ">
             <textarea
-              className="mt-1.5 w-full min-h-[3.5rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3 py-2"
+              className={`${KL_FIELD_CLASS} min-h-[3.5rem] py-2`}
               value={repairForm.note}
               onChange={(e) =>
                 setRepairForm((f) => ({ ...f, note: e.target.value }))
@@ -673,44 +667,17 @@ export default function OpeningAssetDetailPage() {
           เพิ่มประวัติซ่อม
         </Button>
 
-        {confirmArchive ? (
-          <Card className="space-y-3 !p-3.5">
-            <p className="kl-type-body">
-              เก็บรายการนี้? ไม่ลบจริง — ตั้ง is_archived
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="secondary"
-                fullWidth
-                disabled={saving}
-                onClick={() => setConfirmArchive(false)}
-              >
-                ยกเลิก
-              </Button>
-              <Button
-                fullWidth
-                disabled={saving}
-                onClick={() => {
-                  void archiveAsset(asset.id).then((ok) => {
-                    if (ok) window.location.href = "/opening/assets";
-                  });
-                }}
-              >
-                {saving ? "กำลังบันทึก..." : "ยืนยันเก็บ"}
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          <Button
-            variant="secondary"
-            fullWidth
-            className="min-h-[2.75rem]"
-            disabled={saving}
-            onClick={() => setConfirmArchive(true)}
-          >
-            เก็บรายการ (Archive)
-          </Button>
-        )}
+        <ArchiveConfirm
+          open={confirmArchive}
+          saving={saving}
+          onOpen={() => setConfirmArchive(true)}
+          onCancel={() => setConfirmArchive(false)}
+          onConfirm={() => {
+            void archiveAsset(asset.id).then((ok) => {
+              if (ok) window.location.href = "/opening/assets";
+            });
+          }}
+        />
       </section>
 
       <ButtonLink href="/opening/assets" fullWidth>

@@ -33,6 +33,8 @@ import { useWorkspace } from "./WorkspaceProvider";
 import { useAuth } from "../auth/AuthProvider";
 import { showInfoToast } from "../lib/biInfoToast";
 
+type MuteOpts = { silent?: boolean };
+
 type AssetContextValue = {
   assets: AssetItem[];
   decisionGroups: AssetDecisionGroup[];
@@ -71,6 +73,17 @@ type AssetContextValue = {
   ) => Promise<AssetItem | null>;
   setStatus: (id: string, status: AssetStatus) => Promise<void>;
   archiveAsset: (id: string) => Promise<boolean>;
+  unarchiveAsset: (id: string) => Promise<boolean>;
+  bulkSetStatus: (
+    ids: string[],
+    status: AssetStatus
+  ) => Promise<{ previous: Record<string, AssetStatus> } | null>;
+  bulkArchive: (ids: string[]) => Promise<boolean>;
+  bulkUnarchive: (ids: string[]) => Promise<boolean>;
+  /** Restore mixed previous statuses after bulk change (one reload, no spam toast) */
+  restoreStatuses: (
+    previous: Record<string, AssetStatus>
+  ) => Promise<boolean>;
   clearTrialData: () => boolean;
   resetToSeed: () => boolean;
   findSimilar: (input: {
@@ -205,7 +218,7 @@ export function AssetProvider({ children }: { children: ReactNode }) {
         );
         if (w) setWarning(w);
         await loadOnline();
-        showInfoToast("บันทึกอุปกรณ์แล้ว");
+        showInfoToast("✓ บันทึกแล้ว");
         return assetToUiItem(asset);
       });
     },
@@ -223,7 +236,7 @@ export function AssetProvider({ children }: { children: ReactNode }) {
         );
         if (w) setWarning(w);
         await loadOnline();
-        showInfoToast("อัปเดตแล้ว");
+        showInfoToast("✓ บันทึกแล้ว");
         return assetToUiItem(asset);
       });
     },
@@ -240,7 +253,7 @@ export function AssetProvider({ children }: { children: ReactNode }) {
           actor
         );
         await loadOnline();
-        showInfoToast("ทำสำเนาแล้ว");
+        showInfoToast("✓ ทำสำเนาแล้ว");
         return assetToUiItem(asset);
       });
     },
@@ -260,7 +273,7 @@ export function AssetProvider({ children }: { children: ReactNode }) {
           actor
         );
         await loadOnline();
-        showInfoToast("บันทึกการซื้อเพิ่มแล้ว");
+        showInfoToast("✓ บันทึกแล้ว");
         return assetToUiItem(asset);
       });
     },
@@ -280,7 +293,7 @@ export function AssetProvider({ children }: { children: ReactNode }) {
           actor
         );
         await loadOnline();
-        showInfoToast("บันทึกประวัติซ่อมแล้ว");
+        showInfoToast("✓ บันทึกแล้ว");
         return assetToUiItem(asset);
       });
     },
@@ -288,18 +301,110 @@ export function AssetProvider({ children }: { children: ReactNode }) {
   );
 
   const setStatus = useCallback(
-    async (id: string, status: AssetStatus) => {
-      await updateAsset(id, { status });
+    async (id: string, status: AssetStatus, opts?: MuteOpts) => {
+      await withSave(async () => {
+        const { warning: w } = await assetService.updateAsset(
+          workspaceId,
+          id,
+          { status },
+          actor
+        );
+        if (w) setWarning(w);
+        await loadOnline();
+        if (!opts?.silent) showInfoToast("✓ เปลี่ยนสถานะแล้ว");
+      });
     },
-    [updateAsset]
+    [withSave, workspaceId, actor, loadOnline]
   );
 
   const archiveAsset = useCallback(
-    async (id: string) => {
+    async (id: string, opts?: MuteOpts) => {
       const result = await withSave(async () => {
         await assetService.archiveAsset(workspaceId, id, actor);
         await loadOnline();
-        showInfoToast("เก็บรายการแล้ว");
+        if (!opts?.silent) showInfoToast("✓ เก็บรายการแล้ว");
+        return true;
+      });
+      return Boolean(result);
+    },
+    [withSave, workspaceId, actor, loadOnline]
+  );
+
+  const unarchiveAsset = useCallback(
+    async (id: string, opts?: MuteOpts) => {
+      const result = await withSave(async () => {
+        await assetService.unarchiveAsset(workspaceId, id, actor);
+        await loadOnline();
+        if (!opts?.silent) showInfoToast("✓ กู้คืนแล้ว");
+        return true;
+      });
+      return Boolean(result);
+    },
+    [withSave, workspaceId, actor, loadOnline]
+  );
+
+  const bulkSetStatus = useCallback(
+    async (ids: string[], status: AssetStatus) => {
+      if (ids.length === 0) return null;
+      return withSave(async () => {
+        const previous: Record<string, AssetStatus> = {};
+        for (const id of ids) {
+          const row = assets.find((a) => a.id === id);
+          if (row) previous[id] = row.status;
+          const { warning: w } = await assetService.updateAsset(
+            workspaceId,
+            id,
+            { status },
+            actor
+          );
+          if (w) setWarning(w);
+        }
+        await loadOnline();
+        return { previous };
+      });
+    },
+    [withSave, workspaceId, actor, loadOnline, assets]
+  );
+
+  const bulkArchive = useCallback(
+    async (ids: string[]) => {
+      if (ids.length === 0) return false;
+      const result = await withSave(async () => {
+        for (const id of ids) {
+          await assetService.archiveAsset(workspaceId, id, actor);
+        }
+        await loadOnline();
+        return true;
+      });
+      return Boolean(result);
+    },
+    [withSave, workspaceId, actor, loadOnline]
+  );
+
+  const bulkUnarchive = useCallback(
+    async (ids: string[]) => {
+      if (ids.length === 0) return false;
+      const result = await withSave(async () => {
+        for (const id of ids) {
+          await assetService.unarchiveAsset(workspaceId, id, actor);
+        }
+        await loadOnline();
+        return true;
+      });
+      return Boolean(result);
+    },
+    [withSave, workspaceId, actor, loadOnline]
+  );
+
+  const restoreStatuses = useCallback(
+    async (previous: Record<string, AssetStatus>) => {
+      const entries = Object.entries(previous);
+      if (entries.length === 0) return false;
+      const result = await withSave(async () => {
+        for (const [id, status] of entries) {
+          await assetService.updateAsset(workspaceId, id, { status }, actor);
+        }
+        await loadOnline();
         return true;
       });
       return Boolean(result);
@@ -332,6 +437,11 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       addRepairRecord,
       setStatus,
       archiveAsset,
+      unarchiveAsset,
+      bulkSetStatus,
+      bulkArchive,
+      bulkUnarchive,
+      restoreStatuses,
       clearTrialData: () => {
         setError("โหมดออนไลน์ — ใช้ Archive แทนการล้างทั้งหมด");
         return false;
@@ -369,6 +479,11 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       addRepairRecord,
       setStatus,
       archiveAsset,
+      unarchiveAsset,
+      bulkSetStatus,
+      bulkArchive,
+      bulkUnarchive,
+      restoreStatuses,
       loadOnline,
     ]
   );

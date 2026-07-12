@@ -15,6 +15,14 @@ import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import EmptyState from "../../../components/ui/EmptyState";
 import SearchBar from "../../../components/ui/SearchBar";
+import ListSortSelect from "../../../components/bi/ListSortSelect";
+import SummaryMetric from "../../../components/bi/SummaryMetric";
+import SegmentChip from "../../../components/ui/SegmentChip";
+import {
+  matchesAssetSearch,
+  sortAssets,
+  type ListSortKey,
+} from "../lib/listPolish";
 import {
   KL_ICON_CLASS,
   KL_ICON_STROKE,
@@ -76,6 +84,7 @@ function OpeningAssetsInner() {
   const [status, setStatus] = useState<FilterAll | AssetStatus>("all");
   const [priority, setPriority] = useState<FilterAll | AssetPriority>("all");
   const [ownFilter, setOwnFilter] = useState<UxFilter>("all");
+  const [sort, setSort] = useState<ListSortKey>("name");
 
   function setViewPersist(next: ViewMode) {
     setView(next);
@@ -106,8 +115,7 @@ function OpeningAssetsInner() {
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return displayAssets.filter((item) => {
+    const rows = displayAssets.filter((item) => {
       if (category !== "all" && item.category !== category) return false;
       if (status !== "all" && item.status !== status) return false;
       if (priority !== "all" && item.priority !== priority) return false;
@@ -118,12 +126,10 @@ function OpeningAssetsInner() {
         return false;
       if (ownFilter === "received" && item.status !== "received") return false;
       if (ownFilter === "no_price" && !assetHasNoPrice(item)) return false;
-      if (!q) return true;
-      const hay =
-        `${item.name} ${item.brand} ${item.model} ${item.supplier} ${item.category}`.toLowerCase();
-      return hay.includes(q);
+      return matchesAssetSearch(item, query);
     });
-  }, [displayAssets, query, category, status, priority, ownFilter]);
+    return sortAssets(rows, sort);
+  }, [displayAssets, query, category, status, priority, ownFilter, sort]);
 
   const focus = filtered.find(
     (a) =>
@@ -160,8 +166,10 @@ function OpeningAssetsInner() {
         error={error}
         empty={ready && !loading && !error && online && assets.length === 0}
         hasCachedData={false}
-        emptyTitle="ยังไม่มีทรัพย์สิน"
-        emptyHint="เพิ่มรายการใหม่ — ข้อมูลจะบันทึกใน Supabase"
+        emptyTitle="ยังไม่มีรายการ"
+        emptyHint="เริ่มเพิ่มรายการแรกได้เลย"
+        emptyActionLabel="+ เพิ่มรายการ"
+        emptyActionHref="/opening/assets/new"
         sourceHint={sourceHint}
         skeletonRows={5}
         onRetry={() => void retry()}
@@ -181,10 +189,10 @@ function OpeningAssetsInner() {
         <>
           <SummaryCard title="สรุปทรัพย์สิน">
             <div className="grid grid-cols-2 gap-2">
-              <Metric label="รายการทั้งหมด" value={`${summary.total}`} />
-              <Metric label="มีแล้ว" value={`${summary.owned}`} />
-              <Metric label="ต้องจัดหา" value={`${summary.needBuy}`} />
-              <Metric label="ยังไม่มีราคา" value={`${summary.noPrice}`} />
+              <SummaryMetric label="รายการทั้งหมด" value={`${summary.total}`} />
+              <SummaryMetric label="มีแล้ว" value={`${summary.owned}`} />
+              <SummaryMetric label="ต้องจัดหา" value={`${summary.needBuy}`} />
+              <SummaryMetric label="ยังไม่มีราคา" value={`${summary.noPrice}`} />
             </div>
             {summary.noPrice > 0 ? (
               <p className="kl-type-helper">
@@ -251,10 +259,12 @@ function OpeningAssetsInner() {
 
           <section className="space-y-3">
             <SearchBar
-              placeholder="ชื่อ ยี่ห้อ รุ่น Supplier หมวด..."
+              placeholder="ชื่อ หมายเหตุ Supplier..."
               value={query}
               onChange={setQuery}
             />
+
+            <ListSortSelect value={sort} onChange={setSort} />
 
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
               {(
@@ -267,18 +277,12 @@ function OpeningAssetsInner() {
                   ["no_price", "ไม่มีราคา"],
                 ] as const
               ).map(([value, label]) => (
-                <button
+                <SegmentChip
                   key={value}
-                  type="button"
+                  label={label}
+                  active={ownFilter === value}
                   onClick={() => setOwnFilter(value)}
-                  className={`kl-segment-btn shrink-0 whitespace-nowrap kl-pressable ${
-                    ownFilter === value
-                      ? "bg-[var(--bi-lemon)] text-[var(--bi-text-primary)]"
-                      : "bg-kl-surface text-kl-muted"
-                  }`}
-                >
-                  {label}
-                </button>
+                />
               ))}
             </div>
 
@@ -344,14 +348,14 @@ function OpeningAssetsInner() {
 
             {displayAssets.length === 0 ? (
               <EmptyState
-                title="ยังไม่มีรายการอุปกรณ์"
-                hint="เริ่มเพิ่มอุปกรณ์ — ข้อมูลจะบันทึกใน Supabase"
-                actionLabel="เพิ่มอุปกรณ์"
+                title="ยังไม่มีรายการ"
+                hint="เริ่มเพิ่มรายการแรกได้เลย"
+                actionLabel="+ เพิ่มรายการ"
                 actionHref="/opening/assets/new"
               />
             ) : filtered.length === 0 ? (
               <EmptyState
-                title="ค้นหาไม่พบ"
+                title="ไม่พบรายการ"
                 hint={
                   hasActiveFilter
                     ? "ลองล้างคำค้นหรือตัวกรอง"
@@ -411,17 +415,6 @@ export default function OpeningAssetsPage() {
     >
       <OpeningAssetsInner />
     </Suspense>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-2 text-center">
-      <p className="kl-type-caption">{label}</p>
-      <p className="kl-type-metric mt-1 text-[length:var(--kl-type-body-size)]">
-        {value}
-      </p>
-    </div>
   );
 }
 

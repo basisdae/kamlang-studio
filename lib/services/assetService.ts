@@ -159,6 +159,7 @@ export class AssetService {
       power: existing.specifications.power,
       specs: existing.specifications.specs,
       requiredForOpening: existing.specifications.requiredForOpening,
+      specifications: existing.specifications,
       ...patch,
     });
 
@@ -379,6 +380,22 @@ export class AssetService {
       "archive",
       id,
       `${actorName}เก็บรายการ`,
+      actorName
+    );
+  }
+
+  async unarchiveAsset(
+    workspaceId: string,
+    id: string,
+    actorName = "ผู้ใช้งาน"
+  ): Promise<void> {
+    const { assets } = getBiRepositories();
+    await assets.unarchive(id, workspaceId);
+    await logSafe(
+      workspaceId,
+      "unarchive",
+      id,
+      `${actorName}กู้คืนรายการ`,
       actorName
     );
   }

@@ -10,9 +10,14 @@ import NextStepCard from "../../../components/bi/NextStepCard";
 import SectionHeader from "../../../components/bi/SectionHeader";
 import SummaryCard from "../../../components/bi/SummaryCard";
 import EmptyState from "../../../components/ui/EmptyState";
+import SearchBar from "../../../components/ui/SearchBar";
 import ButtonLink from "../../../components/ui/ButtonLink";
 import Card from "../../../components/ui/Card";
+import ListSortSelect from "../../../components/bi/ListSortSelect";
+import SummaryMetric from "../../../components/bi/SummaryMetric";
+import SegmentChip from "../../../components/ui/SegmentChip";
 import { getDecisionGroupBudgetViews } from "../../../data/seed/assetBudget";
+import { ASSET_STATUS_FLOW, type AssetItem } from "../../../data/seed/tangtao";
 import {
   formatBaht,
   getBudgetMoneyNeeded,
@@ -33,6 +38,15 @@ import {
 } from "../../../lib/services/inventoryRollup";
 import OpeningSummaryCard from "../../../components/bi/OpeningSummaryCard";
 import { buildOpeningSummary } from "../lib/openingDomain";
+import {
+  matchesTextSearch,
+  type ListSortKey,
+} from "../lib/listPolish";
+import { buildSmartBudget } from "../lib/smartBudget";
+import SmartBudgetBreakdown from "./components/SmartBudgetBreakdown";
+import SmartBudgetExportButton from "./components/SmartBudgetExportButton";
+import SmartBudgetVarianceCard from "./components/SmartBudgetVarianceCard";
+import SmartBudgetWaterfall from "./components/SmartBudgetWaterfall";
 
 type ContentFilter = "all" | BudgetStatus;
 type DrillTab = "all" | "owned" | "need" | "no_price";
@@ -64,9 +78,22 @@ export default function OpeningBudgetPage() {
   } = useBudget();
   const [filter, setFilter] = useState<ContentFilter>("all");
   const [drill, setDrill] = useState<DrillTab>("all");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<ListSortKey>("name");
 
   const openingSummary = useMemo(() => buildOpeningSummary(assets), [assets]);
+  const smartBudget = useMemo(() => buildSmartBudget(assets), [assets]);
   const inventory = openingSummary.buckets;
+  const assetsById = useMemo(() => {
+    const map = new Map<string, AssetItem>();
+    for (const a of assets) map.set(a.id, a);
+    return map;
+  }, [assets]);
+
+  const statusOrder = useMemo(
+    () => new Map(ASSET_STATUS_FLOW.map((s, i) => [s, i] as const)),
+    []
+  );
 
   const showSkeleton = (loading || assetsLoading) && !ready && !assetsReady;
   const blockOnError =
@@ -164,11 +191,48 @@ export default function OpeningBudgetPage() {
   }, [inventory]);
 
   const visibleDrill = useMemo(() => {
-    if (drill === "owned") return inventory.owned;
-    if (drill === "need") return inventory.need;
-    if (drill === "no_price") return inventory.noPrice;
-    return allLines;
-  }, [allLines, drill, inventory]);
+    let rows: InventoryLine[];
+    if (drill === "owned") rows = inventory.owned;
+    else if (drill === "need") rows = inventory.need;
+    else if (drill === "no_price") rows = inventory.noPrice;
+    else rows = allLines;
+
+    rows = rows.filter((row) => {
+      const asset = assetsById.get(row.id);
+      return matchesTextSearch(
+        [row.name, row.category, asset?.note, asset?.supplier],
+        query
+      );
+    });
+
+    const next = [...rows];
+    next.sort((a, b) => {
+      switch (sort) {
+        case "status": {
+          const sa = statusOrder.get(a.status) ?? 99;
+          const sb = statusOrder.get(b.status) ?? 99;
+          if (sa !== sb) return sa - sb;
+          return a.name.localeCompare(b.name, "th");
+        }
+        case "price": {
+          const pa = a.lineTotal ?? -1;
+          const pb = b.lineTotal ?? -1;
+          if (pa !== pb) return pb - pa;
+          return a.name.localeCompare(b.name, "th");
+        }
+        case "created": {
+          const ca = assetsById.get(a.id)?.createdAt ?? "";
+          const cb = assetsById.get(b.id)?.createdAt ?? "";
+          if (ca !== cb) return cb.localeCompare(ca);
+          return a.name.localeCompare(b.name, "th");
+        }
+        case "name":
+        default:
+          return a.name.localeCompare(b.name, "th");
+      }
+    });
+    return next;
+  }, [allLines, drill, inventory, query, sort, assetsById, statusOrder]);
 
   return (
     <AppShell title="" hidePageHeader compact backHref="/opening">
@@ -178,7 +242,7 @@ export default function OpeningBudgetPage() {
         subtitle="งบประมาณ"
       />
       <p className="kl-type-helper -mt-1">
-        ผลลัพธ์จากรายการเตรียมเปิดร้าน · ไม่ใช่แผนเงินแยกชุด
+        ผลลัพธ์จากรายการเตรียมเปิดร้าน · ไม่ใช้เงินลงทุนเป็นฐาน
       </p>
 
       <BiDataStatus
@@ -191,7 +255,9 @@ export default function OpeningBudgetPage() {
         empty={showEmpty}
         hasCachedData={false}
         emptyTitle="ยังไม่มีรายการ"
-        emptyHint="ยังไม่มีรายการใน bi_assets"
+        emptyHint="เริ่มเพิ่มรายการแรกได้เลย"
+        emptyActionLabel="+ เพิ่มรายการ"
+        emptyActionHref="/opening/assets/new"
         sourceHint={sourceHint}
         skeletonRows={4}
         onRetry={() => void retry()}
@@ -201,23 +267,35 @@ export default function OpeningBudgetPage() {
         <>
           <OpeningSummaryCard summary={openingSummary} variant="full" />
 
+          <SmartBudgetWaterfall report={smartBudget} />
+          <SmartBudgetVarianceCard report={smartBudget} />
+          <SmartBudgetBreakdown buckets={smartBudget.buckets} />
+          <SmartBudgetExportButton
+            report={smartBudget}
+            workspaceName={workspaceName}
+          />
+
           <SummaryCard title="งบจากรายการจริง">
             <div className="grid grid-cols-2 gap-2">
-              <Metric
+              <SummaryMetric
                 label="มูลค่ารวมทั้งหมด"
                 value={formatBaht(inventory.inventoryTotal)}
+                align="start"
               />
-              <Metric
+              <SummaryMetric
                 label="มูลค่าของที่มีแล้ว"
                 value={formatBaht(inventory.inventoryOwned)}
+                align="start"
               />
-              <Metric
+              <SummaryMetric
                 label="งบที่ยังต้องจัดหา"
                 value={formatBaht(inventory.inventoryNeed)}
+                align="start"
               />
-              <Metric
-                label="ซื้อจริง"
-                value={formatBaht(inventory.inventoryActualSpend)}
+              <SummaryMetric
+                label="ประเมินรวม (Checklist)"
+                value={formatBaht(smartBudget.estimatedTotal)}
+                align="start"
               />
             </div>
             {inventory.countNoPrice > 0 ? (
@@ -235,6 +313,12 @@ export default function OpeningBudgetPage() {
 
           <section className="space-y-3">
             <SectionHeader title="ดูรายละเอียดงบ" />
+            <SearchBar
+              placeholder="ชื่อ หมายเหตุ Supplier..."
+              value={query}
+              onChange={setQuery}
+            />
+            <ListSortSelect value={sort} onChange={setSort} />
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
               {(
                 [
@@ -244,7 +328,7 @@ export default function OpeningBudgetPage() {
                   ["no_price", `ไม่มีราคา (${inventory.countNoPrice})`],
                 ] as const
               ).map(([key, label]) => (
-                <FilterChip
+                <SegmentChip
                   key={key}
                   active={drill === key}
                   label={label}
@@ -252,8 +336,20 @@ export default function OpeningBudgetPage() {
                 />
               ))}
             </div>
-            {visibleDrill.length === 0 ? (
-              <EmptyState title="ไม่มีรายการในกลุ่มนี้" hint="ลองเลือกกลุ่มอื่น" />
+            {assets.length === 0 ? (
+              <EmptyState
+                title="ยังไม่มีรายการ"
+                hint="เริ่มเพิ่มรายการแรกได้เลย"
+                actionLabel="+ เพิ่มรายการ"
+                actionHref="/opening/assets/new"
+              />
+            ) : visibleDrill.length === 0 ? (
+              <EmptyState
+                title="ไม่พบรายการ"
+                hint="ลองเปลี่ยนคำค้นหรือกลุ่ม"
+                actionLabel="+ เพิ่มรายการ"
+                actionHref="/opening/assets/new"
+              />
             ) : (
               <Card className="!overflow-hidden !p-0">
                 {visibleDrill.map((row) => (
@@ -278,20 +374,17 @@ export default function OpeningBudgetPage() {
                   นับ Must Have ที่ได้รับแล้ว / ติดตั้งแล้ว
                 </p>
                 <div className="mt-3 grid grid-cols-3 gap-2">
-                  <PriorityCount
+                  <SummaryMetric
                     label="Must"
-                    ready={breakdown.must.ready}
-                    total={breakdown.must.total}
+                    value={`${breakdown.must.ready}/${breakdown.must.total}`}
                   />
-                  <PriorityCount
+                  <SummaryMetric
                     label="Should"
-                    ready={breakdown.should.ready}
-                    total={breakdown.should.total}
+                    value={`${breakdown.should.ready}/${breakdown.should.total}`}
                   />
-                  <PriorityCount
+                  <SummaryMetric
                     label="Nice"
-                    ready={breakdown.nice.ready}
-                    total={breakdown.nice.total}
+                    value={`${breakdown.nice.ready}/${breakdown.nice.total}`}
                   />
                 </div>
               </div>
@@ -337,21 +430,25 @@ export default function OpeningBudgetPage() {
           {assetsReady ? (
             <SummaryCard title="งบประเมิน · ใช้จริง · ช่วงตัดสินใจ">
               <div className="grid grid-cols-2 gap-2">
-                <Metric
+                <SummaryMetric
                   label="งบประเมินรวม (ต่ำสุด)"
                   value={formatBaht(rangeMin)}
+                  align="start"
                 />
-                <Metric
+                <SummaryMetric
                   label="งบประเมินรวม (สูงสุด)"
                   value={formatBaht(rangeMax)}
+                  align="start"
                 />
-                <Metric
+                <SummaryMetric
                   label="ยังไม่แน่นอน"
                   value={formatBaht(uncertain)}
+                  align="start"
                 />
-                <Metric
+                <SummaryMetric
                   label="Must Have ค้างซื้อ"
                   value={formatBaht(moneyMust)}
+                  align="start"
                 />
               </div>
               <div className="rounded-[var(--kl-radius-inner)] bg-kl-surface p-3">
@@ -450,13 +547,13 @@ export default function OpeningBudgetPage() {
             </p>
 
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-              <FilterChip
+              <SegmentChip
                 active={filter === "all"}
                 label="ทั้งหมด"
                 onClick={() => setFilter("all")}
               />
               {STATUS_WORKFLOW_ORDER.map((status) => (
-                <FilterChip
+                <SegmentChip
                   key={status}
                   active={filter === status}
                   label={STATUS_LABELS[status]}
@@ -485,60 +582,6 @@ export default function OpeningBudgetPage() {
         กลับแผนเปิดร้าน
       </ButtonLink>
     </AppShell>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-2">
-      <p className="kl-type-caption">{label}</p>
-      <p className="kl-type-metric mt-1 text-[length:var(--kl-type-body-size)]">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function PriorityCount({
-  label,
-  ready,
-  total,
-}: {
-  label: string;
-  ready: number;
-  total: number;
-}) {
-  return (
-    <div className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-2 text-center">
-      <p className="kl-type-caption">{label}</p>
-      <p className="kl-type-metric mt-1 text-[length:var(--kl-type-body-size)]">
-        {ready}/{total}
-      </p>
-    </div>
-  );
-}
-
-function FilterChip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`kl-segment-btn shrink-0 whitespace-nowrap kl-pressable ${
-        active
-          ? "bg-[var(--bi-lemon)] text-[var(--bi-text-primary)]"
-          : "bg-kl-surface text-kl-muted"
-      }`}
-    >
-      {label}
-    </button>
   );
 }
 

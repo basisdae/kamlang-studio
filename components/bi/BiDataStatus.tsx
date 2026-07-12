@@ -2,6 +2,7 @@
 
 import Card from "../ui/Card";
 import Button from "../ui/Button";
+import EmptyState from "../ui/EmptyState";
 import BiListSkeleton from "./BiListSkeleton";
 
 export type BiDataStatusKind =
@@ -61,6 +62,8 @@ const BADGE_LABEL: Record<BiDataStatusKind, string> = {
 type Props = BiDataStatusInput & {
   emptyTitle?: string;
   emptyHint?: string;
+  emptyActionLabel?: string;
+  emptyActionHref?: string;
   /** Shown under the badge — short source line */
   sourceHint?: string;
   onRetry?: () => void;
@@ -77,8 +80,10 @@ type Props = BiDataStatusInput & {
  * Never shows "Supabase · Online" when the page query failed.
  */
 export default function BiDataStatus({
-  emptyTitle = "ยังไม่มีข้อมูล",
+  emptyTitle = "ยังไม่มีรายการ",
   emptyHint,
+  emptyActionLabel,
+  emptyActionHref,
   sourceHint,
   onRetry,
   skeleton = true,
@@ -185,12 +190,12 @@ export default function BiDataStatus({
       ) : null}
 
       {status === "empty" ? (
-        <Card className="!p-4">
-          <p className="kl-type-card-title">{emptyTitle}</p>
-          {emptyHint ? (
-            <p className="kl-type-helper mt-1">{emptyHint}</p>
-          ) : null}
-        </Card>
+        <EmptyState
+          title={emptyTitle}
+          hint={emptyHint ?? "เริ่มเพิ่มรายการแรกได้เลย"}
+          actionLabel={emptyActionLabel}
+          actionHref={emptyActionHref}
+        />
       ) : null}
     </div>
   );

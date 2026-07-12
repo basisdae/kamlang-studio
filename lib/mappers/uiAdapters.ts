@@ -2,6 +2,7 @@ import type { AssetItem, AssetDecisionGroup as UiDecisionGroup, AssetPurchaseRec
 import type { Asset, AssetDecisionGroup } from "../types/asset";
 import type { BudgetItem as DomainBudget } from "../types/budget";
 import type { BudgetItem as UiBudget } from "../../data/seed/tangtao";
+import { parseProcurementMeta } from "../types/procurement";
 
 export function assetToUiItem(asset: Asset): AssetItem {
   const purchases: UiPurchase[] = asset.purchaseHistory.map((p) => ({
@@ -59,6 +60,8 @@ export function assetToUiItem(asset: Asset): AssetItem {
     imageUrl: null,
     documentIds: [],
     decisionGroupId: asset.decisionGroupId,
+    createdAt: asset.createdAt,
+    procurement: parseProcurementMeta(asset.specifications.procurement),
     purchaseHistory: purchases,
     repairHistory: repairs,
   };

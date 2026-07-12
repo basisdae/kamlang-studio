@@ -108,9 +108,14 @@ Sidebar uses **แผนเปิดร้าน** — never bare “Opening”.
 
 ## Components (BI)
 
-`PageHeader`, `SummaryCard`, `MetricCard`, `ProgressCard`, `CategoryCard`, `BudgetItemCard`, `StatusChip`, `PriorityBadge`, `SectionHeader`, `DataSourceBadge`
+`PageHeader`, `SummaryCard`, `SummaryMetric`, `MetricCard`, `ProgressCard`, `CategoryCard`, `BudgetItemCard`, `StatusChip`, `StatusBadge`, `PriorityBadge`, `SectionHeader`, `DataSourceBadge`, `ArchiveConfirm`
 
-Shared from Kamlang: `AppShell`, `Card`, `Button`, `EmptyState`, `SearchBar`, `Badge`, `StatCell`
+Shared UI lock: `Button`, `ButtonLink`, `IconButton`, `Card`, `EmptyState`, `SearchBar`, `Badge`, `SegmentChip`, `Dialog`, `Skeleton`, `Loading`, `StatCell`, `FormField`
+
+Field class: `KL_FIELD_CLASS` from `components/ui/designLock.ts`  
+Icons: `lucide-react` + `KL_ICON_*` / `KL_ICON_STROKE` from `navConfig`
+
+See also: `components/ui/designLock.ts` (Opening OS component rules).
 
 ## Sample vs Real data
 

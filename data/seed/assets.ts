@@ -4,6 +4,8 @@
  * Ready for future Supabase mapping (same field names).
  */
 
+import type { ProcurementMeta } from "../../lib/types/procurement";
+
 export type AssetPriority = "must" | "should" | "nice";
 
 /** Full lifecycle status for Asset Profile */
@@ -89,6 +91,10 @@ export type AssetItem = {
   documentIds: string[];
   /** Optional decision group (e.g. POS pick-one) */
   decisionGroupId: string | null;
+  /** From bi_assets.created_at when loaded online */
+  createdAt?: string;
+  /** Procurement meta in specifications.procurement */
+  procurement?: ProcurementMeta;
   purchaseHistory: AssetPurchaseRecord[];
   repairHistory: AssetRepairRecord[];
 };

@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import FormField from "../../../../components/ui/FormField";
 import Button from "../../../../components/ui/Button";
 import Card from "../../../../components/ui/Card";
 import SectionHeader from "../../../../components/bi/SectionHeader";
+import { KL_FIELD_CLASS } from "../../../../components/ui/designLock";
 import {
   ASSET_CATEGORIES,
   ASSET_CHANNEL_LABELS,
@@ -47,8 +48,7 @@ const CHANNEL_OPTIONS: AssetPurchaseChannel[] = [
   "",
 ];
 
-const inputClass =
-  "mt-1.5 w-full min-h-[2.75rem] rounded-[var(--kl-radius-inner)] border border-[var(--kl-border)] bg-kl-card px-3 text-[length:var(--kl-type-body-size)] outline-none";
+const inputClass = KL_FIELD_CLASS;
 
 export function emptyAssetForm(): AssetFormValues {
   return {
@@ -148,6 +148,7 @@ export default function AssetForm({
   const [values, setValues] = useState<AssetFormValues>(initial);
   const [error, setError] = useState("");
   const [priceConfirmOpen, setPriceConfirmOpen] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const lockCatalog = mode === "buy" || mode === "duplicate";
   const isBuy = mode === "buy";
@@ -156,6 +157,27 @@ export default function AssetForm({
     () => Array.from(new Set(SUPPLIERS.map((s) => s.name))),
     []
   );
+
+  useEffect(() => {
+    if (!lockCatalog) {
+      nameRef.current?.focus();
+    }
+  }, [lockCatalog]);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      if (priceConfirmOpen) {
+        setPriceConfirmOpen(false);
+        setError("");
+        return;
+      }
+      onCancel();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onCancel, priceConfirmOpen]);
 
   function setField<K extends keyof AssetFormValues>(
     key: K,
@@ -244,13 +266,16 @@ export default function AssetForm({
       <section className="space-y-3">
         <SectionHeader title="1. ข้อมูลหลัก" />
         <Card className="space-y-4">
-          <FormField label="ชื่ออุปกรณ์ *">
+          <FormField label="ชื่ออุปกรณ์ *" htmlFor="asset-name">
             <input
+              id="asset-name"
+              ref={nameRef}
               className={inputClass}
               value={values.name}
               onChange={(e) => setField("name", e.target.value)}
               disabled={lockCatalog}
               required
+              autoComplete="off"
             />
           </FormField>
 

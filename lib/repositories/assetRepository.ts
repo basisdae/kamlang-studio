@@ -23,6 +23,8 @@ export interface AssetRepository {
     input: AssetWriteInput
   ): Promise<Asset>;
   archive(id: string, workspaceId: string): Promise<void>;
+  /** Restore archived row — uses existing is_archived column (no schema change) */
+  unarchive(id: string, workspaceId: string): Promise<void>;
   updateStatus(
     id: string,
     workspaceId: string,

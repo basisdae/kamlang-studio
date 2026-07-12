@@ -1,6 +1,7 @@
 "use client";
 
 import SummaryCard from "./SummaryCard";
+import SummaryMetric from "./SummaryMetric";
 import { formatBaht } from "../../app/opening/sampleData";
 import type { OpeningSummary } from "../../app/opening/lib/openingDomain";
 
@@ -23,9 +24,12 @@ export default function OpeningSummaryCard({
   return (
     <SummaryCard title={title}>
       <div className="grid grid-cols-3 gap-2">
-        <Metric label="พร้อมแล้ว" value={`${summary.readyPercent}%`} />
-        <Metric label="เหลืออีก" value={`${summary.remainingCount}`} />
-        <Metric label="ต้องใช้งบอีก" value={formatBaht(summary.moneyNeeded)} />
+        <SummaryMetric label="พร้อมแล้ว" value={`${summary.readyPercent}%`} />
+        <SummaryMetric label="เหลืออีก" value={`${summary.remainingCount}`} />
+        <SummaryMetric
+          label="ต้องใช้งบอีก"
+          value={formatBaht(summary.moneyNeeded)}
+        />
       </div>
       <div className="kl-progress-track mt-3">
         <div
@@ -41,29 +45,24 @@ export default function OpeningSummaryCard({
       </p>
       {variant === "full" ? (
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Metric label="มูลค่ารวม" value={formatBaht(summary.inventoryTotal)} />
-          <Metric label="มีแล้ว" value={formatBaht(summary.inventoryOwned)} />
-          <Metric
+          <SummaryMetric
+            label="มูลค่ารวม"
+            value={formatBaht(summary.inventoryTotal)}
+          />
+          <SummaryMetric
+            label="มีแล้ว"
+            value={formatBaht(summary.inventoryOwned)}
+          />
+          <SummaryMetric
             label="ยังต้องจัดหา"
             value={formatBaht(summary.moneyNeeded)}
           />
-          <Metric
+          <SummaryMetric
             label="ซื้อจริง"
             value={formatBaht(summary.inventoryActualSpend)}
           />
         </div>
       ) : null}
     </SummaryCard>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-2 text-center">
-      <p className="kl-type-caption">{label}</p>
-      <p className="kl-type-metric mt-1 text-[length:var(--kl-type-body-size)] break-all">
-        {value}
-      </p>
-    </div>
   );
 }

@@ -298,6 +298,13 @@ export function uiAssetToWriteInput(
 ): AssetWriteInput {
   const warranty = asString(item.warranty);
   const warrantyMatch = warranty.match(/(\d+)/);
+  const prevSpecs =
+    item.specifications && typeof item.specifications === "object"
+      ? { ...(item.specifications as Record<string, unknown>) }
+      : {};
+  if (item.procurement !== undefined) {
+    prevSpecs.procurement = item.procurement;
+  }
   return {
     name: asString(item.name),
     category: asString(item.category),
@@ -320,14 +327,17 @@ export function uiAssetToWriteInput(
       | string
       | null,
     specifications: {
-      size: asString(item.size),
-      color: asString(item.color),
-      material: asString(item.material),
-      power: asString(item.power),
-      specs: asString(item.specs),
+      ...prevSpecs,
+      size: asString(item.size ?? prevSpecs.size),
+      color: asString(item.color ?? prevSpecs.color),
+      material: asString(item.material ?? prevSpecs.material),
+      power: asString(item.power ?? prevSpecs.power),
+      specs: asString(item.specs ?? prevSpecs.specs),
       requiredForOpening:
         item.requiredForOpening === undefined
-          ? true
+          ? prevSpecs.requiredForOpening === undefined
+            ? true
+            : Boolean(prevSpecs.requiredForOpening)
           : Boolean(item.requiredForOpening),
     },
     notes: asString(item.notes ?? item.note),

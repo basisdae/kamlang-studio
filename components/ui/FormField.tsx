@@ -5,6 +5,7 @@ type Props = {
   error?: string;
   children: ReactNode;
   className?: string;
+  htmlFor?: string;
 };
 
 export default function FormField({
@@ -12,13 +13,18 @@ export default function FormField({
   error,
   children,
   className = "",
+  htmlFor,
 }: Props) {
   return (
     <div className={className}>
-      <label className="kl-type-label">{label}</label>
+      <label className="kl-type-label" htmlFor={htmlFor}>
+        {label}
+      </label>
       {children}
       {error ? (
-        <div className="kl-type-caption mt-1 text-kl-danger-text">{error}</div>
+        <div className="kl-type-caption mt-1 text-kl-danger-text" role="alert">
+          {error}
+        </div>
       ) : null}
     </div>
   );

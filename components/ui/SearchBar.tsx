@@ -14,12 +14,15 @@ export default function SearchBar({
 }: SearchBarProps) {
   return (
     <div className="kl-search">
-      <Search className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
+      <Search className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} aria-hidden />
       <input
-        className="w-full bg-transparent text-[length:var(--kl-text-body)] text-kl-brown outline-none placeholder:text-kl-muted"
+        className="w-full min-w-0 bg-transparent text-[length:var(--kl-text-body)] text-kl-brown outline-none placeholder:text-kl-muted"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
+        aria-label={placeholder}
+        type="search"
+        enterKeyHint="search"
       />
     </div>
   );

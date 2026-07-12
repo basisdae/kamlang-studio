@@ -260,6 +260,49 @@ export function nextOpeningFocus(assets: AssetItem[]): {
   };
 }
 
+/**
+ * Hub checklist preview — up to `limit` items that still need attention.
+ * Priority: missing price → must remaining → other remaining.
+ */
+export function previewChecklistItems(
+  assets: AssetItem[],
+  limit = 5
+): AssetItem[] {
+  const remaining = assets.filter((a) => isItemRemaining(a.status));
+  const scored = remaining.map((a) => {
+    let score = 0;
+    if (assetHasNoPrice(a)) score += 100;
+    if (a.priority === "must") score += 50;
+    else if (a.priority === "should") score += 25;
+    if (isAssetPlannedSpend(a.status)) score += 10;
+    return { a, score };
+  });
+  scored.sort((x, y) => {
+    if (y.score !== x.score) return y.score - x.score;
+    return x.a.name.localeCompare(y.a.name, "th");
+  });
+  return scored.slice(0, limit).map((s) => s.a);
+}
+
+/**
+ * Default category for Quick Add on a checklist topic.
+ * Must match assetsForTopic filters (no schema change).
+ */
+export function defaultCategoryForTopic(topicId: OpeningTopicId): string {
+  switch (topicId) {
+    case "ingredients":
+      return "ซอสและเครื่องปรุง";
+    case "packaging":
+      return "บรรจุภัณฑ์";
+    case "equipment":
+      return "ของใช้ในครัว";
+    case "suppliers":
+      return "อื่นๆ";
+    default:
+      return "อื่นๆ";
+  }
+}
+
 export type StatusFilter = "all" | OpeningUxStatus;
 
 export function filterByUxStatus(

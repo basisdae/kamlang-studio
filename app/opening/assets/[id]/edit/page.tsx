@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import AppShell from "../../../../../components/layout/AppShell";
+import ArchiveConfirm from "../../../../../components/bi/ArchiveConfirm";
 import BiListSkeleton from "../../../../../components/bi/BiListSkeleton";
 import DataSourceBadge from "../../../../../components/bi/DataSourceBadge";
 import PageHeader from "../../../../../components/bi/PageHeader";
@@ -216,41 +217,18 @@ function EditAssetInner() {
       />
 
       {mode === "edit" ? (
-        <Card className="mt-3 space-y-3 !p-4">
-          <p className="kl-type-card-title">เก็บรายการ (Archive)</p>
-          <p className="kl-type-helper">
-            ไม่ลบจริง — ตั้ง is_archived ใน bi_assets
+        <div className="mt-3 space-y-2">
+          <p className="kl-type-helper px-0.5">
+            Archive ไม่ลบจริง — ซ่อนจากรายการใช้งานประจำวัน
           </p>
-          {confirmArchive ? (
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="secondary"
-                fullWidth
-                disabled={saving}
-                onClick={() => setConfirmArchive(false)}
-              >
-                ยกเลิก
-              </Button>
-              <Button
-                fullWidth
-                disabled={saving}
-                onClick={() => void handleArchive()}
-              >
-                {saving ? "กำลังบันทึก..." : "ยืนยันเก็บ"}
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="secondary"
-              fullWidth
-              className="min-h-[2.75rem]"
-              disabled={saving}
-              onClick={() => setConfirmArchive(true)}
-            >
-              เก็บรายการ
-            </Button>
-          )}
-        </Card>
+          <ArchiveConfirm
+            open={confirmArchive}
+            saving={saving}
+            onOpen={() => setConfirmArchive(true)}
+            onCancel={() => setConfirmArchive(false)}
+            onConfirm={() => void handleArchive()}
+          />
+        </div>
       ) : null}
     </AppShell>
   );

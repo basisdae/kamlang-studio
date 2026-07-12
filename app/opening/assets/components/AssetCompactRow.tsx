@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import StatusBadge from "../../../../components/bi/StatusBadge";
+import Badge from "../../../../components/ui/Badge";
 import {
   ASSET_PRIORITY_LABELS,
-  ASSET_STATUS_LABELS,
   assetHasNoPrice,
   type AssetItem,
 } from "../../../../data/seed/tangtao";
@@ -26,11 +27,7 @@ export default function AssetCompactRow({ item }: AssetCompactRowProps) {
       >
         <div className="flex flex-wrap items-center gap-2">
           <p className="kl-type-card-title truncate">{item.name}</p>
-          {noPrice ? (
-            <span className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-0.5 kl-type-caption">
-              ยังไม่ใส่ราคา
-            </span>
-          ) : null}
+          {noPrice ? <Badge tone="draft">ยังไม่ใส่ราคา</Badge> : null}
         </div>
         <p className="kl-type-helper mt-0.5 truncate">
           {item.category} · {item.quantity} {item.unit} ·{" "}
@@ -41,7 +38,7 @@ export default function AssetCompactRow({ item }: AssetCompactRowProps) {
         </p>
       </Link>
       <div className="shrink-0 text-right space-y-1">
-        <p className="kl-type-caption">{ASSET_STATUS_LABELS[item.status]}</p>
+        <StatusBadge assetStatus={item.status} />
         <p className="kl-type-body mt-0.5 tabular-nums">
           {noPrice ? "ยังไม่ใส่ราคา" : formatBaht(unit!)}
         </p>

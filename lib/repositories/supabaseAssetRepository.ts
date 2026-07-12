@@ -145,6 +145,19 @@ export function createSupabaseAssetRepository(
       }
     },
 
+    async unarchive(id, workspaceId) {
+      try {
+        const { error } = await requireClient()
+          .from("bi_assets")
+          .update({ is_archived: false })
+          .eq("id", id)
+          .eq("workspace_id", workspaceId);
+        if (error) throw error;
+      } catch (e) {
+        throw normalizeError(e);
+      }
+    },
+
     async updateStatus(id, workspaceId, status) {
       try {
         const { data, error } = await requireClient()

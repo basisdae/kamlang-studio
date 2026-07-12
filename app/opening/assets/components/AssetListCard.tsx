@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Card from "../../../../components/ui/Card";
+import StatusBadge from "../../../../components/bi/StatusBadge";
+import Badge from "../../../../components/ui/Badge";
 import {
-  ASSET_PRIORITY_LABELS,
-  ASSET_STATUS_LABELS,
   assetHasNoPrice,
   type AssetItem,
 } from "../../../../data/seed/tangtao";
@@ -22,11 +22,7 @@ export default function AssetListCard({ item }: { item: AssetItem }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="kl-type-card-title">{item.name}</h3>
-            {noPrice ? (
-              <span className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-1 kl-type-caption">
-                ยังไม่ใส่ราคา
-              </span>
-            ) : null}
+            {noPrice ? <Badge tone="draft">ยังไม่ใส่ราคา</Badge> : null}
           </div>
           <p className="kl-type-helper mt-1">
             {item.category}
@@ -34,9 +30,7 @@ export default function AssetListCard({ item }: { item: AssetItem }) {
             {item.model ? ` ${item.model}` : ""}
           </p>
         </div>
-        <span className="shrink-0 rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-1 kl-type-caption">
-          {ASSET_STATUS_LABELS[item.status]}
-        </span>
+        <StatusBadge assetStatus={item.status} />
       </div>
       <div className="grid grid-cols-3 gap-2">
         <div>
@@ -48,7 +42,7 @@ export default function AssetListCard({ item }: { item: AssetItem }) {
         <div>
           <p className="kl-type-label">Priority</p>
           <p className="kl-type-body mt-1">
-            {ASSET_PRIORITY_LABELS[item.priority]}
+            <StatusBadge priority={item.priority} />
           </p>
         </div>
         <div>

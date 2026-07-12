@@ -7,10 +7,14 @@
  * - /opening/initial-stock  → /opening/checklist/ingredients
  *
  * Views that stay (same bi_assets, owner-language labels):
- * - /opening/assets   ทรัพย์สิน
- * - /opening/budget   งบประมาณ
- * - /opening/checklist รายการเตรียมเปิดร้าน
- * - /opening          Hub dashboard
+ * - /opening/assets        ทรัพย์สิน
+ * - /opening/budget        งบประมาณ
+ * - /opening/procurement   จัดหา / สั่งซื้อ
+ * - /opening/activity      กิจกรรม Workspace (feed)
+ * - /opening/checklist     รายการเตรียมเปิดร้าน
+ * - /opening               Hub dashboard
+ *
+ * Legacy: /activity → /opening/activity
  */
 
 export const OPENING_LEGACY_REDIRECTS = [

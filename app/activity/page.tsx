@@ -1,25 +1,22 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AppShell from "../../components/layout/AppShell";
-import { getRecentActivities } from "../repositories/ActivityLogRepository";
-import ActivityTimeline from "./components/ActivityTimeline";
+import BiListSkeleton from "../../components/bi/BiListSkeleton";
 
-export default function ActivityPage() {
-  const pathname = usePathname();
-
-  const activities = useMemo(
-    () => getRecentActivities(100),
-    [pathname]
-  );
+/**
+ * Legacy /activity → Opening Workspace Feed (bi_activity_logs).
+ */
+export default function ActivityRedirectPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/opening/activity");
+  }, [router]);
 
   return (
-    <AppShell
-      title="บันทึกล่าสุด"
-      backHref="/"
-    >
-      <ActivityTimeline activities={activities} />
+    <AppShell title="บันทึกล่าสุด" backHref="/opening" compact>
+      <BiListSkeleton rows={3} showSummary={false} />
     </AppShell>
   );
 }
