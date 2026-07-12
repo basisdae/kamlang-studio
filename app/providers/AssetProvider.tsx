@@ -11,7 +11,6 @@ import {
   type ReactNode,
 } from "react";
 import {
-  assetHasNoPrice,
   isAssetOwned as seedIsAssetOwned,
   isAssetPlannedSpend,
   type AssetDecisionGroup,
@@ -28,21 +27,11 @@ import {
   assetToUiItem,
   decisionGroupToUi,
 } from "../../lib/mappers/uiAdapters";
-import {
-  ASSETS_STORAGE_KEY,
-  ASSETS_STORAGE_KEY_V1,
-  ASSETS_STORAGE_KEY_V2_LEGACY,
-  findSimilarAssets,
-  loadAssetsCacheOnly,
-  normalizeAsset,
-  persistAssets,
-  type AssetsStorageError,
-} from "../opening/assets/lib/assetsStorage";
+import { findSimilarAssets } from "../opening/assets/lib/assetsStorage";
+import { buildOpeningSummary } from "../opening/lib/openingDomain";
 import { useWorkspace } from "./WorkspaceProvider";
 import { useAuth } from "../auth/AuthProvider";
 import { showInfoToast } from "../lib/biInfoToast";
-
-const IMPORT_FLAG_KEY = "business-insight.assets.imported-to-supabase.v1";
 
 type AssetContextValue = {
   assets: AssetItem[];
@@ -54,11 +43,13 @@ type AssetContextValue = {
   online: boolean;
   configured: boolean;
   browserOffline: boolean;
-  storageError: AssetsStorageError | null;
+  /** @deprecated No business data in localStorage — always null */
+  storageError: null;
   storageKey: string;
   schemaVersion: number;
   error: string | null;
   warning: string | null;
+  /** @deprecated Local import removed — always false */
   canImportLocal: boolean;
   getById: (id: string) => AssetItem | null;
   addAsset: (item: Omit<AssetItem, "id">) => Promise<AssetItem | null>;
@@ -99,45 +90,6 @@ type AssetContextValue = {
 
 const AssetContext = createContext<AssetContextValue | null>(null);
 
-function readImportFlag() {
-  if (typeof window === "undefined") return true;
-  return window.localStorage.getItem(IMPORT_FLAG_KEY) === "1";
-}
-
-function setImportFlag() {
-  window.localStorage.setItem(IMPORT_FLAG_KEY, "1");
-}
-
-function collectLegacyLocalAssets(): AssetItem[] {
-  const keys = [
-    ASSETS_STORAGE_KEY,
-    ASSETS_STORAGE_KEY_V2_LEGACY,
-    ASSETS_STORAGE_KEY_V1,
-  ];
-  for (const key of keys) {
-    try {
-      const raw = window.localStorage.getItem(key);
-      if (!raw) continue;
-      const parsed = JSON.parse(raw) as unknown;
-      const list = Array.isArray(parsed)
-        ? parsed
-        : parsed &&
-            typeof parsed === "object" &&
-            Array.isArray((parsed as { assets?: unknown }).assets)
-          ? (parsed as { assets: unknown[] }).assets
-          : null;
-      if (!list) continue;
-      const assets = list
-        .map((row) => normalizeAsset(row as Partial<AssetItem>))
-        .filter((a): a is AssetItem => Boolean(a));
-      if (assets.length) return assets;
-    } catch {
-      /* next */
-    }
-  }
-  return [];
-}
-
 export function AssetProvider({ children }: { children: ReactNode }) {
   const configured = getSupabaseEnvStatus().configured;
   const { workspaceId, ready: workspaceReady } = useWorkspace();
@@ -152,19 +104,12 @@ export function AssetProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(configured);
   const [saving, setSaving] = useState(false);
   const [ready, setReady] = useState(!configured);
-  // Never claim online until query succeeds
   const [mode, setMode] = useState<"online" | "offline">("offline");
   const [error, setError] = useState<string | null>(
     configured ? null : getSupabaseEnvStatus().error
   );
   const [warning, setWarning] = useState<string | null>(null);
   const [browserOffline, setBrowserOffline] = useState(false);
-  const [storageError, setStorageError] = useState<AssetsStorageError | null>(
-    null
-  );
-  const [importedAlready, setImportedAlready] = useState(() =>
-    typeof window === "undefined" ? true : readImportFlag()
-  );
 
   const loadOnline = useCallback(async () => {
     const env = getSupabaseEnvStatus();
@@ -175,7 +120,6 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       setMode("offline");
       setAssets([]);
       setDecisionGroups([]);
-      setStorageError(null);
       setLoading(false);
       setReady(true);
       return;
@@ -188,23 +132,16 @@ export function AssetProvider({ children }: { children: ReactNode }) {
         assetService.list(workspaceId),
         assetService.listDecisionGroups(workspaceId),
       ]);
-      const uiAssets = rows.map(assetToUiItem);
-      setAssets(uiAssets);
+      setAssets(rows.map(assetToUiItem));
       setDecisionGroups(groups.map(decisionGroupToUi));
       setMode("online");
-      persistAssets(uiAssets);
-      setStorageError(null);
     } catch (e) {
       biDevError("AssetProvider", "list + decisionGroups", e);
       setError(userFacingMessage(e));
       setMode("offline");
-      // Cache only — never silent seed fallback
-      const cache = loadAssetsCacheOnly();
-      setAssets(cache.assets);
-      setStorageError(cache.error);
-      if (!cache.hit) {
-        setAssets([]);
-      }
+      // No localStorage / seed fallback — Supabase is SSoT
+      setAssets([]);
+      setDecisionGroups([]);
     } finally {
       setLoading(false);
       setReady(true);
@@ -370,53 +307,6 @@ export function AssetProvider({ children }: { children: ReactNode }) {
     [withSave, workspaceId, actor, loadOnline]
   );
 
-  const importLocalToSupabase = useCallback(async () => {
-    if (readImportFlag()) {
-      return { ok: false, count: 0, error: "นำเข้าไปแล้ว — ไม่ทำซ้ำอัตโนมัติ" };
-    }
-    if (mode !== "online") {
-      return { ok: false, count: 0, error: "ต้องออนไลน์ก่อนนำเข้า" };
-    }
-    const local = collectLegacyLocalAssets();
-    if (local.length === 0) {
-      setImportFlag();
-      setImportedAlready(true);
-      return { ok: false, count: 0, error: "ไม่พบข้อมูล localStorage" };
-    }
-    try {
-      let count = 0;
-      for (const item of local) {
-        const { id: _id, purchaseHistory, repairHistory, ...rest } = item;
-        void _id;
-        const created = await assetService.createAsset(
-          workspaceId,
-          {
-            ...rest,
-            purchaseHistory: [],
-            repairHistory: [],
-            documentIds: [],
-            imageUrl: null,
-          },
-          actor
-        );
-        for (const p of purchaseHistory) {
-          await assetService.purchaseMore(workspaceId, created.asset.id, p, actor);
-        }
-        for (const r of repairHistory) {
-          await assetService.addRepair(workspaceId, created.asset.id, r, actor);
-        }
-        count += 1;
-      }
-      setImportFlag();
-      setImportedAlready(true);
-      await loadOnline();
-      showInfoToast(`นำเข้า ${count} รายการแล้ว`);
-      return { ok: true, count };
-    } catch (e) {
-      return { ok: false, count: 0, error: userFacingMessage(e) };
-    }
-  }, [mode, workspaceId, actor, loadOnline]);
-
   const value = useMemo<AssetContextValue>(
     () => ({
       assets,
@@ -428,13 +318,12 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       online: mode === "online",
       configured,
       browserOffline,
-      storageError,
-      storageKey: ASSETS_STORAGE_KEY,
+      storageError: null,
+      storageKey: "(supabase)",
       schemaVersion: 2,
       error,
       warning,
-      canImportLocal:
-        configured && mode === "online" && !importedAlready,
+      canImportLocal: false,
       getById,
       addAsset,
       updateAsset,
@@ -452,10 +341,14 @@ export function AssetProvider({ children }: { children: ReactNode }) {
         return true;
       },
       findSimilar: (input) => findSimilarAssets(assets, input),
-      dismissStorageError: () => setStorageError(null),
+      dismissStorageError: () => undefined,
       retry: loadOnline,
       refresh: loadOnline,
-      importLocalToSupabase,
+      importLocalToSupabase: async () => ({
+        ok: false,
+        count: 0,
+        error: "เลิกใช้ localStorage สำหรับข้อมูลธุรกิจแล้ว",
+      }),
     }),
     [
       assets,
@@ -466,10 +359,8 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       mode,
       configured,
       browserOffline,
-      storageError,
       error,
       warning,
-      importedAlready,
       getById,
       addAsset,
       updateAsset,
@@ -479,7 +370,6 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       setStatus,
       archiveAsset,
       loadOnline,
-      importLocalToSupabase,
     ]
   );
 
@@ -503,19 +393,16 @@ export function isAssetOwned(status: AssetStatus) {
 }
 
 export function getAssetsSummary(assets: AssetItem[]) {
+  // Money + no-price from shared Opening rollup (Zero Duplicate)
+  const opening = buildOpeningSummary(assets);
   const owned = assets.filter((a) => isAssetOwned(a.status));
   const needBuy = assets.filter((a) => isAssetPlannedSpend(a.status));
-  const noPrice = assets.filter((a) => assetHasNoPrice(a));
-  const totalValue = assets.reduce((sum, a) => {
-    const unit = a.estimatedPrice;
-    return sum + (unit != null ? unit * a.quantity : 0);
-  }, 0);
   return {
-    total: assets.length,
+    total: opening.totalCount,
     owned: owned.length,
     needBuy: needBuy.length,
-    noPrice: noPrice.length,
-    totalValue,
+    noPrice: opening.noPriceCount,
+    totalValue: opening.inventoryTotal,
   };
 }
 

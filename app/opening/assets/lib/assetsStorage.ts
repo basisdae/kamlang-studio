@@ -1,38 +1,22 @@
 /**
- * Assets localStorage — schema versioned for Tang Tao trial.
- * Ready to swap for Supabase later (same AssetItem shape).
+ * Asset helpers for Opening.
+ * Business rows are not persisted to localStorage (v0.2.3+ — Supabase SSoT).
+ * Legacy key names remain for BI_CACHE_VERSION purge.
  */
 
-import {
-  SEED_ASSETS,
-  type AssetItem,
-  type AssetStatus,
-} from "../../../../data/seed/tangtao";
+import type { AssetItem, AssetStatus } from "../../../../data/seed/tangtao";
 
 export const ASSETS_STORAGE_KEY_V1 = "bi.tangtao.assets.v1";
-/** Legacy v2 array-only key from earlier sprint */
 export const ASSETS_STORAGE_KEY_V2_LEGACY = "bi.tangtao.assets.v2";
-/** Canonical key */
 export const ASSETS_STORAGE_KEY = "business-insight.assets.v2";
 export const ASSETS_SCHEMA_VERSION = 2 as const;
-
-export type AssetsStorageEnvelope = {
-  schemaVersion: typeof ASSETS_SCHEMA_VERSION;
-  updatedAt: string;
-  assets: AssetItem[];
-};
-
-export type AssetsLoadResult = {
-  assets: AssetItem[];
-  source: "seed" | "storage" | "migrated";
-  error: AssetsStorageError | null;
-};
 
 export type AssetsStorageError =
   | "read_failed"
   | "write_failed"
   | "schema_invalid"
-  | "empty_after_clear";
+  | "empty_after_clear"
+  | null;
 
 const LEGACY_STATUS_MAP: Record<string, AssetStatus> = {
   no_price: "planned",
@@ -71,7 +55,9 @@ export function findSimilarAssets(
   });
 }
 
-export function normalizeAsset(raw: Partial<AssetItem> & { id?: string }): AssetItem | null {
+export function normalizeAsset(
+  raw: Partial<AssetItem> & { id?: string }
+): AssetItem | null {
   if (!raw || typeof raw !== "object") return null;
   if (!raw.id || typeof raw.id !== "string") return null;
   if (!raw.name || typeof raw.name !== "string") return null;
@@ -118,180 +104,30 @@ export function normalizeAsset(raw: Partial<AssetItem> & { id?: string }): Asset
   };
 }
 
-function migrateAssetArray(raw: unknown): AssetItem[] | null {
-  if (!Array.isArray(raw)) return null;
-  const assets: AssetItem[] = [];
-  for (const row of raw) {
-    const item = normalizeAsset(row as Partial<AssetItem>);
-    if (item) assets.push(item);
-  }
-  return assets.length > 0 ? assets : null;
-}
-
-function parseEnvelope(raw: string): {
-  assets: AssetItem[] | null;
-  invalid: boolean;
-} {
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (Array.isArray(parsed)) {
-      const assets = migrateAssetArray(parsed);
-      return { assets, invalid: assets == null };
-    }
-    if (parsed && typeof parsed === "object") {
-      const env = parsed as Partial<AssetsStorageEnvelope>;
-      if (env.schemaVersion === 2 && Array.isArray(env.assets)) {
-        const assets = migrateAssetArray(env.assets);
-        return { assets, invalid: assets == null };
-      }
-      if (Array.isArray((parsed as { assets?: unknown }).assets)) {
-        const assets = migrateAssetArray(
-          (parsed as { assets: unknown[] }).assets
-        );
-        return { assets, invalid: assets == null };
-      }
-      return { assets: null, invalid: true };
-    }
-    return { assets: null, invalid: true };
-  } catch {
-    return { assets: null, invalid: true };
-  }
-}
-
-function seedAssets() {
-  return structuredClone(SEED_ASSETS).map((a) => normalizeAsset(a)!);
-}
-
-/**
- * Cache-only read — never falls back to Tang Tao seed.
- * Used by online AssetProvider (Supabase is SoT).
- */
+/** @deprecated No-op — Supabase is SSoT */
 export function loadAssetsCacheOnly(): {
   assets: AssetItem[];
   hit: boolean;
-  error: AssetsStorageError | null;
+  error: AssetsStorageError;
 } {
-  if (typeof window === "undefined") {
-    return { assets: [], hit: false, error: null };
-  }
-  try {
-    const raw = window.localStorage.getItem(ASSETS_STORAGE_KEY);
-    if (!raw) return { assets: [], hit: false, error: null };
-    const { assets, invalid } = parseEnvelope(raw);
-    if (invalid) return { assets: [], hit: false, error: "schema_invalid" };
-    if (assets) return { assets, hit: true, error: null };
-    return { assets: [], hit: false, error: null };
-  } catch {
-    return { assets: [], hit: false, error: "read_failed" };
-  }
+  return { assets: [], hit: false, error: null };
 }
 
-/** @deprecated Prefer loadAssetsCacheOnly for online mode — may return seed */
-export function loadAssetsFromStorage(): AssetsLoadResult {
-  if (typeof window === "undefined") {
-    return { assets: seedAssets(), source: "seed", error: null };
-  }
-
-  try {
-    const canonical = window.localStorage.getItem(ASSETS_STORAGE_KEY);
-    if (canonical) {
-      const { assets, invalid } = parseEnvelope(canonical);
-      if (invalid) {
-        return {
-          assets: seedAssets(),
-          source: "seed",
-          error: "schema_invalid",
-        };
-      }
-      if (assets) {
-        return { assets, source: "storage", error: null };
-      }
-    }
-
-    const legacyV2 = window.localStorage.getItem(ASSETS_STORAGE_KEY_V2_LEGACY);
-    if (legacyV2) {
-      const { assets, invalid } = parseEnvelope(legacyV2);
-      if (assets) {
-        persistAssets(assets);
-        window.localStorage.removeItem(ASSETS_STORAGE_KEY_V2_LEGACY);
-        return { assets, source: "migrated", error: null };
-      }
-      if (invalid) {
-        return {
-          assets: seedAssets(),
-          source: "seed",
-          error: "schema_invalid",
-        };
-      }
-    }
-
-    const legacyV1 = window.localStorage.getItem(ASSETS_STORAGE_KEY_V1);
-    if (legacyV1) {
-      const { assets, invalid } = parseEnvelope(legacyV1);
-      if (assets) {
-        persistAssets(assets);
-        window.localStorage.removeItem(ASSETS_STORAGE_KEY_V1);
-        return { assets, source: "migrated", error: null };
-      }
-      if (invalid) {
-        return {
-          assets: seedAssets(),
-          source: "seed",
-          error: "schema_invalid",
-        };
-      }
-    }
-
-    return { assets: seedAssets(), source: "seed", error: null };
-  } catch {
-    return { assets: seedAssets(), source: "seed", error: "read_failed" };
-  }
-}
-
-export function persistAssets(assets: AssetItem[]): {
+/** @deprecated No-op */
+export function persistAssets(_assets: AssetItem[]): {
   ok: boolean;
-  error: AssetsStorageError | null;
+  error: AssetsStorageError;
 } {
-  if (typeof window === "undefined") {
-    return { ok: true, error: null };
-  }
-  const envelope: AssetsStorageEnvelope = {
-    schemaVersion: ASSETS_SCHEMA_VERSION,
-    updatedAt: new Date().toISOString(),
-    assets,
-  };
-  try {
-    window.localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(envelope));
-    return { ok: true, error: null };
-  } catch {
-    return { ok: false, error: "write_failed" };
-  }
+  return { ok: true, error: null };
 }
 
-export function clearAssetsStorage(): {
-  ok: boolean;
-  error: AssetsStorageError | null;
-} {
-  if (typeof window === "undefined") {
-    return { ok: true, error: null };
-  }
+export function clearAssetsStorage() {
+  if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(ASSETS_STORAGE_KEY);
     window.localStorage.removeItem(ASSETS_STORAGE_KEY_V2_LEGACY);
     window.localStorage.removeItem(ASSETS_STORAGE_KEY_V1);
-    return { ok: true, error: null };
   } catch {
-    return { ok: false, error: "write_failed" };
+    /* ignore */
   }
 }
-
-export function getSeedAssetsCopy() {
-  return seedAssets();
-}
-
-export const STATUSES_NEED_ACTUAL_PRICE: AssetStatus[] = [
-  "ordered",
-  "awaiting_delivery",
-  "received",
-  "in_use",
-];

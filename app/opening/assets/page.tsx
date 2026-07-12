@@ -62,11 +62,7 @@ function OpeningAssetsInner() {
     browserOffline,
     error,
     warning,
-    storageError,
-    canImportLocal,
-    dismissStorageError,
     retry,
-    importLocalToSupabase,
     saving,
   } = useAssets();
   const [view, setView] = useState<ViewMode>(() => {
@@ -98,9 +94,7 @@ function OpeningAssetsInner() {
       ? "แหล่งข้อมูล: Supabase · bi_assets"
       : error
         ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-        : assets.length > 0
-          ? "แหล่งข้อมูล: แคชสำรอง"
-          : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
+        : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
 
   const displayAssets = useMemo(
     () => (shotEmpty ? [] : assets),
@@ -149,10 +143,13 @@ function OpeningAssetsInner() {
   return (
     <AppShell title="" hidePageHeader compact backHref="/opening">
       <PageHeader
-        title="แผนเปิดร้าน"
+        title="เปิดร้าน"
         workspace={workspaceName}
         subtitle="ทรัพย์สิน"
       />
+      <p className="kl-type-helper -mt-1">
+        มุมมองทรัพย์สิน · ข้อมูลชุดเดียวกับรายการเตรียมเปิดร้าน
+      </p>
 
       <BiDataStatus
         loading={loading}
@@ -162,7 +159,7 @@ function OpeningAssetsInner() {
         browserOffline={browserOffline}
         error={error}
         empty={ready && !loading && !error && online && assets.length === 0}
-        hasCachedData={!online && assets.length > 0}
+        hasCachedData={false}
         emptyTitle="ยังไม่มีทรัพย์สิน"
         emptyHint="เพิ่มรายการใหม่ — ข้อมูลจะบันทึกใน Supabase"
         sourceHint={sourceHint}
@@ -178,40 +175,6 @@ function OpeningAssetsInner() {
 
       {saving ? (
         <p className="kl-type-caption">กำลังบันทึก...</p>
-      ) : null}
-
-      {canImportLocal ? (
-        <Card className="space-y-3 !p-4 border border-[var(--bi-lemon)]">
-          <p className="kl-type-card-title">พบข้อมูล localStorage เก่า</p>
-          <p className="kl-type-helper">
-            นำเข้าเข้า Supabase ได้ครั้งเดียว · กดเองเท่านั้น ระบบไม่ import
-            ซ้ำอัตโนมัติ
-          </p>
-          <Button
-            fullWidth
-            className="min-h-[2.75rem]"
-            disabled={saving}
-            onClick={() => void importLocalToSupabase()}
-          >
-            นำเข้าข้อมูลเดิม
-          </Button>
-        </Card>
-      ) : null}
-
-      {storageError === "write_failed" ? (
-        <Card className="space-y-3 !p-4">
-          <p className="kl-type-card-title">แคชในเครื่องบันทึกไม่สำเร็จ</p>
-          <p className="kl-type-helper">
-            ข้อมูลหลักอยู่ที่ Supabase แล้ว — แคชใช้สำรองชั่วคราวเท่านั้น
-          </p>
-          <Button
-            fullWidth
-            className="min-h-[2.75rem]"
-            onClick={dismissStorageError}
-          >
-            ปิดแจ้งเตือน
-          </Button>
-        </Card>
       ) : null}
 
       {!showSkeleton && !blockOnError ? (

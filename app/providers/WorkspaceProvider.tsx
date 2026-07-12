@@ -16,8 +16,6 @@ import { workspaceService } from "../../lib/services/workspaceService";
 import type { Workspace } from "../../lib/types/workspace";
 import type { DataSource } from "../../components/bi/dataSource";
 
-const CACHE_KEY = "business-insight.workspace.cache.v1";
-
 type WorkspaceContextValue = {
   workspace: Workspace | null;
   workspaceId: string;
@@ -34,23 +32,7 @@ type WorkspaceContextValue = {
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
-function readCache(): Workspace | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(CACHE_KEY);
-    return raw ? (JSON.parse(raw) as Workspace) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeCache(ws: Workspace) {
-  try {
-    window.localStorage.setItem(CACHE_KEY, JSON.stringify(ws));
-  } catch {
-    /* ignore */
-  }
-}
+const FALLBACK_WORKSPACE_ID = "11111111-1111-1111-1111-111111111111";
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const configured = getSupabaseEnvStatus().configured;
@@ -70,7 +52,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (!env.configured) {
       setError(env.error);
       setOnline(false);
-      setWorkspace(readCache());
+      setWorkspace(null);
       setLoading(false);
       setReady(true);
       return;
@@ -81,13 +63,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     try {
       const ws = await workspaceService.getCurrentWorkspace();
       setWorkspace(ws);
-      writeCache(ws);
       setOnline(true);
     } catch (e) {
       biDevError("WorkspaceProvider", "getCurrentWorkspace", e);
       setError(userFacingMessage(e));
       setOnline(false);
-      setWorkspace(readCache());
+      // No localStorage fallback — Supabase is SSoT
+      setWorkspace(null);
     } finally {
       setLoading(false);
       setReady(true);
@@ -120,7 +102,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
     return {
       workspace,
-      workspaceId: workspace?.id ?? "11111111-1111-1111-1111-111111111111",
+      workspaceId: workspace?.id ?? FALLBACK_WORKSPACE_ID,
       workspaceName: workspace?.name ?? "ตั้งเตา",
       ready,
       loading,

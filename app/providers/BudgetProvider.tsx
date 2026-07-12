@@ -23,8 +23,6 @@ import {
 import { useWorkspace } from "./WorkspaceProvider";
 import { useAssets } from "./AssetProvider";
 
-const CACHE_KEY = "business-insight.budget.cache.v1";
-
 type BudgetContextValue = {
   items: BudgetItem[];
   decisionGroups: AssetDecisionGroup[];
@@ -41,25 +39,6 @@ type BudgetContextValue = {
 };
 
 const BudgetContext = createContext<BudgetContextValue | null>(null);
-
-function readCache(): BudgetItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(CACHE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as BudgetItem[]) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeCache(items: BudgetItem[]) {
-  try {
-    window.localStorage.setItem(CACHE_KEY, JSON.stringify(items));
-  } catch {
-    /* ignore */
-  }
-}
 
 export function BudgetProvider({ children }: { children: ReactNode }) {
   const configured = getSupabaseEnvStatus().configured;
@@ -100,22 +79,16 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         budgetService.listItems(workspaceId),
         budgetService.listDecisionGroups(workspaceId),
       ]);
-      const uiItems = rows.map(budgetToUi);
-      const uiGroups = groups.map(decisionGroupToUi);
-      setItems(uiItems);
-      setDecisionGroups(uiGroups);
-      writeCache(uiItems);
+      setItems(rows.map(budgetToUi));
+      setDecisionGroups(groups.map(decisionGroupToUi));
       setOnline(true);
     } catch (e) {
       biDevError("BudgetProvider", "listItems + decisionGroups", e);
       setError(userFacingMessage(e));
       setOnline(false);
-      // Cache only — never silent seed
-      const cached = readCache();
-      setItems(cached);
-      if (cached.length === 0) {
-        setItems([]);
-      }
+      // No localStorage / seed fallback
+      setItems([]);
+      setDecisionGroups([]);
     } finally {
       setLoading(false);
       setReady(true);
@@ -129,7 +102,6 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
   }, [workspaceReady, configured, load]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Recalculate summary when assets or budget items change
   /* eslint-disable react-hooks/set-state-in-effect -- derive budget summary from loaded domain data */
   useEffect(() => {
     if (!assetsReady && configured) return;

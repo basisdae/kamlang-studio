@@ -24,11 +24,33 @@ And:
 
 **"แล้วเราควรทำอะไรต่อ?"**
 
+**Opening OS question (every Opening screen):**
+
+**"วันนี้ร้านยังต้องเตรียมอะไรบ้าง"** / **ร้านพร้อมเปิดหรือยัง**
+
 Every page needs: ภาพรวม · สิ่งที่ควรทำต่อ · รายละเอียด · Action.
 
 If not, do not add it.
 
 This overrides decoration, feature creep, and "nice to have" polish.
+
+---
+
+# Opening OS Principles (v0.3+)
+
+1. **Workflow First** — รายการเตรียมเปิดร้าน (Checklist) is the protagonist; Hub is the dashboard (Ready result lives on Hub, not a separate menu).
+2. **Single Source of Truth** — Business data lives in Supabase (`bi_assets` for opening items). No duplicate business datasets in localStorage.
+3. **Multiple Views** — รายการเตรียมเปิดร้าน / งบประมาณ / ทรัพย์สิน / วัตถุดิบเริ่มต้น are views of the same data, not separate systems. Nav labels use owner language; URLs may stay English.
+4. **Summary = outcome** — Ready %, remaining count, and money still needed are derived from checklist data, never a second source of truth. “พร้อมเปิดหรือยัง” is the Hub result, not its own route in IA.
+5. **One Thing, One Place** — One real dataset; many views. Changing status on any screen must reflect on Hub, Checklist, Budget view, Assets view, and Readiness immediately (same provider state).
+6. **Refactor, not Rewrite** — Prefer existing components (AppShell, SummaryCard, AssetCompactRow, AssetForm, BiDataStatus, etc.). Move, rename, and re-wire workflow before inventing new UI. New components only when nothing existing fits.
+7. **Route Compatibility** — Old Opening URLs must redirect to the new IA (never 404 for bookmarks). Examples: `/opening/ready` → `/opening`, `/opening/initial-stock` → `/opening/checklist/ingredients`.
+8. **Zero Duplicate** — Hub Summary, Budget, Assets, and Checklist must share one calculation path (`buildOpeningSummary` / `buildInventoryBuckets` / `AssetProvider`). No parallel rollups. Status edits update every view via the same provider state. v0.3 must not lose or diverge from the user’s real Supabase data.
+
+Owner language: มีแล้ว · ต้องจัดหา · สั่งแล้ว · ได้รับแล้ว  
+Primary nav labels: รายการเตรียมเปิดร้าน · งบประมาณ · ทรัพย์สิน · วัตถุดิบเริ่มต้น (not English system terms).
+
+**v0.3 goal:** Better workflow + mental model; **data identical 100%** to the live `bi_assets` set.
 
 ---
 

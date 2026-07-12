@@ -29,16 +29,17 @@ import { useAssets } from "../assets/AssetsProvider";
 import { useBudget } from "../../providers/BudgetProvider";
 import { useWorkspace } from "../../providers/WorkspaceProvider";
 import {
-  buildInventoryBuckets,
   type InventoryLine,
 } from "../../../lib/services/inventoryRollup";
+import OpeningSummaryCard from "../../../components/bi/OpeningSummaryCard";
+import { buildOpeningSummary } from "../lib/openingDomain";
 
 type ContentFilter = "all" | BudgetStatus;
 type DrillTab = "all" | "owned" | "need" | "no_price";
 
 /**
- * Budget decision page — live bi_budget_items + bi_assets + decision groups
- * (Summary formulas left as-is — readiness/budget refactor is a later sprint.)
+ * Budget view — outcome of the same bi_assets Checklist data.
+ * Not a separate planning system (One Thing, One Place · Zero Duplicate).
  */
 export default function OpeningBudgetPage() {
   const { workspaceName } = useWorkspace();
@@ -64,7 +65,8 @@ export default function OpeningBudgetPage() {
   const [filter, setFilter] = useState<ContentFilter>("all");
   const [drill, setDrill] = useState<DrillTab>("all");
 
-  const inventory = useMemo(() => buildInventoryBuckets(assets), [assets]);
+  const openingSummary = useMemo(() => buildOpeningSummary(assets), [assets]);
+  const inventory = openingSummary.buckets;
 
   const showSkeleton = (loading || assetsLoading) && !ready && !assetsReady;
   const blockOnError =
@@ -144,9 +146,7 @@ export default function OpeningBudgetPage() {
       ? `แหล่งข้อมูล: bi_assets · ${inventory.countAll} รายการ`
       : pageError
         ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-        : assets.length > 0
-          ? "แหล่งข้อมูล: แคชสำรอง"
-          : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
+        : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
 
   const allLines = useMemo(() => {
     const map = new Map<string, InventoryLine>();
@@ -173,10 +173,13 @@ export default function OpeningBudgetPage() {
   return (
     <AppShell title="" hidePageHeader compact backHref="/opening">
       <PageHeader
-        title="แผนเปิดร้าน"
+        title="เปิดร้าน"
         workspace={workspaceName}
         subtitle="งบประมาณ"
       />
+      <p className="kl-type-helper -mt-1">
+        ผลลัพธ์จากรายการเตรียมเปิดร้าน · ไม่ใช่แผนเงินแยกชุด
+      </p>
 
       <BiDataStatus
         loading={loading || assetsLoading}
@@ -186,7 +189,7 @@ export default function OpeningBudgetPage() {
         browserOffline={browserOffline}
         error={pageError}
         empty={showEmpty}
-        hasCachedData={!pageOnline && assets.length > 0}
+        hasCachedData={false}
         emptyTitle="ยังไม่มีรายการ"
         emptyHint="ยังไม่มีรายการใน bi_assets"
         sourceHint={sourceHint}
@@ -194,8 +197,10 @@ export default function OpeningBudgetPage() {
         onRetry={() => void retry()}
       />
 
-      {!showSkeleton && !blockOnError && (pageOnline || assets.length > 0) ? (
+      {!showSkeleton && !blockOnError && pageOnline ? (
         <>
+          <OpeningSummaryCard summary={openingSummary} variant="full" />
+
           <SummaryCard title="งบจากรายการจริง">
             <div className="grid grid-cols-2 gap-2">
               <Metric

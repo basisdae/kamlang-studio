@@ -1,124 +1,136 @@
-import { Check, Circle } from "lucide-react";
+"use client";
+
+import { useMemo } from "react";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import AppShell from "../../../components/layout/AppShell";
-import DataSourceBadge from "../../../components/bi/DataSourceBadge";
-import MetricCard from "../../../components/bi/MetricCard";
+import BiDataStatus from "../../../components/bi/BiDataStatus";
 import NextStepCard from "../../../components/bi/NextStepCard";
+import OpeningSummaryCard from "../../../components/bi/OpeningSummaryCard";
+import PageHeader from "../../../components/bi/PageHeader";
 import SectionHeader from "../../../components/bi/SectionHeader";
-import Card from "../../../components/ui/Card";
 import ButtonLink from "../../../components/ui/ButtonLink";
-import { OPENING_DATA_SOURCE } from "../../../components/bi/dataSource";
 import {
   KL_ICON_CLASS,
   KL_ICON_STROKE,
 } from "../../../components/layout/navConfig";
+import { useWorkspace } from "../../providers/WorkspaceProvider";
+import { useAssets } from "../assets/AssetsProvider";
 import {
-  getChecklistProgress,
-  OPENING_CHECKLIST,
-} from "../sampleData";
+  OPENING_TOPICS,
+  buildOpeningSummary,
+  nextOpeningFocus,
+  topicProgress,
+} from "../lib/openingDomain";
 
-const CHECKLIST_LINKS: Record<string, string> = {
-  c2: "/opening/assets",
-  c3: "/opening/assets",
-  c4: "/opening/initial-stock",
-  c5: "/opening/assets",
-  c6: "/opening",
-  c7: "/opening/team",
-};
-
+/**
+ * Opening Checklist — workflow protagonist.
+ * Same bi_assets as Hub / Budget / Assets views.
+ */
 export default function OpeningChecklistPage() {
-  const progress = getChecklistProgress();
-  const nextItem = OPENING_CHECKLIST.find((item) => !item.done);
-  const percent = Math.round((progress.done / progress.total) * 100);
+  const { workspaceName } = useWorkspace();
+  const {
+    assets,
+    loading,
+    ready,
+    online,
+    configured,
+    browserOffline,
+    error,
+    retry,
+  } = useAssets();
+
+  const summary = useMemo(() => buildOpeningSummary(assets), [assets]);
+  const focus = useMemo(() => nextOpeningFocus(assets), [assets]);
+  const topics = useMemo(
+    () => OPENING_TOPICS.map((t) => topicProgress(assets, t)),
+    [assets]
+  );
 
   return (
-    <AppShell title="รายการตรวจสอบ" backHref="/opening" compact>
-      <DataSourceBadge source={OPENING_DATA_SOURCE} />
+    <AppShell title="" hidePageHeader compact backHref="/opening">
+      <PageHeader
+        title="เปิดร้าน"
+        workspace={workspaceName}
+        subtitle="รายการเตรียมเปิดร้าน"
+      />
+      <p className="kl-type-helper -mt-1">
+        วันนี้ร้านยังต้องเตรียมอะไรบ้าง
+      </p>
 
-      <section className="space-y-3">
-        <SectionHeader title="ภาพรวม" />
-        <div className="grid grid-cols-2 gap-3">
-          <MetricCard
-            label="เสร็จแล้ว"
-            value={`${progress.done}/${progress.total}`}
-          />
-          <MetricCard label="ความคืบหน้า" value={`${percent}%`} />
-        </div>
-        <div
-          className="kl-progress-track"
-          role="progressbar"
-          aria-valuenow={percent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="kl-progress-fill" style={{ width: `${percent}%` }} />
-        </div>
-      </section>
-
-      <NextStepCard
-        message={
-          nextItem
-            ? `ทำต่อ: “${nextItem.label}” — ยังไม่พร้อมเปิดร้าน`
-            : "รายการตรวจสอบครบแล้ว — พร้อมสรุปกับทีมบริหาร"
+      <BiDataStatus
+        loading={loading}
+        ready={ready}
+        configured={configured}
+        online={online}
+        browserOffline={browserOffline}
+        error={error}
+        empty={false}
+        hasCachedData={false}
+        sourceHint={
+          online
+            ? "แหล่งข้อมูล: Supabase · รายการเตรียมเปิดร้าน"
+            : "แหล่งข้อมูล: โหลดไม่สำเร็จ"
         }
-        href={
-          nextItem
-            ? CHECKLIST_LINKS[nextItem.id] ?? "/opening"
-            : "/opening/team"
-        }
-        actionLabel={nextItem ? "ไปทำรายการนี้" : "ไปทีมบริหาร"}
+        skeletonRows={4}
+        onRetry={() => void retry()}
       />
 
-      <section className="space-y-3">
-        <SectionHeader title="รายละเอียด" />
-        <Card className="space-y-1 !p-2">
-          {OPENING_CHECKLIST.map((item) => {
-            const href = CHECKLIST_LINKS[item.id];
-            const row = (
-              <div className="flex min-h-[2.75rem] items-center gap-3 rounded-[var(--kl-radius-inner)] px-3">
-                {item.done ? (
-                  <Check
-                    className={`${KL_ICON_CLASS} text-[var(--bi-success)]`}
-                    strokeWidth={KL_ICON_STROKE}
-                  />
-                ) : (
-                  <Circle
-                    className={`${KL_ICON_CLASS} text-kl-muted`}
-                    strokeWidth={KL_ICON_STROKE}
-                  />
-                )}
-                <span
-                  className={`kl-type-body ${
-                    item.done ? "text-kl-muted line-through" : ""
-                  }`}
+      {!loading && !error ? (
+        <>
+          <OpeningSummaryCard summary={summary} variant="compact" />
+
+          <NextStepCard
+            message={focus.message}
+            href={focus.href}
+            actionLabel="ไปทำต่อ"
+          />
+
+          <section className="space-y-3">
+            <SectionHeader title="หมวด" />
+            <div className="space-y-2">
+              {topics.map((row) => (
+                <Link
+                  key={row.topic.id}
+                  href={row.topic.href}
+                  className="kl-section block space-y-2 kl-pressable"
                 >
-                  {item.label}
-                </span>
-              </div>
-            );
-
-            if (!item.done && href) {
-              return (
-                <Link key={item.id} href={href} className="block kl-pressable">
-                  {row}
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="kl-type-card-title">{row.topic.title}</p>
+                    <ChevronRight
+                      className={KL_ICON_CLASS}
+                      strokeWidth={KL_ICON_STROKE}
+                      aria-hidden
+                    />
+                  </div>
+                  <p className="kl-type-helper">{row.topic.description}</p>
+                  {row.isExternal ? (
+                    <p className="kl-type-caption">ไปหน้าจัดการ →</p>
+                  ) : (
+                    <>
+                      <div className="kl-progress-track">
+                        <div
+                          className="kl-progress-fill"
+                          style={{ width: `${row.percent}%` }}
+                        />
+                      </div>
+                      <p className="kl-type-caption">
+                        {row.total === 0
+                          ? "ยังไม่มีรายการในหมวดนี้"
+                          : `พร้อม ${row.ready}/${row.total} · ต้องจัดหา ${row.need} · สั่งแล้ว ${row.ordered}`}
+                      </p>
+                    </>
+                  )}
                 </Link>
-              );
-            }
+              ))}
+            </div>
+          </section>
 
-            return <div key={item.id}>{row}</div>;
-          })}
-        </Card>
-      </section>
-
-      <section className="space-y-3">
-        <SectionHeader title="Action" />
-        <ButtonLink href="/opening/assets" fullWidth>
-          ไปทรัพย์สิน
-        </ButtonLink>
-        <ButtonLink href="/opening" variant="secondary" fullWidth>
-          กลับแผนเปิดร้าน
-        </ButtonLink>
-      </section>
+          <ButtonLink href="/opening" variant="secondary" fullWidth>
+            กลับภาพรวมเปิดร้าน
+          </ButtonLink>
+        </>
+      ) : null}
     </AppShell>
   );
 }
