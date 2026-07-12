@@ -13,25 +13,38 @@ Naming lock: `docs/00-naming.md`
 
 ## Design Principles (apply to every screen)
 
-### 1. What next?
+### 1. Context vs Content
+
+| Control | Role |
+|---------|------|
+| **Workspace Switcher** | Context — which Workspace (full name once) |
+| **Page Header** | Content — the job on this screen |
+
+Do not repeat the Workspace name in the Page Header / Landing title when the Switcher already shows it.
+
+Example: Switcher `ดำเนินกิจการ ▼` → Header `ภาพรวม` or `จัดซื้อ` — never Header `ดำเนินกิจการ` again.
+
+See `docs/01-vision.md` → UI Principles → Context vs Content.
+
+### 2. What next?
 
 Every page must answer: **แล้วเจ้าของร้านควรทำอะไรต่อ?**
 
 Show data only when it leads to a decision or next step.
 
-### 2. Drillable numbers
+### 3. Drillable numbers
 
 Important metrics must look and behave as if they can open detail later (link, chevron, card press).
 
 Even when Sprint logic is sample-only, the path must exist in the IA.
 
-### 3. No dead ends
+### 4. No dead ends
 
 Every screen needs at least one clear action:
 
 เพิ่มรายการ · ดูรายละเอียด · กลับสรุป · ไปหมวดถัดไป
 
-### 4. Timeline-ready structure
+### 5. Timeline-ready structure
 
 Layout and nav must support:
 
@@ -39,12 +52,12 @@ Layout and nav must support:
 
 Do not hard-code Opening as the only forever mode.
 
-### 5. Feel like building a business
+### 6. Feel like building a business
 
 Tone: calm, confident, action-oriented.  
 Avoid dense form-admin aesthetics.
 
-### 6. Mobile First
+### 7. Mobile First
 
 | Rule | Detail |
 |------|--------|

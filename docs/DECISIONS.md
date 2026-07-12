@@ -8,6 +8,38 @@ For engineering rules, see `AGENTS.md`.
 
 ---
 
+## Decision 0003
+
+**Status:** Accepted
+
+**Date:** 2026-07-12
+
+**Title:** Context vs Content — Workspace Switcher and Page Header roles
+
+### Problem
+
+After the Switcher showed the full Workspace name, Landing / Page Headers still repeated that name (e.g. Switcher `ดำเนินกิจการ` + Header `ดำเนินกิจการ`), so Context and Content competed.
+
+### Decision
+
+Platform UI lock:
+
+1. **Workspace Switcher = Context** — which Workspace (full name once; readable in ≤1s; never truncated).
+2. **Page Header = Content** — the job on this screen (ภาพรวม, จัดซื้อ, สูตร, …).
+3. Header must not reuse the Workspace label when the Switcher already shows it.
+
+Canonical write-up: `docs/01-vision.md` · `docs/03-design-system.md` · `AGENTS.md` Design Rules.
+
+### Impact
+
+Landing titles and AppShell page titles name the work, not the Workspace. Dedup polish may follow in a later pass; the principle is locked now.
+
+### Related
+
+Decision 0002 (Workspace = Context in architecture)
+
+---
+
 ## Decision 0002
 
 **Status:** Accepted

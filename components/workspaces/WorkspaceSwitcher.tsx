@@ -16,8 +16,8 @@ import Button from "../ui/Button";
 import Card from "../ui/Card";
 
 /**
- * Secondary context control — quiet name + chevron (not a primary CTA).
- * Aligns end so page title / summary stay first in visual hierarchy.
+ * Workspace context control — full label always readable (never truncated).
+ * Quiet secondary chrome: name left, chevron right; not a primary CTA.
  */
 export default function WorkspaceSwitcher() {
   const router = useRouter();
@@ -62,27 +62,33 @@ export default function WorkspaceSwitcher() {
   if (!isHydrated || !isWorkspaceSelected || !config) return null;
   if (pathname === "/modes" || pathname.startsWith("/modes/")) return null;
 
+  const Icon = config.icon;
+
   return (
     <>
-      <div className="flex justify-end">
-        <button
-          type="button"
-          className="inline-flex max-w-[70%] items-center gap-0.5 py-0.5 kl-pressable text-kl-muted"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-label={`เปลี่ยน Workspace · ${config.label}`}
-          onClick={() => setOpen(true)}
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 py-0.5 kl-pressable"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`เปลี่ยน Workspace · ${config.label}`}
+        onClick={() => setOpen(true)}
+      >
+        <span
+          className="flex h-5 w-5 shrink-0 items-center justify-center text-kl-muted"
+          aria-hidden
         >
-          <span className="truncate kl-type-caption font-medium text-kl-muted">
-            {config.label}
-          </span>
-          <ChevronDown
-            className={`${KL_ICON_SM_CLASS} shrink-0 opacity-70`}
-            strokeWidth={KL_ICON_STROKE}
-            aria-hidden
-          />
-        </button>
-      </div>
+          <Icon className={KL_ICON_SM_CLASS} strokeWidth={KL_ICON_STROKE} />
+        </span>
+        <span className="min-w-0 flex-1 whitespace-nowrap text-left kl-type-label font-medium text-kl-brown">
+          {config.label}
+        </span>
+        <ChevronDown
+          className={`${KL_ICON_SM_CLASS} shrink-0 text-kl-muted`}
+          strokeWidth={KL_ICON_STROKE}
+          aria-hidden
+        />
+      </button>
 
       {open ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">

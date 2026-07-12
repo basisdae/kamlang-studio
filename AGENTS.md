@@ -56,6 +56,13 @@ Primary nav labels: รายการเตรียมเปิดร้าน
 
 # Design Rules
 
+## Context vs Content (Platform UI lock)
+
+- **Workspace Switcher = Context** — show the Workspace name once (full label, never truncated).
+- **Page Header = Content** — name the work on this screen (ภาพรวม, จัดซื้อ, สูตร, …).
+- Header / Landing title must **not** repeat the Workspace label when the Switcher already shows it.
+- Canonical rule: `docs/01-vision.md` → UI Principles → Context vs Content · `docs/03-design-system.md` §1.
+
 DO
 
 - Prefer Business Insight tokens (Lemon / White / Light Gray) for new screens
@@ -70,6 +77,7 @@ DON'T
 - Introduce unnecessary animations
 - Increase visual complexity
 - Use emoji as primary icons
+- Duplicate Workspace name in Page Header when Switcher is visible
 
 ---
 

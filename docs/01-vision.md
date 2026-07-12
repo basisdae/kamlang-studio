@@ -60,6 +60,35 @@ Sales stay on an **external POS** and delivery channels (Grab / LINE MAN). Those
 
 ## UI Principles
 
+### Context vs Content (Platform lock)
+
+**Workspace Switcher = Context** (show once).  
+**Page Header = Content** (the work on this screen).
+
+| Layer | Owns | Does not |
+|--------|------|----------|
+| Workspace Switcher | Which Workspace the user is in (full name, readable in ≤1s) | Page job title, summary, primary CTA |
+| Page Header | What the user is doing now (ภาพรวม, จัดซื้อ, สูตร, …) | Repeat the Workspace name |
+
+Examples:
+
+```
+ดำเนินกิจการ ▼
+ภาพรวม
+
+ดำเนินกิจการ ▼
+จัดซื้อ
+
+วิจัยและพัฒนา ▼
+สูตร
+```
+
+Forbidden: Switcher shows `ดำเนินกิจการ` and Header also titles the page `ดำเนินกิจการ`.
+
+Context and Content must not share the same label on one screen.
+
+### Page layers
+
 Every page must include these four layers (not a bare data list):
 
 | # | Layer | Role |

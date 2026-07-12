@@ -1,0 +1,13 @@
+---
+description: Workspace Switcher is Context; Page Header is Content — never duplicate Workspace name
+alwaysApply: true
+---
+
+# Context vs Content (Platform UI lock)
+
+- **Workspace Switcher = Context** — show the Workspace name once (full label, never truncated).
+- **Page Header / Landing title = Content** — name the work on this screen (e.g. ภาพรวม, จัดซื้อ, สูตร).
+- Do **not** repeat the Workspace label in the Header when the Switcher is visible.
+- Context and Content must have distinct jobs on every screen.
+
+Canonical: `docs/01-vision.md` → UI Principles → Context vs Content · Decision 0003 · `AGENTS.md` Design Rules.
