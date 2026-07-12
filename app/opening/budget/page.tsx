@@ -95,14 +95,12 @@ export default function OpeningBudgetPage() {
     []
   );
 
-  const showSkeleton = (loading || assetsLoading) && !ready && !assetsReady;
+  const showSkeleton = assetsLoading && !assetsReady;
   const blockOnError =
-    Boolean(error || assetsError) &&
-    items.length === 0 &&
-    assets.length === 0 &&
-    !showSkeleton;
-  const pageOnline = online && assetsOnline;
-  const pageError = error || assetsError;
+    Boolean(assetsError) && assets.length === 0 && !showSkeleton;
+  /** Smart Budget SSoT = bi_assets — do not AND budget provider online */
+  const pageOnline = assetsOnline;
+  const pageError = assetsError;
 
   const readyPercent =
     liveSummary?.readyPercent ?? getBudgetReadyPercent(items);
@@ -159,9 +157,7 @@ export default function OpeningBudgetPage() {
     : "ตรวจรายการตรวจสอบก่อนเปิดร้าน";
 
   const showEmpty =
-    ready &&
     assetsReady &&
-    !loading &&
     !assetsLoading &&
     !pageError &&
     pageOnline &&
@@ -173,7 +169,7 @@ export default function OpeningBudgetPage() {
       ? `แหล่งข้อมูล: bi_assets · ${inventory.countAll} รายการ`
       : pageError
         ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-        : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
+        : "กำลังเชื่อมต่อ...";
 
   const allLines = useMemo(() => {
     const map = new Map<string, InventoryLine>();
@@ -246,8 +242,8 @@ export default function OpeningBudgetPage() {
       </p>
 
       <BiDataStatus
-        loading={loading || assetsLoading}
-        ready={ready && assetsReady}
+        loading={assetsLoading}
+        ready={assetsReady}
         configured={configured}
         online={pageOnline}
         browserOffline={browserOffline}

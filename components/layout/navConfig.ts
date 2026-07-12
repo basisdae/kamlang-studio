@@ -54,7 +54,7 @@ export const navigationItems: NavigationItem[] = [
   {
     id: "overview",
     title: "ภาพรวม",
-    href: "/",
+    href: "/opening",
     icon: Home,
     mobile: true,
     desktop: true,
@@ -108,7 +108,7 @@ export const navigationItems: NavigationItem[] = [
       {
         id: "opening-initial-stock",
         title: "วัตถุดิบเริ่มต้น",
-        href: "/opening/initial-stock",
+        href: "/opening/checklist/ingredients",
         icon: Package,
         mobile: true,
         desktop: true,

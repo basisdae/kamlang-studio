@@ -1,3 +1,6 @@
-import OverviewPage from "./overview/OverviewPage";
+import { redirect } from "next/navigation";
 
-export default OverviewPage;
+/** Root = Opening Hub (live bi_assets). Seed Overview retired from `/`. */
+export default function HomePage() {
+  redirect("/opening");
+}

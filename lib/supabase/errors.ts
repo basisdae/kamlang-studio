@@ -127,7 +127,30 @@ export function userFacingMessage(error: unknown): string {
 
 /** Development-only diagnostics — never logs keys. */
 export function biDevError(page: string, query: string, error: unknown) {
-  if (process.env.NODE_ENV !== "development") return;
+  biRuntimeError(page, query, error);
+}
+
+/**
+ * Safe runtime diagnostics (browser + server).
+ * Logs table/query, status/code, message — never URL keys or anon key.
+ */
+export function biRuntimeError(
+  page: string,
+  query: string,
+  error: unknown,
+  extra?: { table?: string; httpStatus?: number | string | null }
+) {
   const bi = normalizeError(error);
-  console.error(`[BI] ${page} · ${query}`, bi.code, bi.message);
+  const payload: Record<string, string | number | null> = {
+    page,
+    query,
+    code: bi.code,
+    message: bi.message,
+  };
+  if (extra?.table) payload.table = extra.table;
+  if (extra?.httpStatus != null && extra.httpStatus !== "") {
+    payload.status = String(extra.httpStatus);
+  }
+  if (bi.details) payload.details = bi.details.slice(0, 240);
+  console.error("[BI]", payload);
 }

@@ -103,7 +103,7 @@ function OpeningAssetsInner() {
       ? "แหล่งข้อมูล: Supabase · bi_assets"
       : error
         ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-        : "แหล่งข้อมูล: ยังไม่มีข้อมูล";
+        : "กำลังเชื่อมต่อ...";
 
   const displayAssets = useMemo(
     () => (shotEmpty ? [] : assets),

@@ -21,7 +21,7 @@ import {
 } from "../../data/seed/tangtao";
 import { getSupabaseEnvStatus } from "../../lib/supabase/env";
 import { getBrowserOnline } from "../../lib/supabase/service";
-import { biDevError, userFacingMessage } from "../../lib/supabase/errors";
+import { biRuntimeError, userFacingMessage } from "../../lib/supabase/errors";
 import { assetService } from "../../lib/services/assetService";
 import {
   assetToUiItem,
@@ -149,7 +149,9 @@ export function AssetProvider({ children }: { children: ReactNode }) {
       setDecisionGroups(groups.map(decisionGroupToUi));
       setMode("online");
     } catch (e) {
-      biDevError("AssetProvider", "list + decisionGroups", e);
+      biRuntimeError("AssetProvider", "list + decisionGroups", e, {
+        table: "bi_assets",
+      });
       setError(userFacingMessage(e));
       setMode("offline");
       // No localStorage / seed fallback — Supabase is SSoT
@@ -508,14 +510,12 @@ export function isAssetOwned(status: AssetStatus) {
 }
 
 export function getAssetsSummary(assets: AssetItem[]) {
-  // Money + no-price from shared Opening rollup (Zero Duplicate)
+  // Money + counts from shared Opening rollup (Zero Duplicate · same as Hub)
   const opening = buildOpeningSummary(assets);
-  const owned = assets.filter((a) => isAssetOwned(a.status));
-  const needBuy = assets.filter((a) => isAssetPlannedSpend(a.status));
   return {
     total: opening.totalCount,
-    owned: owned.length,
-    needBuy: needBuy.length,
+    owned: opening.buckets.countOwned,
+    needBuy: opening.buckets.countNeed,
     noPrice: opening.noPriceCount,
     totalValue: opening.inventoryTotal,
   };

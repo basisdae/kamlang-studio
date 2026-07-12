@@ -11,7 +11,7 @@ import {
 } from "react";
 import { getSupabaseEnvStatus } from "../../lib/supabase/env";
 import { getBrowserOnline } from "../../lib/supabase/service";
-import { biDevError, userFacingMessage } from "../../lib/supabase/errors";
+import { biRuntimeError, userFacingMessage } from "../../lib/supabase/errors";
 import { workspaceService } from "../../lib/services/workspaceService";
 import type { Workspace } from "../../lib/types/workspace";
 import type { DataSource } from "../../components/bi/dataSource";
@@ -65,7 +65,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setWorkspace(ws);
       setOnline(true);
     } catch (e) {
-      biDevError("WorkspaceProvider", "getCurrentWorkspace", e);
+      biRuntimeError("WorkspaceProvider", "getCurrentWorkspace", e, {
+        table: "bi_workspaces",
+      });
       setError(userFacingMessage(e));
       setOnline(false);
       // No localStorage fallback — Supabase is SSoT
@@ -94,11 +96,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const value = useMemo<WorkspaceContextValue>(() => {
-    let dataSource: DataSource = "seed";
-    if (!configured) dataSource = "seed";
+    // Never label live Opening OS as "seed" — seed Overview retired from `/`
+    let dataSource: DataSource = "sample";
+    if (!configured) dataSource = "sample";
     else if (loading) dataSource = "sample";
     else if (online) dataSource = "real";
-    else dataSource = "seed";
+    else dataSource = "sample";
 
     return {
       workspace,

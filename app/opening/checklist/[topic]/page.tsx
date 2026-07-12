@@ -93,9 +93,13 @@ export default function OpeningChecklistTopicPage() {
         empty={false}
         hasCachedData={false}
         sourceHint={
-          online
-            ? `รายการเตรียมเปิดร้าน · ${topic.title}`
-            : "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+          loading
+            ? "กำลังดึง bi_assets..."
+            : online
+              ? `รายการเตรียมเปิดร้าน · ${topic.title}`
+              : error
+                ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+                : "กำลังเชื่อมต่อ..."
         }
         skeletonRows={4}
         onRetry={() => void retry()}

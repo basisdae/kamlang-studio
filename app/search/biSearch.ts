@@ -76,7 +76,7 @@ function buildIndex(): SearchHit[] {
       group: "stock",
       title: item.name,
       subtitle: `${item.quantity} ${item.unit}`,
-      href: "/opening/initial-stock",
+      href: "/opening/checklist/ingredients",
       keywords: `${item.name} วัตถุดิบ stock`,
     });
   }

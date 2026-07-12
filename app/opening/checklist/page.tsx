@@ -69,9 +69,13 @@ export default function OpeningChecklistPage() {
         empty={false}
         hasCachedData={false}
         sourceHint={
-          online
-            ? "แหล่งข้อมูล: Supabase · รายการเตรียมเปิดร้าน"
-            : "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+          loading
+            ? "กำลังดึง bi_assets..."
+            : online
+              ? "แหล่งข้อมูล: Supabase · รายการเตรียมเปิดร้าน"
+              : error
+                ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+                : "กำลังเชื่อมต่อ..."
         }
         skeletonRows={4}
         onRetry={() => void retry()}

@@ -1,5 +1,5 @@
 import type { BiSupabaseClient } from "../supabase/client";
-import { configError, normalizeError, notFoundError } from "../supabase/errors";
+import { biRuntimeError, configError, normalizeError, notFoundError } from "../supabase/errors";
 import {
   assetFromDatabase,
   assetToDatabase,
@@ -61,7 +61,13 @@ export function createSupabaseAssetRepository(
         }
 
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) {
+          biRuntimeError("supabaseAssetRepository", "listByWorkspace", error, {
+            table: "bi_assets",
+            httpStatus: (error as { status?: number }).status ?? error.code,
+          });
+          throw error;
+        }
         const rows = (data ?? []) as AssetRow[];
         const { purchases, repairs } = await loadRelated(
           requireClient(),

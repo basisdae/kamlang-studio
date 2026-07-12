@@ -28,11 +28,8 @@ export default function OpeningHubPage() {
   const {
     workspaceName,
     workspaceId,
-    loading: wsLoading,
     configured,
-    online: wsOnline,
     browserOffline,
-    error: wsError,
     retry: retryWs,
   } = useWorkspace();
   const {
@@ -51,10 +48,10 @@ export default function OpeningHubPage() {
     [assets]
   );
 
-  const loading = wsLoading || assetsLoading;
-  const ready = !wsLoading && assetsReady;
-  const online = wsOnline && assetsOnline;
-  const error = wsError ?? assetsError;
+  const loading = assetsLoading;
+  const ready = assetsReady;
+  const online = assetsOnline;
+  const error = assetsError;
   const isEmpty = ready && !loading && !error && online && assets.length === 0;
 
   const isShopReady =
@@ -98,11 +95,13 @@ export default function OpeningHubPage() {
         emptyActionLabel="+ เพิ่มรายการ"
         emptyActionHref="/opening/assets/new"
         sourceHint={
-          online
-            ? `แหล่งข้อมูล: Supabase · ${summary.totalCount} รายการ`
-            : error
-              ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-              : "กำลังเชื่อมต่อ..."
+          loading
+            ? "กำลังดึง bi_assets..."
+            : online
+              ? `แหล่งข้อมูล: Supabase · ${summary.totalCount} รายการ`
+              : error
+                ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
+                : "กำลังเชื่อมต่อ..."
         }
         skeleton={false}
         onRetry={() => void retry()}
