@@ -2,7 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
-import { APP_WORKSPACE_LIST } from "../../lib/workspaces/appWorkspaces";
+import {
+  APP_WORKSPACE_LIST,
+  getAppWorkspaceConfig,
+} from "../../lib/workspaces/appWorkspaces";
+import { isPathInWorkspace } from "../../lib/workspaces/filterNavigation";
+import { consumeReturnPath } from "../../lib/workspaces/returnPath";
 import type { AppWorkspaceId } from "../../lib/workspaces/types";
 import { workspaceAccentStyle } from "../../lib/workspaces/workspaceAccent";
 import { KL_ICON_LG_CLASS, KL_ICON_STROKE } from "../layout/navConfig";
@@ -21,7 +26,15 @@ export default function WorkspaceChooser() {
 
   function choose(id: AppWorkspaceId, landing: string) {
     setWorkspace(id);
-    router.replace(landing);
+    const config = getAppWorkspaceConfig(id);
+    const returnPath = consumeReturnPath();
+    const target =
+      returnPath &&
+      config &&
+      isPathInWorkspace(returnPath, config.visibleModules, id)
+        ? returnPath
+        : landing;
+    router.replace(target);
   }
 
   return (

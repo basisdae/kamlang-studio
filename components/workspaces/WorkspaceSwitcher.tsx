@@ -169,7 +169,7 @@ export default function WorkspaceSwitcher() {
                 })}
               </div>
               <Button variant="secondary" fullWidth onClick={exitWorkspace}>
-                ออกจากโหมดนี้
+                ออกจาก Workspace
               </Button>
             </Card>
           </div>

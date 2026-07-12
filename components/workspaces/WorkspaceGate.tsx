@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppWorkspace } from "../../app/providers/AppWorkspaceProvider";
+import { isPathInWorkspace } from "../../lib/workspaces/filterNavigation";
+import { saveReturnPath } from "../../lib/workspaces/returnPath";
 import WorkspaceChooser from "./WorkspaceChooser";
 
 const PUBLIC_PREFIXES = [
@@ -19,9 +21,15 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
+function isChooserPath(pathname: string): boolean {
+  return pathname === "/modes" || pathname.startsWith("/modes/");
+}
+
 /**
- * Hard gate: ไม่มี Workspace = ไม่เรนเดอร์หน้างาน (เช่น /opening)
- * แสดง Chooser เต็มจอแทน — ไม่ใช่แค่ redirect ช้าๆ
+ * Route guard:
+ * - No currentWorkspace → /modes (save return path)
+ * - /modes always shows Chooser (Entry)
+ * - Path outside selected Workspace → Workspace Landing
  */
 export default function WorkspaceGate({
   children,
@@ -30,17 +38,31 @@ export default function WorkspaceGate({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isHydrated, isWorkspaceSelected } = useAppWorkspace();
+  const { isHydrated, isWorkspaceSelected, config } = useAppWorkspace();
 
   const needsChooser =
     isHydrated && !isWorkspaceSelected && !isPublicPath(pathname);
 
+  const pathOutsideWorkspace =
+    isHydrated &&
+    isWorkspaceSelected &&
+    config != null &&
+    !isChooserPath(pathname) &&
+    !isPublicPath(pathname) &&
+    !isPathInWorkspace(pathname, config.visibleModules, config.id);
+
   useEffect(() => {
     if (!needsChooser) return;
-    if (pathname !== "/modes") {
+    if (!isChooserPath(pathname)) {
+      saveReturnPath(pathname);
       router.replace("/modes");
     }
   }, [needsChooser, pathname, router]);
+
+  useEffect(() => {
+    if (!pathOutsideWorkspace || !config) return;
+    router.replace(config.defaultLanding);
+  }, [pathOutsideWorkspace, config, router]);
 
   if (!isHydrated) {
     return (
@@ -50,8 +72,7 @@ export default function WorkspaceGate({
     );
   }
 
-  // /modes is always Chooser entry — even if a Workspace is already selected
-  if (pathname === "/modes" || pathname.startsWith("/modes/")) {
+  if (isChooserPath(pathname)) {
     return (
       <div className="min-h-screen bg-kl-ivory px-4 py-8 text-kl-brown">
         <div className="mx-auto w-full max-w-[var(--bi-app-width)]">
@@ -67,6 +88,14 @@ export default function WorkspaceGate({
         <div className="mx-auto w-full max-w-[var(--bi-app-width)]">
           <WorkspaceChooser />
         </div>
+      </div>
+    );
+  }
+
+  if (pathOutsideWorkspace) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-[var(--bi-app-width)] items-center justify-center px-4">
+        <p className="kl-type-caption text-kl-muted">กำลังเข้า Workspace…</p>
       </div>
     );
   }

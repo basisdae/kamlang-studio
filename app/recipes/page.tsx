@@ -110,7 +110,7 @@ export default function RecipesPage() {
 
       {filteredStandardRecipes.length > 0 ? (
         <section className="space-y-3">
-          <SectionTitle module="recipes">สูตรตัวอย่าง</SectionTitle>
+          <SectionTitle module="recipes">สูตรมาตรฐาน</SectionTitle>
           <div className="space-y-3">
             {filteredStandardRecipes.map((recipe) => (
               <RecipeLibraryCard

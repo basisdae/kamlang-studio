@@ -8,6 +8,7 @@ import {
 } from "../../components/layout/navConfig";
 import {
   ALWAYS_VISIBLE_NAV_IDS,
+  getAppWorkspaceConfig,
   WORKSPACE_LANDING_PATHS,
 } from "./appWorkspaces";
 import type { AppWorkspaceId, ModuleId } from "./types";
@@ -69,7 +70,23 @@ function isWorkspaceLandingPath(
 ): boolean {
   if (!workspaceId) return false;
   const paths = WORKSPACE_LANDING_PATHS[workspaceId] ?? [];
-  return paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  // Exact landing only — do not treat /opening/budget as Opening Landing
+  return paths.some((p) => pathname === p);
+}
+
+function pathMatchesNavItem(
+  pathname: string,
+  item: NavigationItem,
+  workspaceId?: AppWorkspaceId | null
+): boolean {
+  // overview href in master nav is /opening — resolve to this Workspace's landing
+  if (item.id === "overview") {
+    const landing =
+      (workspaceId && getAppWorkspaceConfig(workspaceId)?.defaultLanding) ||
+      item.href;
+    return isNavActive(pathname, landing);
+  }
+  return isNavActive(pathname, item.href);
 }
 
 /**
@@ -102,7 +119,8 @@ export function isPathInWorkspace(
   const allowed = allowedSet(visibleModules);
   const candidates = [...getDesktopNavItems(), ...getLegacyNavItems()];
   return candidates.some(
-    (item) => isAllowed(item, allowed) && isNavActive(pathname, item.href)
+    (item) =>
+      isAllowed(item, allowed) &&
+      pathMatchesNavItem(pathname, item, workspaceId)
   );
 }
-
