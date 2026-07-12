@@ -4,6 +4,8 @@ import { Noto_Sans_Thai } from "next/font/google";
 import UndoToastHost from "../components/ui/UndoToastHost";
 import BiInfoToastHost from "../components/ui/BiInfoToastHost";
 import { AuthProvider } from "./auth/AuthProvider";
+import { AppWorkspaceProvider } from "./providers/AppWorkspaceProvider";
+import WorkspaceGate from "../components/workspaces/WorkspaceGate";
 import "./globals.css";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -46,9 +48,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-kl-ivory text-kl-text font-sans antialiased">
         <AuthProvider>
-          {children}
-          <UndoToastHost />
-          <BiInfoToastHost />
+          <AppWorkspaceProvider>
+            <WorkspaceGate>{children}</WorkspaceGate>
+            <UndoToastHost />
+            <BiInfoToastHost />
+          </AppWorkspaceProvider>
         </AuthProvider>
       </body>
     </html>

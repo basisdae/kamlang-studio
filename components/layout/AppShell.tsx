@@ -3,6 +3,8 @@ import Link from "next/link";
 import AppNav from "./AppNav";
 import DesktopSidebar from "./DesktopSidebar";
 import IconButtonLink from "../ui/IconButtonLink";
+import WorkspaceSwitcher from "../workspaces/WorkspaceSwitcher";
+import WorkspaceChrome from "../workspaces/WorkspaceChrome";
 import { KL_ICON_CLASS, KL_ICON_STROKE } from "./navConfig";
 
 type AppShellProps = {
@@ -41,19 +43,24 @@ export default function AppShell({
   const mainPadding = compact
     ? "kl-page-safe-top--compact pb-5"
     : "kl-page-safe-top pb-7";
-  const contentGap = compact ? "space-y-4" : "space-y-5";
+  const contentGap = compact ? "space-y-3" : "space-y-5";
 
   return (
     <div className="kl-shell md:flex">
-      <DesktopSidebar />
+      <WorkspaceChrome>
+        <DesktopSidebar />
+      </WorkspaceChrome>
 
       <div className="kl-shell-main">
         <main
           className={`kl-page-above-nav min-h-screen overflow-x-hidden bg-kl-ivory px-4 text-kl-brown sm:px-5 ${mainPadding}`}
         >
-          <div
-            className={`mx-auto w-full min-w-0 max-w-[var(--bi-app-width)] ${contentGap}`}
-          >
+            <div className="mx-auto w-full min-w-0 max-w-[var(--bi-app-width)]">
+              <WorkspaceSwitcher />
+            </div>
+            <div
+              className={`mx-auto w-full min-w-0 max-w-[var(--bi-app-width)] ${contentGap}`}
+            >
             {hidePageHeader ? (
               <>
                 {backHref ? (
@@ -119,7 +126,9 @@ export default function AppShell({
           </div>
         </main>
 
-        <AppNav />
+        <WorkspaceChrome>
+          <AppNav />
+        </WorkspaceChrome>
       </div>
     </div>
   );

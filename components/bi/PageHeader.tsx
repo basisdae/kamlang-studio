@@ -15,7 +15,7 @@ export default function PageHeader({
     <header className="space-y-1.5">
       <p className="kl-type-label">{title}</p>
       {workspace ? (
-        <p className="kl-type-caption">Workspace: {workspace}</p>
+        <p className="kl-type-caption">ร้าน: {workspace}</p>
       ) : null}
       {tagline ? (
         <p className="kl-type-helper italic">{tagline}</p>

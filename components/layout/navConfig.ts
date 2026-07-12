@@ -3,6 +3,7 @@ import {
   Beef,
   ClipboardList,
   CalendarDays,
+  Calculator,
   FileText,
   Handshake,
   Scale,
@@ -21,6 +22,7 @@ import {
   UtensilsCrossed,
   Wallet,
   Wrench,
+  FlaskConical,
 } from "lucide-react";
 
 /**
@@ -67,7 +69,7 @@ export const navigationItems: NavigationItem[] = [
     icon: Map,
     mobile: true,
     desktop: true,
-    mobilePlacement: "tab",
+    mobilePlacement: "more",
     children: [
       {
         id: "opening-checklist",
@@ -134,7 +136,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         id: "opening-activity",
-        title: "กิจกรรม Workspace",
+        title: "กิจกรรมร้าน",
         href: "/opening/activity",
         icon: History,
         mobile: true,
@@ -235,6 +237,24 @@ export const navigationItems: NavigationItem[] = [
     mobilePlacement: "more",
   },
   {
+    id: "recipe-builder",
+    title: "Recipe Builder",
+    href: "/recipes/builder",
+    icon: FlaskConical,
+    mobile: true,
+    desktop: true,
+    mobilePlacement: "more",
+  },
+  {
+    id: "costing",
+    title: "ต้นทุน",
+    href: "/costing",
+    icon: Calculator,
+    mobile: true,
+    desktop: true,
+    mobilePlacement: "more",
+  },
+  {
     id: "settings",
     title: "ตั้งค่า",
     href: "/settings",
@@ -249,9 +269,8 @@ export const navigationItems: NavigationItem[] = [
     href: "/today-ops",
     icon: Home,
     mobile: true,
-    desktop: false,
+    desktop: true,
     mobilePlacement: "more",
-    group: "legacy",
   },
   {
     id: "production",
@@ -259,9 +278,8 @@ export const navigationItems: NavigationItem[] = [
     href: "/production",
     icon: ClipboardList,
     mobile: true,
-    desktop: false,
+    desktop: true,
     mobilePlacement: "more",
-    group: "legacy",
   },
   {
     id: "menus",
@@ -279,9 +297,8 @@ export const navigationItems: NavigationItem[] = [
     href: "/inventory",
     icon: Package,
     mobile: true,
-    desktop: false,
+    desktop: true,
     mobilePlacement: "more",
-    group: "legacy",
   },
   {
     id: "today",
@@ -382,8 +399,18 @@ export function isNavActive(pathname: string, href: string) {
     return pathname === "/";
   }
 
-  if (href === "/opening") {
-    return pathname === "/opening";
+  /** Workspace hub landings — exact match only */
+  const exactLandings = new Set([
+    "/opening",
+    "/operations",
+    "/ops",
+    "/lab",
+    "/marketing",
+    "/finance",
+    "/explorer",
+  ]);
+  if (exactLandings.has(href)) {
+    return pathname === href;
   }
 
   return pathname === href || pathname.startsWith(`${href}/`);

@@ -16,12 +16,12 @@ export default function InsightPage() {
       <EmptyState
         icon={Lightbulb}
         title="Insight กำลังจะมา"
-        hint="รอบนี้โฟกัสแผนเปิดร้านและงบประมาณก่อน ตัวเลขทุกตัวจะกดเจาะลึกได้ในอนาคต"
-        actionLabel="ไปแผนเปิดร้าน"
+        hint="Command Center ของทั้งแพลตฟอร์ม — อ่านและสรุปจาก Shared Core ไม่ใช่ที่กรอกข้อมูล"
+        actionLabel="ไปเปิดร้าน"
         actionHref="/opening"
       />
-      <ButtonLink href="/" variant="secondary" fullWidth>
-        กลับภาพรวม
+      <ButtonLink href="/modes" variant="secondary" fullWidth>
+        เปลี่ยน Workspace
       </ButtonLink>
     </AppShell>
   );

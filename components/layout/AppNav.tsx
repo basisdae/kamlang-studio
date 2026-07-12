@@ -2,26 +2,46 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getNotificationCount } from "../../app/lib/notificationService";
+import { useAppWorkspace } from "../../app/providers/AppWorkspaceProvider";
+import { getWorkspaceMobileTabNav } from "../../lib/workspaces/filterNavigation";
 import AppNavMoreSheet from "./AppNavMoreSheet";
 import {
-  getMobileTabItems,
   getNavIconStroke,
   isMoreNavActive,
   isNavActive,
   KL_ICON_CLASS,
   moreNavIcon,
+  type NavigationItem,
 } from "./navConfig";
 
 const MoreIcon = moreNavIcon;
 
 export default function AppNav() {
   const pathname = usePathname();
+  const { config } = useAppWorkspace();
   const [moreOpenForPath, setMoreOpenForPath] = useState<string | null>(null);
   const isMoreOpen = moreOpenForPath === pathname;
-  const tabItems = getMobileTabItems();
-  // Defer localStorage read until after mount — avoids SSR/client hydration mismatch
+  const visibleModules = config?.visibleModules ?? "all";
+
+  const tabItems = useMemo(() => {
+    const filtered = getWorkspaceMobileTabNav(visibleModules);
+    // Prefer workspace landing as first tab when overview is present
+    if (!config) return filtered;
+    return filtered.map((item): NavigationItem => {
+      if (item.id === "overview") {
+        return {
+          ...item,
+          href: config.defaultLanding,
+          title: config.label,
+          shortTitle: "ภาพรวม",
+        };
+      }
+      return item;
+    });
+  }, [visibleModules, config]);
+
   const [notificationCount, setNotificationCount] = useState(0);
   useEffect(() => {
     setNotificationCount(getNotificationCount());
@@ -51,12 +71,12 @@ export default function AppNav() {
                       className={KL_ICON_CLASS}
                       strokeWidth={getNavIconStroke()}
                     />
-                    {item.href === "/" && notificationCount > 0 ? (
+                    {item.id === "overview" && notificationCount > 0 ? (
                       <span className="kl-notification-dot">
                         {notificationCount > 9 ? "9+" : notificationCount}
                       </span>
                     ) : null}
-                    {item.badge != null && item.href !== "/" ? (
+                    {item.badge != null && item.id !== "overview" ? (
                       <span className="kl-notification-dot">{item.badge}</span>
                     ) : null}
                   </span>

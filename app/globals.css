@@ -248,7 +248,7 @@ body {
 }
 
 .kl-page-safe-top--compact {
-  padding-top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
+  padding-top: max(0.5rem, calc(env(safe-area-inset-top, 0px) + 0.25rem));
 }
 
 .kl-sheet-builder {

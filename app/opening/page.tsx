@@ -9,7 +9,6 @@ import OpeningHeroCard from "../../components/bi/OpeningHeroCard";
 import OpeningHubSkeleton from "../../components/bi/OpeningHubSkeleton";
 import OpeningRecentActivity from "../../components/bi/OpeningRecentActivity";
 import RecommendationPanel from "../../components/bi/RecommendationPanel";
-import PageHeader from "../../components/bi/PageHeader";
 import ButtonLink from "../../components/ui/ButtonLink";
 import { useWorkspace } from "../providers/WorkspaceProvider";
 import { useAssets } from "./assets/AssetsProvider";
@@ -20,13 +19,11 @@ import {
 } from "./lib/openingDomain";
 
 /**
- * Opening Hub = Dashboard
- * Goal: understand shop readiness in ~30 seconds.
- * Checklist = workflow (separate route) · same bi_assets SSoT.
+ * Opening Hub — data first on ~390px:
+ * Workspace chip · Summary · Ring · CTA (แล้วค่อยรายละเอียดด้านล่าง)
  */
 export default function OpeningHubPage() {
   const {
-    workspaceName,
     workspaceId,
     configured,
     browserOffline,
@@ -70,42 +67,33 @@ export default function OpeningHubPage() {
     await retryAssets();
   };
 
+  const showStatusPanel =
+    !configured ||
+    browserOffline ||
+    Boolean(error) ||
+    (isEmpty && !loading);
+
   return (
     <AppShell title="" hidePageHeader compact>
-      <PageHeader
-        title="เปิดร้าน"
-        workspace={workspaceName}
-        subtitle="ภาพรวม"
-      />
-      <p className="kl-type-helper -mt-1">
-        วันนี้ร้านยังต้องเตรียมอะไรบ้าง
-      </p>
-
-      <BiDataStatus
-        loading={loading}
-        ready={ready}
-        configured={configured}
-        online={online}
-        browserOffline={browserOffline}
-        error={error}
-        empty={isEmpty}
-        hasCachedData={false}
-        emptyTitle="ยังไม่มีรายการ"
-        emptyHint="เริ่มเพิ่มรายการแรกได้เลย"
-        emptyActionLabel="+ เพิ่มรายการ"
-        emptyActionHref="/opening/assets/new"
-        sourceHint={
-          loading
-            ? "กำลังดึง bi_assets..."
-            : online
-              ? `แหล่งข้อมูล: Supabase · ${summary.totalCount} รายการ`
-              : error
-                ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
-                : "กำลังเชื่อมต่อ..."
-        }
-        skeleton={false}
-        onRetry={() => void retry()}
-      />
+      {showStatusPanel ? (
+        <BiDataStatus
+          loading={false}
+          ready={ready}
+          configured={configured}
+          online={online}
+          browserOffline={browserOffline}
+          error={error}
+          empty={isEmpty && !loading}
+          hasCachedData={false}
+          emptyTitle="ยังไม่มีรายการ"
+          emptyHint="เริ่มเพิ่มรายการแรกได้เลย"
+          emptyActionLabel="+ เพิ่มรายการ"
+          emptyActionHref="/opening/assets/new"
+          sourceHint={error ? "โหลดไม่สำเร็จ — กดลองใหม่" : undefined}
+          skeleton={false}
+          onRetry={() => void retry()}
+        />
+      ) : null}
 
       {loading ? <OpeningHubSkeleton /> : null}
 

@@ -2,10 +2,13 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useAppWorkspace } from "../../app/providers/AppWorkspaceProvider";
 import {
-  getLegacyNavItems,
-  getMobileMoreItems,
+  getWorkspaceLegacyNav,
+  getWorkspaceMobileMoreNav,
+} from "../../lib/workspaces/filterNavigation";
+import {
   getNavIconStroke,
   isNavActive,
   KL_ICON_CLASS,
@@ -55,6 +58,18 @@ function MoreNavRow({
 }
 
 export default function AppNavMoreSheet({ isOpen, pathname, onClose }: Props) {
+  const { config } = useAppWorkspace();
+  const visibleModules = config?.visibleModules ?? "all";
+
+  const moreItems = useMemo(
+    () => getWorkspaceMobileMoreNav(visibleModules),
+    [visibleModules]
+  );
+  const legacyItems = useMemo(
+    () => getWorkspaceLegacyNav(visibleModules),
+    [visibleModules]
+  );
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -71,9 +86,6 @@ export default function AppNavMoreSheet({ isOpen, pathname, onClose }: Props) {
   if (!isOpen) {
     return null;
   }
-
-  const moreItems = getMobileMoreItems();
-  const legacyItems = getLegacyNavItems();
 
   return (
     <>
@@ -100,22 +112,37 @@ export default function AppNavMoreSheet({ isOpen, pathname, onClose }: Props) {
             ))}
           </nav>
 
-          <div className="border-t border-[var(--kl-border)] px-5 py-3">
-            <div className="kl-type-label">Legacy</div>
-            <p className="kl-type-helper mt-1">
-              เครื่องมือครัวจาก Kamlang Studio — เก็บไว้ใช้ต่อ
-            </p>
+          {legacyItems.length > 0 ? (
+            <>
+              <div className="border-t border-[var(--kl-border)] px-5 py-3">
+                <div className="kl-type-label">Legacy</div>
+                <p className="kl-type-helper mt-1">
+                  เครื่องมือครัวจาก Kamlang Studio — เก็บไว้ใช้ต่อ
+                </p>
+              </div>
+              <nav>
+                {legacyItems.map((item) => (
+                  <MoreNavRow
+                    key={item.id}
+                    item={item}
+                    pathname={pathname}
+                    onNavigate={onClose}
+                  />
+                ))}
+              </nav>
+            </>
+          ) : null}
+
+          <div className="border-t border-[var(--kl-border)] px-5 py-4">
+            <p className="kl-type-label mb-2">Command Center</p>
+            <Link
+              href="/insight"
+              onClick={onClose}
+              className="kl-btn kl-btn-secondary flex min-h-[2.75rem] w-full items-center justify-center kl-pressable"
+            >
+              Business Insight
+            </Link>
           </div>
-          <nav>
-            {legacyItems.map((item) => (
-              <MoreNavRow
-                key={item.id}
-                item={item}
-                pathname={pathname}
-                onNavigate={onClose}
-              />
-            ))}
-          </nav>
         </div>
       </div>
     </>

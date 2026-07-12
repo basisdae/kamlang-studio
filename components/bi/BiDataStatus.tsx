@@ -92,6 +92,10 @@ export default function BiDataStatus({
   ...input
 }: Props) {
   const status = resolveBiDataStatus(input);
+  /** Quiet when healthy online — owner sees data, not system metadata */
+  const showStatusChrome =
+    status !== "online" && !(status === "empty" && !sourceHint);
+
   const muted =
     status === "loading" ||
     status === "error" ||
@@ -99,23 +103,31 @@ export default function BiDataStatus({
     status === "unconfigured" ||
     status === "offline";
 
+  const showBadge =
+    status === "offline" ||
+    status === "error" ||
+    status === "cached" ||
+    status === "unconfigured";
+
   return (
     <div className={`space-y-3 ${className}`.trim()}>
-      <div className="flex flex-wrap items-center gap-2">
-        <span
-          className={`inline-flex min-h-[2rem] items-center rounded-full border px-3 text-[length:var(--kl-type-label-size)] font-medium ${
-            muted
-              ? "border-[var(--kl-border)] bg-[var(--bi-surface-muted)] text-[var(--bi-text-secondary)]"
-              : "border-[var(--bi-lemon)] bg-[rgb(231_246_91/0.35)] text-[var(--bi-text-primary)]"
-          }`}
-          data-bi-status={status}
-          role="status"
-        >
-          {BADGE_LABEL[status]}
-        </span>
-      </div>
+      {showBadge ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={`inline-flex min-h-[2rem] items-center rounded-full border px-3 text-[length:var(--kl-type-label-size)] font-medium ${
+              muted
+                ? "border-[var(--kl-border)] bg-[var(--bi-surface-muted)] text-[var(--bi-text-secondary)]"
+                : "border-[var(--bi-lemon)] bg-[rgb(231_246_91/0.35)] text-[var(--bi-text-primary)]"
+            }`}
+            data-bi-status={status}
+            role="status"
+          >
+            {BADGE_LABEL[status]}
+          </span>
+        </div>
+      ) : null}
 
-      {sourceHint ? (
+      {sourceHint && showStatusChrome ? (
         <p className="kl-type-caption -mt-1">{sourceHint}</p>
       ) : null}
 
