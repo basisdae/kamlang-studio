@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getNotificationCount } from "../../app/lib/notificationService";
 import { useAppWorkspace } from "../../app/providers/AppWorkspaceProvider";
 import { getWorkspaceMobileTabNav } from "../../lib/workspaces/filterNavigation";
@@ -21,13 +21,13 @@ const MoreIcon = moreNavIcon;
 export default function AppNav() {
   const pathname = usePathname();
   const { config } = useAppWorkspace();
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
   const [moreOpenForPath, setMoreOpenForPath] = useState<string | null>(null);
   const isMoreOpen = moreOpenForPath === pathname;
   const visibleModules = config?.visibleModules ?? "all";
 
   const tabItems = useMemo(() => {
     const filtered = getWorkspaceMobileTabNav(visibleModules);
-    // Prefer workspace landing as first tab when overview is present
     if (!config) return filtered;
     return filtered.map((item): NavigationItem => {
       if (item.id === "overview") {
@@ -46,7 +46,19 @@ export default function AppNav() {
   useEffect(() => {
     setNotificationCount(getNotificationCount());
   }, [pathname]);
-  const isMoreActive = isMoreNavActive(pathname);
+
+  // Close More when route changes; never keep a sticky open/active look
+  useEffect(() => {
+    setMoreOpenForPath(null);
+  }, [pathname]);
+
+  const isMoreActive = isMoreNavActive(pathname, tabItems);
+
+  const closeMore = () => {
+    setMoreOpenForPath(null);
+    // Drop sticky keyboard / tap focus so yellow Active cannot linger
+    moreBtnRef.current?.blur();
+  };
 
   return (
     <>
@@ -63,7 +75,7 @@ export default function AppNav() {
                   key={item.id}
                   href={item.href}
                   className="kl-nav-item"
-                  data-active={isActive}
+                  data-active={isActive ? "true" : "false"}
                   aria-current={isActive ? "page" : undefined}
                 >
                   <span className="relative">
@@ -86,18 +98,23 @@ export default function AppNav() {
             })}
 
             <button
+              ref={moreBtnRef}
               type="button"
               className="kl-nav-item"
-              data-active={isMoreActive || isMoreOpen}
+              data-active={isMoreActive ? "true" : "false"}
               aria-expanded={isMoreOpen}
               aria-haspopup="dialog"
+              aria-current={isMoreActive ? "page" : undefined}
               onClick={() =>
                 setMoreOpenForPath((current) =>
                   current === pathname ? null : pathname
                 )
               }
             >
-              <MoreIcon className={KL_ICON_CLASS} strokeWidth={getNavIconStroke()} />
+              <MoreIcon
+                className={KL_ICON_CLASS}
+                strokeWidth={getNavIconStroke()}
+              />
               <span className="kl-nav-label">เพิ่มเติม</span>
             </button>
           </div>
@@ -107,7 +124,7 @@ export default function AppNav() {
       <AppNavMoreSheet
         isOpen={isMoreOpen}
         pathname={pathname}
-        onClose={() => setMoreOpenForPath(null)}
+        onClose={closeMore}
       />
     </>
   );

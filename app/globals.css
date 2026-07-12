@@ -1331,6 +1331,7 @@ body {
     padding: 0.375rem 0.25rem;
     color: var(--kl-muted);
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition: var(--kl-transition-surface),
       transform var(--kl-duration-fast) var(--kl-ease-spring);
   }
@@ -1339,10 +1340,28 @@ body {
     display: block;
   }
 
+  /* Pressed feedback only — never leave a sticky Active look */
   .kl-nav-item:active {
     transform: scale(0.96);
   }
 
+  .kl-nav-item:focus {
+    outline: none;
+  }
+
+  .kl-nav-item:focus-visible {
+    outline: 2px solid var(--bi-text-primary);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .kl-nav-item:hover:not([data-active="true"]) {
+      background-color: var(--bi-surface-muted);
+      color: var(--bi-text-primary);
+    }
+  }
+
+  /* Active = current route only (exactly one tab / More) */
   .kl-nav-item[data-active="true"] {
     background-color: var(--kl-nav-active-strong);
     color: var(--bi-text-primary);

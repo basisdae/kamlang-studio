@@ -412,7 +412,18 @@ export function isNavActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function isMoreNavActive(pathname: string) {
+/**
+ * More is active only when the current route is a More-sheet destination
+ * and no primary tab already owns that route (exactly one bottom Active).
+ */
+export function isMoreNavActive(
+  pathname: string,
+  tabItems: NavigationItem[] = getMobileTabItems()
+) {
+  if (tabItems.some((item) => isNavActive(pathname, item.href))) {
+    return false;
+  }
+
   return (
     getMobileMoreItems().some((item) => isNavActive(pathname, item.href)) ||
     getLegacyNavItems().some((item) => isNavActive(pathname, item.href))
