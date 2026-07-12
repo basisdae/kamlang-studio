@@ -1,10 +1,9 @@
 /**
  * Re-export Tang Tao seed + calendar helpers.
- * Source of truth: data/seed/tangtao.ts
+ * Clean-start: no mock calendar tasks.
  */
 
 export {
-  OPENING_CALENDAR_TASKS,
   WORKSPACE_NAME,
   type CalendarPriority,
   type CalendarTaskStatus,
@@ -16,7 +15,12 @@ import type {
   CalendarTaskStatus,
   OpeningCalendarTask,
 } from "../../../data/seed/tangtao";
-import { OPENING_CALENDAR_TASKS } from "../../../data/seed/tangtao";
+import { OPENING_CALENDAR_TASKS as SEED_OPENING_CALENDAR_TASKS } from "../../../data/seed/tangtao";
+import { isCleanStart } from "../../../lib/bi/cleanStart";
+
+export const OPENING_CALENDAR_TASKS: OpeningCalendarTask[] = isCleanStart()
+  ? []
+  : SEED_OPENING_CALENDAR_TASKS;
 
 export const CALENDAR_STATUS_LABELS: Record<CalendarTaskStatus, string> = {
   done: "เสร็จแล้ว",

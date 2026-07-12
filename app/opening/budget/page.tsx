@@ -37,7 +37,7 @@ import {
   type InventoryLine,
 } from "../../../lib/services/inventoryRollup";
 import OpeningSummaryCard from "../../../components/bi/OpeningSummaryCard";
-import { buildOpeningSummary } from "../lib/openingDomain";
+import { buildOpeningSummary, openingAssetsOnly } from "../lib/openingDomain";
 import {
   matchesTextSearch,
   type ListSortKey,
@@ -92,7 +92,10 @@ export default function OpeningBudgetPage() {
   }, [view.defaultFilter, financeView]);
 
   const openingSummary = useMemo(() => buildOpeningSummary(assets), [assets]);
-  const smartBudget = useMemo(() => buildSmartBudget(assets), [assets]);
+  const smartBudget = useMemo(
+    () => buildSmartBudget(openingAssetsOnly(assets)),
+    [assets]
+  );
   const inventory = openingSummary.buckets;
   const assetsById = useMemo(() => {
     const map = new Map<string, AssetItem>();

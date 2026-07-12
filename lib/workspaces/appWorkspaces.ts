@@ -75,9 +75,9 @@ const LAB_MODULES = [
 
 const MARKETING_MODULES = [
   "overview",
+  "opening-checklist",
   "timeline",
   "opening-documents",
-  "opening-calendar",
 ] as const;
 
 const FINANCE_MODULES = [
@@ -134,12 +134,28 @@ export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
   marketing: {
     id: "marketing",
     label: "การตลาด",
-    description: "พื้นที่การตลาดกำลังเริ่มต้น",
+    description: "Marketing Readiness — เตรียมความพร้อมก่อนเปิดการตลาด",
     icon: Megaphone,
     defaultLanding: PLATFORM_LANDING_PATH,
     visibleModules: [...MARKETING_MODULES],
-    shortcuts: [{ label: "ไทม์ไลน์", href: "/timeline" }],
+    shortcuts: [
+      { label: "รายการเตรียมการตลาด", href: "/opening/checklist" },
+      { label: "หน้าร้าน", href: "/opening/checklist/mkt-storefront" },
+    ],
     accent: "marketing",
+    moduleConfig: {
+      "opening-checklist": {
+        summaryMode: "marketing",
+        visibleSections: [
+          "mkt-storefront",
+          "mkt-online",
+          "mkt-branding",
+          "mkt-print",
+          "mkt-promotion",
+          "mkt-content",
+        ],
+      },
+    },
   },
   finance: {
     id: "finance",

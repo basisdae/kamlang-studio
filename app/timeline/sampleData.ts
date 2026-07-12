@@ -1,17 +1,22 @@
 /**
  * Re-export Tang Tao seed + timeline helpers.
  * Source of truth: data/seed/tangtao.ts
+ * Clean-start: no mock timeline events.
  */
 
 export {
-  TIMELINE_EVENTS,
   WORKSPACE_NAME,
   type TimelineEvent,
   type TimelineEventKind,
 } from "../../data/seed/tangtao";
 
 import type { TimelineEvent } from "../../data/seed/tangtao";
-import { TIMELINE_EVENTS } from "../../data/seed/tangtao";
+import { TIMELINE_EVENTS as SEED_TIMELINE_EVENTS } from "../../data/seed/tangtao";
+import { isCleanStart } from "../../lib/bi/cleanStart";
+
+export const TIMELINE_EVENTS: TimelineEvent[] = isCleanStart()
+  ? []
+  : SEED_TIMELINE_EVENTS;
 
 export type TimelineDayGroup = {
   dateKey: string;

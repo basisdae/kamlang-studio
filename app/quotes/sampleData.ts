@@ -1,17 +1,22 @@
 /**
  * Quote Compare — seed re-export + UI labels.
- * Source of truth: data/seed/tangtao.ts
+ * Clean-start: no mock quote groups.
  */
 
 export {
-  QUOTE_COMPARE_GROUPS,
   WORKSPACE_NAME,
   type QuoteCompareGroup,
   type QuoteOption,
   type QuotePickTag,
 } from "../../data/seed/tangtao";
 
-import type { QuotePickTag } from "../../data/seed/tangtao";
+import type { QuoteCompareGroup, QuotePickTag } from "../../data/seed/tangtao";
+import { QUOTE_COMPARE_GROUPS as SEED_QUOTE_COMPARE_GROUPS } from "../../data/seed/tangtao";
+import { isCleanStart } from "../../lib/bi/cleanStart";
+
+export const QUOTE_COMPARE_GROUPS: QuoteCompareGroup[] = isCleanStart()
+  ? []
+  : SEED_QUOTE_COMPARE_GROUPS;
 
 export const QUOTE_PICK_LABELS: Record<QuotePickTag, string> = {
   best_price: "Best Price",

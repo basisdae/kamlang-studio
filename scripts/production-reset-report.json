@@ -1,0 +1,43 @@
+{
+  "cleared": {
+    "activity": 1,
+    "purchases": 0,
+    "repairs": 0,
+    "budget": 39,
+    "decisionGroups": 0,
+    "assets": 57
+  },
+  "openingTemplateCount": 39,
+  "marketingTemplateCount": 16,
+  "pricedCount": 0,
+  "notPlannedCount": 0,
+  "openingSample": [
+    "ซอสมะเขือเทศโรซ่า",
+    "ซอสพริกโรซ่า",
+    "มายองเนสกลิ่นชีส aro",
+    "ซอสพิซซ่า เพียวฟู้ดส์",
+    "มายองเนส Best Foods",
+    "นูเทลล่า",
+    "น้ำพริกเผา aro",
+    "แยมมะนาว"
+  ],
+  "marketingNames": [
+    "เมนูเล่ม",
+    "เมนูติดผนัง",
+    "QR PromptPay",
+    "QR Line OA",
+    "Facebook",
+    "Google Maps",
+    "Grab",
+    "LINE MAN",
+    "ป้ายร้าน",
+    "ป้ายโปรโมชั่น",
+    "โบว์ชัวร์",
+    "นามบัตร",
+    "Content",
+    "Branding",
+    "โปรโมชั่น",
+    "ของแจก"
+  ],
+  "generatedAt": "2026-07-12T14:19:58.456Z"
+}

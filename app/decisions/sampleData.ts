@@ -1,17 +1,19 @@
 /**
  * Decisions helpers — Decision Queue from Tang Tao seed.
- * Source of truth: data/seed/tangtao.ts
+ * Clean-start: empty queue.
  */
 
 export {
-  DECISIONS,
   WORKSPACE_NAME,
   type DecisionItem,
   type DecisionPriority,
 } from "../../data/seed/tangtao";
 
 import type { DecisionItem, DecisionPriority } from "../../data/seed/tangtao";
-import { DECISIONS } from "../../data/seed/tangtao";
+import { DECISIONS as SEED_DECISIONS } from "../../data/seed/tangtao";
+import { isCleanStart } from "../../lib/bi/cleanStart";
+
+export const DECISIONS: DecisionItem[] = isCleanStart() ? [] : SEED_DECISIONS;
 
 export const DECISION_PRIORITY_LABELS: Record<DecisionPriority, string> = {
   must: "Must",

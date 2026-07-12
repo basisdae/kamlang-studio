@@ -18,7 +18,6 @@ import {
   defaultCategoryForTopic,
   filterByUxStatus,
   type OpeningTopic,
-  type OpeningTopicId,
   type StatusFilter,
   type TopicProgress,
 } from "../../lib/openingDomain";
@@ -31,7 +30,7 @@ import ChecklistRow from "./ChecklistRow";
 const STATUS_CHIPS: { id: StatusFilter; label: string }[] = [
   { id: "all", label: "ทั้งหมด" },
   { id: "owned", label: "มีแล้ว" },
-  { id: "need", label: "ต้องจัดหา" },
+  { id: "need", label: "ยังไม่เริ่ม / ต้องจัดหา" },
   { id: "ordered", label: "สั่งแล้ว" },
   { id: "received", label: "ได้รับแล้ว" },
 ];
@@ -100,7 +99,8 @@ export default function ChecklistTopicBoard({
     const created = await addAsset({
       ...base,
       name,
-      category: defaultCategoryForTopic(topic.id as OpeningTopicId),
+      category: defaultCategoryForTopic(topic.id),
+      requiredForOpening: !String(topic.id).startsWith("mkt-"),
       documentIds: [],
       imageUrl: null,
       purchaseHistory: [],

@@ -87,6 +87,17 @@ Forbidden: Switcher shows `ดำเนินกิจการ` and Header also
 
 Context and Content must not share the same label on one screen.
 
+### Marketing Readiness
+
+**Marketing Workspace** = prepare marketing readiness — **not** a Campaign Manager.
+
+- Protagonist: Checklist (same Module as Opening; different categories)
+- Landing: Ready % · remaining · next action
+- Secondary: Timeline · Documents
+- Campaign Module: not in v0.x
+
+See Decision 0004.
+
 ### Page layers
 
 Every page must include these four layers (not a bare data list):

@@ -12,6 +12,15 @@ import {
   assetHasNoPrice,
 } from "../../../data/seed/tangtao";
 import { buildInventoryBuckets } from "../../../lib/services/inventoryRollup";
+import {
+  assetsForMarketingTopic,
+  defaultCategoryForMarketingTopic,
+  getMarketingTopic,
+  isMarketingCategory,
+  isMarketingTopicId,
+  MARKETING_TOPICS,
+  type MarketingTopicId,
+} from "../../../lib/marketing/marketingChecklist";
 
 export type OpeningTopicId =
   | "equipment"
@@ -21,6 +30,9 @@ export type OpeningTopicId =
   | "documents"
   | "suppliers";
 
+/** Platform Checklist topic ids — Opening + Marketing Readiness */
+export type ChecklistTopicId = OpeningTopicId | MarketingTopicId;
+
 export type OpeningUxStatus =
   | "owned"
   | "need"
@@ -29,13 +41,16 @@ export type OpeningUxStatus =
   | "other";
 
 export type OpeningTopic = {
-  id: OpeningTopicId;
+  id: ChecklistTopicId;
   title: string;
   href: string;
   /** External page when topic is not an asset list */
   externalHref?: string;
   description: string;
 };
+
+/** @deprecated Prefer OpeningTopic — same shape for all checklist topics */
+export type ChecklistTopic = OpeningTopic;
 
 export const OPENING_TOPICS: OpeningTopic[] = [
   {
@@ -90,7 +105,16 @@ const PACKAGING_CATEGORIES = new Set([
 ]);
 
 export function getTopic(id: string): OpeningTopic | null {
-  return OPENING_TOPICS.find((t) => t.id === id) ?? null;
+  const opening = OPENING_TOPICS.find((t) => t.id === id);
+  if (opening) return opening;
+  const marketing = getMarketingTopic(id);
+  if (!marketing) return null;
+  return {
+    id: marketing.id,
+    title: marketing.title,
+    href: marketing.href,
+    description: marketing.description,
+  };
 }
 
 export function uxStatusOf(status: AssetStatus): OpeningUxStatus {
@@ -106,7 +130,11 @@ export function uxStatusLabel(status: AssetStatus): string {
   if (ux === "owned") return "มีแล้ว";
   if (ux === "received") return "ได้รับแล้ว";
   if (ux === "ordered") return "สั่งแล้ว";
-  if (ux === "need") return "ต้องจัดหา";
+  if (ux === "need") {
+    // planned = not started; quote/ready = actively sourcing
+    if (status === "planned") return "ยังไม่เริ่ม";
+    return "ต้องจัดหา";
+  }
   return ASSET_STATUS_LABELS[status];
 }
 
@@ -121,15 +149,25 @@ export function isItemRemaining(status: AssetStatus): boolean {
 
 function isEquipmentCategory(category: string) {
   return (
-    !INGREDIENT_CATEGORIES.has(category) && !PACKAGING_CATEGORIES.has(category)
+    !INGREDIENT_CATEGORIES.has(category) &&
+    !PACKAGING_CATEGORIES.has(category) &&
+    !isMarketingCategory(category)
   );
+}
+
+/** Opening-only rows — Marketing Readiness categories stay out of Opening rollups */
+export function openingAssetsOnly(assets: AssetItem[]): AssetItem[] {
+  return assets.filter((a) => !isMarketingCategory(a.category));
 }
 
 /** Assets belonging to a checklist topic (same bi_assets rows). */
 export function assetsForTopic(
   assets: AssetItem[],
-  topicId: OpeningTopicId
+  topicId: ChecklistTopicId
 ): AssetItem[] {
+  if (isMarketingTopicId(topicId)) {
+    return assetsForMarketingTopic(assets, topicId);
+  }
   switch (topicId) {
     case "ingredients":
       return assets.filter((a) => INGREDIENT_CATEGORIES.has(a.category));
@@ -210,7 +248,7 @@ export type OpeningSummary = {
  * Always derived from the same asset list (One Thing, One Place · Zero Duplicate).
  */
 export function buildOpeningSummary(assets: AssetItem[]): OpeningSummary {
-  const active = assets;
+  const active = openingAssetsOnly(assets);
   const totalCount = active.length;
   const readyCount = active.filter((a) => isItemReady(a.status)).length;
   const remainingCount = active.filter((a) => isItemRemaining(a.status)).length;
@@ -236,7 +274,8 @@ export function nextOpeningFocus(assets: AssetItem[]): {
   message: string;
   href: string;
 } {
-  const noPrice = assets.find((a) => assetHasNoPrice(a));
+  const openingOnly = openingAssetsOnly(assets);
+  const noPrice = openingOnly.find((a) => assetHasNoPrice(a));
   if (noPrice) {
     return {
       message: `ใส่ราคา “${noPrice.name}” — งบสรุปจะครบขึ้น`,
@@ -244,7 +283,7 @@ export function nextOpeningFocus(assets: AssetItem[]): {
     };
   }
   for (const topic of OPENING_TOPICS) {
-    const p = topicProgress(assets, topic);
+    const p = topicProgress(openingOnly, topic);
     if (p.isExternal) continue;
     if (p.remaining > 0) {
       return {
@@ -268,7 +307,9 @@ export function previewChecklistItems(
   assets: AssetItem[],
   limit = 5
 ): AssetItem[] {
-  const remaining = assets.filter((a) => isItemRemaining(a.status));
+  const remaining = openingAssetsOnly(assets).filter((a) =>
+    isItemRemaining(a.status)
+  );
   const scored = remaining.map((a) => {
     let score = 0;
     if (assetHasNoPrice(a)) score += 100;
@@ -288,7 +329,10 @@ export function previewChecklistItems(
  * Default category for Quick Add on a checklist topic.
  * Must match assetsForTopic filters (no schema change).
  */
-export function defaultCategoryForTopic(topicId: OpeningTopicId): string {
+export function defaultCategoryForTopic(topicId: ChecklistTopicId): string {
+  if (isMarketingTopicId(topicId)) {
+    return defaultCategoryForMarketingTopic(topicId);
+  }
   switch (topicId) {
     case "ingredients":
       return "ซอสและเครื่องปรุง";

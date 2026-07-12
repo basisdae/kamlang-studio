@@ -1,11 +1,9 @@
 /**
  * Re-export Tang Tao seed + document helpers.
- * Source of truth: data/seed/tangtao.ts
+ * Clean-start: no mock documents / quotes.
  */
 
 export {
-  OPENING_DOCUMENTS,
-  OPENING_QUOTES,
   WORKSPACE_NAME,
   type DocumentKind,
   type DocumentParentType,
@@ -17,11 +15,20 @@ import type {
   DocumentKind,
   DocumentParentType,
   OpeningDocument,
+  QuoteDocument,
 } from "../../../data/seed/tangtao";
 import {
-  OPENING_DOCUMENTS,
-  OPENING_QUOTES,
+  OPENING_DOCUMENTS as SEED_OPENING_DOCUMENTS,
+  OPENING_QUOTES as SEED_OPENING_QUOTES,
 } from "../../../data/seed/tangtao";
+import { isCleanStart } from "../../../lib/bi/cleanStart";
+
+export const OPENING_DOCUMENTS: OpeningDocument[] = isCleanStart()
+  ? []
+  : SEED_OPENING_DOCUMENTS;
+export const OPENING_QUOTES: QuoteDocument[] = isCleanStart()
+  ? []
+  : SEED_OPENING_QUOTES;
 
 export const KIND_LABELS: Record<DocumentKind, string> = {
   image: "รูป",

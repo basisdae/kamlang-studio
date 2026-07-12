@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-07-12T14:22:09.172Z",
+  "passed": 15,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Marketing templates count",
+      "ok": true,
+      "detail": "16"
+    },
+    {
+      "name": "Opening templates count",
+      "ok": true,
+      "detail": "39"
+    },
+    {
+      "name": "All templates status planned (ยังไม่เริ่ม)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "All templates have no price (budget 0)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Create Marketing",
+      "ok": true,
+      "detail": "f6d607f8-659f-4c2d-bb17-85eed3dc677b"
+    },
+    {
+      "name": "Create Opening",
+      "ok": true,
+      "detail": "4d284876-54c0-4661-8c79-f2e162913c7f"
+    },
+    {
+      "name": "Create Finance test asset",
+      "ok": true,
+      "detail": "100"
+    },
+    {
+      "name": "Edit Marketing",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Status change to in_use",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Search test rows",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "name": "Archive soft-delete",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Archived excluded from active list",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Duplicate create policy",
+      "ok": true,
+      "detail": "DB allows same name; UI Quick Add stays focused for next row"
+    },
+    {
+      "name": "Cleanup test rows",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "name": "Post-cleanup counts",
+      "ok": true,
+      "detail": "opening=39 marketing=16"
+    }
+  ],
+  "notes": {
+    "lab": "Recipes/ingredients empty via clean-start; create via /recipes/builder (localStorage)",
+    "operations": "Purchase/Production empty without demo seeds; create via UI when plans exist",
+    "finance": "Budget numbers from bi_assets; Partners/Quotes/Decisions modules empty (no mock)"
+  }
+}

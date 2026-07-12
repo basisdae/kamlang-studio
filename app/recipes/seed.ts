@@ -1,6 +1,7 @@
 import demoRecipes from "../data/demo/recipes.json";
 import userRecipes from "../data/user/recipes.json";
 import { loadDataset } from "../data/loadDataset";
+import { isEmptyDataSource } from "../data/config";
 import { mergeUserMasterRecords } from "../data/mergeUserMaster";
 import { getUserMasterRecipes } from "../repositories/UserMasterDataRepository";
 import type { RecipeSeed } from "./types";
@@ -15,6 +16,7 @@ function getBaseRecipeSeeds(): RecipeSeed[] {
 
 /** Standard recipe master data — demo base + localStorage user imports. */
 export function getRecipeSeeds(): RecipeSeed[] {
+  if (isEmptyDataSource()) return [];
   return mergeUserMasterRecords(getBaseRecipeSeeds(), getUserMasterRecipes());
 }
 

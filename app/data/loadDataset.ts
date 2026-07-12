@@ -7,6 +7,13 @@ import { getDataSource, type DataSource } from "./config";
 export function loadDataset<T>(dataset: string, demo: T, user: T): T {
   const source = getDataSource();
 
+  if (source === "empty") {
+    if (Array.isArray(demo)) {
+      return [] as T;
+    }
+    return user;
+  }
+
   if (source === "user") {
     return user;
   }

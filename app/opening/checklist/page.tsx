@@ -10,6 +10,7 @@ import OpeningSummaryCard from "../../../components/bi/OpeningSummaryCard";
 import PageHeader from "../../../components/bi/PageHeader";
 import RecommendationPanel from "../../../components/bi/RecommendationPanel";
 import SectionHeader from "../../../components/bi/SectionHeader";
+import SummaryMetric from "../../../components/bi/SummaryMetric";
 import ButtonLink from "../../../components/ui/ButtonLink";
 import {
   KL_ICON_CLASS,
@@ -23,13 +24,22 @@ import {
   nextOpeningFocus,
   topicProgress,
 } from "../lib/openingDomain";
+import { useModuleViewConfig } from "../../../lib/workspaces/moduleViewConfig";
+import {
+  MARKETING_TOPICS,
+  buildMarketingSummary,
+  marketingTopicProgress,
+  nextMarketingFocus,
+} from "../../../lib/marketing/marketingChecklist";
 
 /**
- * Opening Checklist — workflow protagonist.
- * Same bi_assets as Hub / Budget / Assets views.
+ * Checklist index — Opening or Marketing Readiness via moduleViewConfig.
+ * Same bi_assets Module; topics change by Workspace Context.
  */
 export default function OpeningChecklistPage() {
   const { workspaceName } = useWorkspace();
+  const view = useModuleViewConfig("opening-checklist");
+  const marketingMode = view.summaryMode === "marketing";
   const {
     assets,
     loading,
@@ -41,22 +51,36 @@ export default function OpeningChecklistPage() {
     retry,
   } = useAssets();
 
-  const summary = useMemo(() => buildOpeningSummary(assets), [assets]);
-  const focus = useMemo(() => nextOpeningFocus(assets), [assets]);
-  const topics = useMemo(
-    () => OPENING_TOPICS.map((t) => topicProgress(assets, t)),
+  const openingSummary = useMemo(() => buildOpeningSummary(assets), [assets]);
+  const marketingSummary = useMemo(
+    () => buildMarketingSummary(assets),
     [assets]
   );
+  const openingFocus = useMemo(() => nextOpeningFocus(assets), [assets]);
+  const marketingFocus = useMemo(() => nextMarketingFocus(assets), [assets]);
+  const topics = useMemo(() => {
+    if (marketingMode) {
+      return MARKETING_TOPICS.map((t) => marketingTopicProgress(assets, t));
+    }
+    return OPENING_TOPICS.map((t) => topicProgress(assets, t));
+  }, [assets, marketingMode]);
+
+  const backHref = marketingMode ? "/home" : "/opening";
+  const focus = marketingMode ? marketingFocus : openingFocus;
 
   return (
-    <AppShell title="" hidePageHeader compact backHref="/opening">
+    <AppShell title="" hidePageHeader compact backHref={backHref}>
       <PageHeader
-        title="เปิดร้าน"
+        title={marketingMode ? "รายการเตรียมการตลาด" : "เปิดร้าน"}
         workspace={workspaceName}
-        subtitle="รายการเตรียมเปิดร้าน"
+        subtitle={
+          marketingMode ? "Marketing Readiness" : "รายการเตรียมเปิดร้าน"
+        }
       />
       <p className="kl-type-helper -mt-1">
-        วันนี้ร้านยังต้องเตรียมอะไรบ้าง
+        {marketingMode
+          ? "การตลาดพร้อมแค่ไหนแล้ว"
+          : "วันนี้ร้านยังต้องเตรียมอะไรบ้าง"}
       </p>
 
       <BiDataStatus
@@ -72,7 +96,9 @@ export default function OpeningChecklistPage() {
           loading
             ? "กำลังดึง bi_assets..."
             : online
-              ? "แหล่งข้อมูล: Supabase · รายการเตรียมเปิดร้าน"
+              ? marketingMode
+                ? "แหล่งข้อมูล: Supabase · Marketing Checklist"
+                : "แหล่งข้อมูล: Supabase · รายการเตรียมเปิดร้าน"
               : error
                 ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
                 : "กำลังเชื่อมต่อ..."
@@ -84,7 +110,26 @@ export default function OpeningChecklistPage() {
       {!loading && !error ? (
         <>
           <div className="kl-sticky-summary">
-            <OpeningSummaryCard summary={summary} variant="compact" />
+            {marketingMode ? (
+              <div className="grid grid-cols-2 gap-2">
+                <SummaryMetric
+                  label="Marketing Ready"
+                  value={`${marketingSummary.readyPercent}%`}
+                  tone={
+                    marketingSummary.readyPercent >= 100 ? "success" : "accent"
+                  }
+                />
+                <SummaryMetric
+                  label="เหลืออีก"
+                  value={marketingSummary.remainingCount}
+                  tone={
+                    marketingSummary.remainingCount > 0 ? "accent" : "success"
+                  }
+                />
+              </div>
+            ) : (
+              <OpeningSummaryCard summary={openingSummary} variant="compact" />
+            )}
           </div>
 
           <NextStepCard
@@ -93,7 +138,9 @@ export default function OpeningChecklistPage() {
             actionLabel="ไปทำต่อ"
           />
 
-          <RecommendationPanel assets={assets} limit={4} />
+          {marketingMode ? null : (
+            <RecommendationPanel assets={assets} limit={4} />
+          )}
 
           <section className="space-y-3">
             <SectionHeader title="หมวด" />
@@ -115,7 +162,7 @@ export default function OpeningChecklistPage() {
                     />
                   </div>
                   <p className="kl-type-helper">{row.topic.description}</p>
-                  {row.isExternal ? (
+                  {"isExternal" in row && row.isExternal ? (
                     <p className="kl-type-caption">ไปหน้าจัดการ →</p>
                   ) : (
                     <>
@@ -128,7 +175,9 @@ export default function OpeningChecklistPage() {
                       <p className="kl-type-caption">
                         {row.total === 0
                           ? "ยังไม่มีรายการในหมวดนี้"
-                          : `พร้อม ${row.ready}/${row.total} · ต้องจัดหา ${row.need} · สั่งแล้ว ${row.ordered}`}
+                          : marketingMode
+                            ? `พร้อม ${row.ready}/${row.total}`
+                            : `พร้อม ${row.ready}/${row.total} · ต้องจัดหา ${row.need} · สั่งแล้ว ${row.ordered}`}
                       </p>
                     </>
                   )}
@@ -137,14 +186,8 @@ export default function OpeningChecklistPage() {
             </div>
           </section>
 
-          {assets.length === 0 ? (
-            <ButtonLink href="/opening/assets/new" fullWidth>
-              + เพิ่มรายการ
-            </ButtonLink>
-          ) : null}
-
-          <ButtonLink href="/opening" variant="secondary" fullWidth>
-            กลับภาพรวมเปิดร้าน
+          <ButtonLink href={backHref} variant="secondary" fullWidth>
+            {marketingMode ? "กลับภาพรวมการตลาด" : "กลับภาพรวมเปิดร้าน"}
           </ButtonLink>
         </>
       ) : null}

@@ -12,8 +12,6 @@ export {
   OPENING_CATEGORIES,
   OPENING_CHECKLIST,
   OPENING_NEXT_ACTIONS,
-  OPENING_SUMMARY,
-  OPENING_TEAM,
   OPENING_INITIAL_STOCK,
   READINESS_STATUS_LABELS,
   SEED_ASSET_TIMELINES,
@@ -45,6 +43,7 @@ import type {
   ChecklistItem,
   InitialStockItem,
   OpeningDocument,
+  TeamMember,
 } from "../../data/seed/tangtao";
 import {
   BUSINESS_READINESS,
@@ -53,15 +52,26 @@ import {
   OPENING_CHECKLIST,
   OPENING_DOCUMENTS,
   OPENING_INITIAL_STOCK,
+  OPENING_SUMMARY as SEED_OPENING_SUMMARY,
+  OPENING_TEAM as SEED_OPENING_TEAM,
   SEED_ASSET_DECISION_GROUPS,
   SEED_ASSET_TIMELINES,
 } from "../../data/seed/tangtao";
 import type { ReadinessArea } from "../../data/seed/tangtao";
+import { isCleanStart } from "../../lib/bi/cleanStart";
 import {
   budgetItemAssetHref,
   getAssetsBudgetSummary as summarizeAssetsBudget,
   getDecisionGroupBudgetViews,
 } from "../../data/seed/assetBudget";
+
+/** Clean-start: no mock team / budget target */
+export const OPENING_TEAM: TeamMember[] = isCleanStart()
+  ? []
+  : SEED_OPENING_TEAM;
+export const OPENING_SUMMARY = isCleanStart()
+  ? { ...SEED_OPENING_SUMMARY, targetBudget: 0 }
+  : SEED_OPENING_SUMMARY;
 
 export {
   budgetItemAssetHref,

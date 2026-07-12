@@ -14,18 +14,23 @@ import {
   assetsForTopic,
   getTopic,
   topicProgress,
-  type OpeningTopicId,
+  type ChecklistTopicId,
 } from "../../lib/openingDomain";
 import ChecklistTopicBoard from "../components/ChecklistTopicBoard";
+import { useModuleViewConfig } from "../../../../lib/workspaces/moduleViewConfig";
+import { isMarketingTopicId } from "../../../../lib/marketing/marketingChecklist";
 
 /**
  * Checklist topic — same bi_assets rows as Assets / Budget views.
- * Fast UX: Quick Add · inline edit · multi-select · bulk · undo 5s.
+ * Opening or Marketing Readiness topics via getTopic().
  */
 export default function OpeningChecklistTopicPage() {
   const params = useParams();
   const topicId = String(params.topic ?? "");
   const topic = getTopic(topicId);
+  const view = useModuleViewConfig("opening-checklist");
+  const marketingMode =
+    view.summaryMode === "marketing" || isMarketingTopicId(topicId);
 
   const { workspaceName } = useWorkspace();
   const {
@@ -45,7 +50,7 @@ export default function OpeningChecklistTopicPage() {
   );
   const topicAssets = useMemo(
     () =>
-      topic ? assetsForTopic(assets, topic.id as OpeningTopicId) : [],
+      topic ? assetsForTopic(assets, topic.id as ChecklistTopicId) : [],
     [assets, topic]
   );
 
@@ -75,10 +80,14 @@ export default function OpeningChecklistTopicPage() {
     );
   }
 
+  const listTitle = marketingMode
+    ? "รายการเตรียมการตลาด"
+    : "รายการเตรียมเปิดร้าน";
+
   return (
     <AppShell title="" hidePageHeader compact backHref="/opening/checklist">
       <PageHeader
-        title="รายการเตรียมเปิดร้าน"
+        title={listTitle}
         workspace={workspaceName}
         subtitle={topic.title}
       />
@@ -96,7 +105,7 @@ export default function OpeningChecklistTopicPage() {
           loading
             ? "กำลังดึง bi_assets..."
             : online
-              ? `รายการเตรียมเปิดร้าน · ${topic.title}`
+              ? `${listTitle} · ${topic.title}`
               : error
                 ? "แหล่งข้อมูล: โหลดไม่สำเร็จ"
                 : "กำลังเชื่อมต่อ..."
@@ -112,15 +121,17 @@ export default function OpeningChecklistTopicPage() {
             topicAssets={topicAssets}
             progress={progress}
           />
-          <p className="kl-type-caption text-center">
-            ดูรายละเอียดเต็มได้ที่{" "}
-            <Link
-              href="/opening/assets"
-              className="underline text-[var(--bi-text-primary)]"
-            >
-              ทรัพย์สิน
-            </Link>
-          </p>
+          {marketingMode ? null : (
+            <p className="kl-type-caption text-center">
+              ดูรายละเอียดเต็มได้ที่{" "}
+              <Link
+                href="/opening/assets"
+                className="underline text-[var(--bi-text-primary)]"
+              >
+                ทรัพย์สิน
+              </Link>
+            </p>
+          )}
         </>
       ) : null}
     </AppShell>

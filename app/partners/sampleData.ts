@@ -1,17 +1,19 @@
 /**
  * Re-export Tang Tao seed + partner helpers.
- * Source of truth: data/seed/tangtao.ts
+ * Clean-start: empty partners (Finance shows 0).
  */
 
 export {
-  PARTNERS,
   WORKSPACE_NAME,
   type Partner,
   type PartnerStatus,
 } from "../../data/seed/tangtao";
 
 import type { Partner, PartnerStatus } from "../../data/seed/tangtao";
-import { PARTNERS } from "../../data/seed/tangtao";
+import { PARTNERS as SEED_PARTNERS } from "../../data/seed/tangtao";
+import { isCleanStart } from "../../lib/bi/cleanStart";
+
+export const PARTNERS: Partner[] = isCleanStart() ? [] : SEED_PARTNERS;
 
 export const PARTNER_STATUS_LABELS: Record<PartnerStatus, string> = {
   active: "ทำงานอยู่",

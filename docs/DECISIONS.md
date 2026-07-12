@@ -8,6 +8,38 @@ For engineering rules, see `AGENTS.md`.
 
 ---
 
+## Decision 0004
+
+**Status:** Accepted
+
+**Date:** 2026-07-12
+
+**Title:** Marketing Workspace = Marketing Readiness (not Campaign Manager)
+
+### Problem
+
+Marketing was framed like a Campaign Manager (empty campaign state), which is the wrong mental model for Business Insight pre-open prep.
+
+### Decision
+
+1. **Marketing Workspace = Marketing Readiness** — prepare marketing readiness before go-live.
+2. **Primary workflow = Checklist** — same Platform Checklist Module as Opening (`bi_assets` + `/opening/checklist`), differentiated by **category / topic** via `moduleViewConfig` (`summaryMode: "marketing"`).
+3. **Landing Composition** shows: Marketing Ready %, remaining checklist, next action, topic modules, recent checklist — Primary CTA **ไปทำต่อ**.
+4. **Modules (topics):** หน้าร้าน · ออนไลน์ · Branding · สิ่งพิมพ์ · Promotion · Content.
+5. **Timeline** and **Documents** are secondary modules — not the protagonist.
+6. **Campaign Module is out of scope for v0.x.**
+7. Multi-business templates (ร้านอาหาร / คาเฟ่ / ร้านค้า / โรงงาน) may generate checklist later; starter apply for ร้านอาหาร is allowed without a Campaign Module.
+
+### Impact
+
+Marketing `visibleModules` includes `opening-checklist`. Opening rollups exclude Marketing categories so Opening readiness / budget stay clean.
+
+### Related
+
+Decision 0002 (Workspace Context · Platform Modules)
+
+---
+
 ## Decision 0003
 
 **Status:** Accepted

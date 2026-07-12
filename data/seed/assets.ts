@@ -111,6 +111,12 @@ export const ASSET_CATEGORIES = [
   "หน้าร้านและป้าย",
   "เครื่องใช้ไฟฟ้า",
   "ของใช้ในครัว",
+  "การตลาด·หน้าร้าน",
+  "การตลาด·ออนไลน์",
+  "การตลาด·Branding",
+  "การตลาด·สิ่งพิมพ์",
+  "การตลาด·Promotion",
+  "การตลาด·Content",
   "อื่นๆ",
 ] as const;
 
@@ -137,7 +143,7 @@ export const ASSET_PRIORITY_LABELS: Record<AssetPriority, string> = {
 };
 
 export const ASSET_STATUS_LABELS: Record<AssetStatus, string> = {
-  planned: "ต้องจัดหา",
+  planned: "ยังไม่เริ่ม",
   awaiting_quote: "ต้องจัดหา",
   ready_to_buy: "ต้องจัดหา",
   ordered: "สั่งแล้ว",

@@ -1,0 +1,22 @@
+{
+  "workspaceId": "11111111-1111-1111-1111-111111111111",
+  "marketing": [
+    { "name": "เมนูเล่ม", "category": "การตลาด·สิ่งพิมพ์", "topicId": "mkt-print" },
+    { "name": "เมนูติดผนัง", "category": "การตลาด·หน้าร้าน", "topicId": "mkt-storefront" },
+    { "name": "QR PromptPay", "category": "การตลาด·หน้าร้าน", "topicId": "mkt-storefront" },
+    { "name": "QR Line OA", "category": "การตลาด·ออนไลน์", "topicId": "mkt-online" },
+    { "name": "Facebook", "category": "การตลาด·ออนไลน์", "topicId": "mkt-online" },
+    { "name": "Google Maps", "category": "การตลาด·ออนไลน์", "topicId": "mkt-online" },
+    { "name": "Grab", "category": "การตลาด·ออนไลน์", "topicId": "mkt-online" },
+    { "name": "LINE MAN", "category": "การตลาด·ออนไลน์", "topicId": "mkt-online" },
+    { "name": "ป้ายร้าน", "category": "การตลาด·หน้าร้าน", "topicId": "mkt-storefront" },
+    { "name": "ป้ายโปรโมชั่น", "category": "การตลาด·หน้าร้าน", "topicId": "mkt-storefront" },
+    { "name": "โบว์ชัวร์", "category": "การตลาด·สิ่งพิมพ์", "topicId": "mkt-print" },
+    { "name": "นามบัตร", "category": "การตลาด·สิ่งพิมพ์", "topicId": "mkt-print" },
+    { "name": "Content", "category": "การตลาด·Content", "topicId": "mkt-content" },
+    { "name": "Branding", "category": "การตลาด·Branding", "topicId": "mkt-branding" },
+    { "name": "โปรโมชั่น", "category": "การตลาด·Promotion", "topicId": "mkt-promotion" },
+    { "name": "ของแจก", "category": "การตลาด·Promotion", "topicId": "mkt-promotion" }
+  ],
+  "openingNote": "Opening templates are loaded from first-real-data-catalog.json with prices stripped (status=planned)."
+}
