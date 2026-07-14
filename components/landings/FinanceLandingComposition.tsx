@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Wallet } from "lucide-react";
 import BiDataStatus from "../bi/BiDataStatus";
 import SummaryMetric from "../bi/SummaryMetric";
@@ -11,7 +11,12 @@ import SectionLink from "../ui/SectionLink";
 import { useWorkspace } from "../../app/providers/WorkspaceProvider";
 import { useAssets } from "../../app/opening/assets/AssetsProvider";
 import { buildOpeningSummary } from "../../app/opening/lib/openingDomain";
-import { getPartnersSummary } from "../../app/partners/sampleData";
+import {
+  buildPartnersSummary,
+  getEmptyPartnersSummary,
+  type PartnersSummary,
+} from "../../lib/partners/partnerCore";
+import { partnerService } from "../../lib/services/partnerService";
 import { getDecisionsSummary } from "../../app/decisions/sampleData";
 
 /**
@@ -20,6 +25,7 @@ import { getDecisionsSummary } from "../../app/decisions/sampleData";
  */
 export default function FinanceLandingComposition() {
   const {
+    workspaceId,
     configured,
     browserOffline,
     retry: retryWs,
@@ -34,7 +40,27 @@ export default function FinanceLandingComposition() {
   } = useAssets();
 
   const summary = useMemo(() => buildOpeningSummary(assets), [assets]);
-  const partners = useMemo(() => getPartnersSummary(), []);
+  const [partners, setPartners] = useState<PartnersSummary>(
+    getEmptyPartnersSummary
+  );
+  useEffect(() => {
+    if (!configured || !workspaceId) {
+      setPartners(getEmptyPartnersSummary());
+      return;
+    }
+    let cancelled = false;
+    void partnerService
+      .list(workspaceId)
+      .then((rows) => {
+        if (!cancelled) setPartners(buildPartnersSummary(rows));
+      })
+      .catch(() => {
+        if (!cancelled) setPartners(getEmptyPartnersSummary());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [configured, workspaceId]);
   const decisions = useMemo(() => getDecisionsSummary(), []);
   const showStatus = !configured || browserOffline || Boolean(error);
 
@@ -47,7 +73,7 @@ export default function FinanceLandingComposition() {
     <div className="min-w-0 space-y-3">
       <WorkspaceLandingHeader
         title="ภาพรวม"
-        description="งบประมาณ · Quotes · Decisions — อ้างอิง Shared Core"
+        description="งบประมาณ · Quotes · Decisions"
       />
 
       {showStatus ? (
@@ -112,7 +138,7 @@ export default function FinanceLandingComposition() {
         <SectionLink
           variant="nav"
           href="/partners"
-          title={`Partners · Shared Core (${partners.total})`}
+          title={`Partners (${partners.total})`}
         />
         <SectionLink variant="nav" href="/quotes" title="Quote Compare" />
         <SectionLink

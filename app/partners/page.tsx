@@ -1,98 +1,387 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Handshake } from "lucide-react";
 import AppShell from "../../components/layout/AppShell";
+import PartnerCard from "../../components/bi/PartnerCard";
+import PartnerFormDialog from "../../components/bi/PartnerFormDialog";
+import BiDataStatus from "../../components/bi/BiDataStatus";
 import SectionHeader from "../../components/bi/SectionHeader";
 import SummaryCard from "../../components/bi/SummaryCard";
 import WorkspaceLandingHeader from "../../components/workspaces/WorkspaceLandingHeader";
 import EmptyState from "../../components/ui/EmptyState";
+import SearchBar from "../../components/ui/SearchBar";
+import SegmentChip from "../../components/ui/SegmentChip";
 import Button from "../../components/ui/Button";
+import Dialog from "../../components/ui/Dialog";
 import Card from "../../components/ui/Card";
+import { useWorkspace } from "../providers/WorkspaceProvider";
+import { partnerService } from "../../lib/services/partnerService";
 import {
   buildPartnersSummary,
-  isPartnersWritable,
-  listPartners,
-  PARTNERS_READONLY_REASON,
+  type PartnerWriteInput,
 } from "../../lib/partners/partnerCore";
 import {
   PARTNER_CATEGORIES,
-  PARTNERS_SHARED_CORE_TABLE,
+  PARTNER_CATEGORY_LABELS,
+  PARTNER_STATUS_LABELS,
+  partnerCategoryLabel,
+  type PartnerCategory,
+  type PartnerRecord,
 } from "../../lib/partners/types";
+import { showInfoToast } from "../lib/biInfoToast";
+import { userFacingMessage } from "../../lib/supabase/errors";
 
-const READONLY_HINT =
-  "Partner เป็น Shared Core — ชุดเดียวทุก Workspace · ไม่ใช่ Module ของ Finance";
+type CategoryFilter = "all" | PartnerCategory;
+type StatusFilter = "all" | "active" | "pending" | "paused";
 
 /**
- * Partners — Shared Core directory (Temporary Readonly until bi_partners ships).
+ * Partners — Shared Core. Same list for every App Workspace.
  */
 export default function PartnersPage() {
-  const rows = listPartners(false);
-  const summary = buildPartnersSummary(rows);
-  const writable = isPartnersWritable();
-  const isEmpty = rows.length === 0;
+  const {
+    workspaceId,
+    configured,
+    browserOffline,
+    online,
+    ready: workspaceReady,
+    error: workspaceError,
+    retry: retryWs,
+  } = useWorkspace();
+
+  const [rows, setRows] = useState<PartnerRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<PartnerRecord | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [detail, setDetail] = useState<PartnerRecord | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<PartnerRecord | null>(
+    null
+  );
+
+  const reload = useCallback(async () => {
+    if (!configured || !workspaceId) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await partnerService.list(workspaceId);
+      setRows(list);
+    } catch (e) {
+      setError(userFacingMessage(e));
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [configured, workspaceId]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  const summary = useMemo(() => buildPartnersSummary(rows), [rows]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return rows.filter((p) => {
+      if (categoryFilter !== "all" && p.category !== categoryFilter) {
+        return false;
+      }
+      if (statusFilter !== "all" && p.status !== statusFilter) return false;
+      if (!q) return true;
+      const hay =
+        `${p.name} ${partnerCategoryLabel(p.category)} ${p.phone} ${p.notes}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [rows, query, categoryFilter, statusFilter]);
+
+  const categoryMetrics = Object.entries(summary.byCategory).sort((a, b) =>
+    a[0].localeCompare(b[0], "th")
+  );
+
+  function openCreate() {
+    setEditing(null);
+    setFormOpen(true);
+  }
+
+  function openEdit(partner: PartnerRecord) {
+    setDetail(null);
+    setEditing(partner);
+    setFormOpen(true);
+  }
+
+  function resetFilters() {
+    setQuery("");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+  }
+
+  async function handleSave(input: PartnerWriteInput) {
+    if (!workspaceId) return;
+    setSaving(true);
+    try {
+      if (editing) {
+        await partnerService.update(editing.id, workspaceId, input);
+        showInfoToast("บันทึก Partner แล้ว");
+      } else {
+        await partnerService.create(workspaceId, input);
+        showInfoToast("เพิ่ม Partner แล้ว");
+      }
+      setFormOpen(false);
+      setEditing(null);
+      await reload();
+    } catch (e) {
+      showInfoToast(userFacingMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleArchiveConfirm() {
+    if (!archiveTarget || !workspaceId) return;
+    setSaving(true);
+    try {
+      await partnerService.archive(archiveTarget.id, workspaceId);
+      showInfoToast("Archive แล้ว");
+      setArchiveTarget(null);
+      setDetail(null);
+      await reload();
+    } catch (e) {
+      showInfoToast(userFacingMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const showStatus =
+    !configured || browserOffline || Boolean(error || workspaceError);
+  const isEmpty = !loading && !error && rows.length === 0;
+  const canWrite = configured && online && !error;
 
   return (
     <AppShell title="" hidePageHeader compact>
       <WorkspaceLandingHeader
         title="Partners"
-        description="คนและองค์กรรอบร้าน — Shared Core ชุดเดียวทุก Workspace"
+        description="คนและองค์กรรอบร้าน"
       />
 
-      <Card className="space-y-2 !p-3">
-        <p className="kl-type-caption text-kl-muted">
-          แหล่งข้อมูล: Shared Core · {PARTNERS_SHARED_CORE_TABLE}
-        </p>
-        <p className="kl-type-helper">{READONLY_HINT}</p>
-        {!writable ? (
-          <p className="kl-type-caption text-[var(--bi-text-primary)]">
-            {PARTNERS_READONLY_REASON}
-          </p>
-        ) : null}
-      </Card>
+      {showStatus ? (
+        <BiDataStatus
+          loading={loading || !workspaceReady}
+          ready={workspaceReady}
+          configured={configured}
+          online={online}
+          browserOffline={browserOffline}
+          error={error ?? workspaceError}
+          empty={isEmpty}
+          skeleton={false}
+          onRetry={() => {
+            void retryWs();
+            void reload();
+          }}
+        />
+      ) : null}
 
       <SummaryCard title="สรุป">
         <div className="grid grid-cols-2 gap-2">
           <Metric label="Partner ทั้งหมด" value={`${summary.total}`} />
           <Metric label="Active" value={`${summary.active}`} />
-          <Metric label="Supplier" value={`${summary.supplier}`} />
-          <Metric label="Investor" value={`${summary.investor}`} />
+          {categoryMetrics.map(([label, count]) => (
+            <Metric key={label} label={label} value={`${count}`} />
+          ))}
         </div>
       </SummaryCard>
 
-      <SectionHeader title="ประเภทที่รองรับ" />
-      <Card className="!p-3">
-        <p className="kl-type-helper">
-          Category เดียว — {PARTNER_CATEGORIES.join(" · ")}
-        </p>
-      </Card>
+      {!isEmpty && !loading && !error ? (
+        <div className="space-y-2">
+          <SearchBar
+            placeholder="ค้นหาชื่อ ประเภท เบอร์…"
+            value={query}
+            onChange={setQuery}
+          />
+          <div className="flex flex-wrap gap-1.5">
+            <SegmentChip
+              label="ทุกประเภท"
+              active={categoryFilter === "all"}
+              onClick={() => setCategoryFilter("all")}
+            />
+            {PARTNER_CATEGORIES.map((c) => (
+              <SegmentChip
+                key={c}
+                label={PARTNER_CATEGORY_LABELS[c]}
+                active={categoryFilter === c}
+                onClick={() => setCategoryFilter(c)}
+              />
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {(
+              [
+                ["all", "ทุกสถานะ"],
+                ["active", "Active"],
+                ["pending", "รอยืนยัน"],
+                ["paused", "พักไว้"],
+              ] as const
+            ).map(([id, label]) => (
+              <SegmentChip
+                key={id}
+                label={label}
+                active={statusFilter === id}
+                onClick={() => setStatusFilter(id)}
+              />
+            ))}
+            <Button type="button" variant="text" size="sm" onClick={resetFilters}>
+              ล้างตัวกรอง
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {loading ? (
+        <Card className="!p-4">
+          <p className="kl-type-helper">กำลังโหลด…</p>
+        </Card>
+      ) : null}
 
       {isEmpty ? (
         <EmptyState
           icon={Handshake}
           title="ยังไม่มี Partner"
-          hint="เมื่อ Shared Core พร้อม จะเพิ่มคนและองค์กรรอบร้านได้จากหน้านี้"
+          hint="เก็บรายชื่อคนและองค์กรที่เกี่ยวกับร้านไว้ที่เดียว"
+          actionLabel={canWrite ? "เพิ่ม Partner รายแรก" : undefined}
+          onAction={canWrite ? openCreate : undefined}
         />
       ) : null}
 
-      <div className="space-y-2">
-        <Button
-          type="button"
-          fullWidth
-          disabled
-          title={PARTNERS_READONLY_REASON}
-          aria-disabled
-        >
-          เพิ่ม Partner รายแรก
-        </Button>
-        <p className="kl-type-caption text-center text-kl-muted">
-          {PARTNERS_READONLY_REASON}
-        </p>
-      </div>
+      {!loading && !error && !isEmpty ? (
+        <>
+          <div className="flex items-center justify-between gap-2">
+            <SectionHeader title="รายชื่อ" />
+            <Button
+              type="button"
+              size="sm"
+              disabled={!canWrite}
+              onClick={openCreate}
+            >
+              เพิ่ม Partner
+            </Button>
+          </div>
 
-      {!isEmpty ? (
-        <p className="kl-type-helper text-kl-muted">
-          มี {rows.length} รายการ — รอ CRUD ผ่าน Shared Core
-        </p>
+          {filtered.length === 0 ? (
+            <Card className="!p-4">
+              <p className="kl-type-helper">
+                ไม่พบรายการตามค้นหา/ตัวกรอง —{" "}
+                <button
+                  type="button"
+                  className="underline text-[var(--bi-text-primary)]"
+                  onClick={resetFilters}
+                >
+                  ล้างตัวกรอง
+                </button>
+              </p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {filtered.map((partner) => (
+                <PartnerCard
+                  key={partner.id}
+                  partner={partner}
+                  onEdit={() => openEdit(partner)}
+                  onArchive={() => setArchiveTarget(partner)}
+                  onOpenDetail={() => setDetail(partner)}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      ) : null}
+
+      <PartnerFormDialog
+        open={formOpen}
+        initial={editing}
+        saving={saving}
+        onClose={() => {
+          if (saving) return;
+          setFormOpen(false);
+          setEditing(null);
+        }}
+        onSave={handleSave}
+      />
+
+      {detail ? (
+        <Dialog open onClose={() => setDetail(null)} title={detail.name}>
+          <div className="space-y-3">
+            <p className="kl-type-helper">
+              {partnerCategoryLabel(detail.category)} ·{" "}
+              {PARTNER_STATUS_LABELS[detail.status]}
+            </p>
+            {detail.phone ? (
+              <p className="kl-type-body">เบอร์: {detail.phone}</p>
+            ) : null}
+            {detail.notes ? (
+              <p className="kl-type-body text-kl-muted">{detail.notes}</p>
+            ) : null}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() => openEdit(detail)}
+              >
+                แก้ไข
+              </Button>
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() => setArchiveTarget(detail)}
+              >
+                Archive
+              </Button>
+            </div>
+            <Button variant="text" fullWidth onClick={() => setDetail(null)}>
+              ปิด
+            </Button>
+          </div>
+        </Dialog>
+      ) : null}
+
+      {archiveTarget ? (
+        <Dialog
+          open
+          onClose={() => {
+            if (saving) return;
+            setArchiveTarget(null);
+          }}
+          title="Archive Partner?"
+          role="alertdialog"
+        >
+          <p className="kl-type-body">
+            Archive “{archiveTarget.name}”? รายการจะหายจากรายชื่อ (ไม่ลบถาวร)
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="secondary"
+              fullWidth
+              disabled={saving}
+              onClick={() => setArchiveTarget(null)}
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              fullWidth
+              disabled={saving}
+              onClick={() => void handleArchiveConfirm()}
+            >
+              {saving ? "กำลังบันทึก…" : "Archive"}
+            </Button>
+          </div>
+        </Dialog>
       ) : null}
     </AppShell>
   );

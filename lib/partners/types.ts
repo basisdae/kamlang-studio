@@ -1,45 +1,58 @@
 /**
- * Partners — Shared Core entity (business-scoped, not Workspace-owned).
- *
- * Mental model:
- * - One Partner list per Business/Tenant; every Workspace references the same set.
- * - Not a Finance Module — Finance may link here but does not own Partner data.
- * - Single `category` field (no parallel tables per type).
- *
- * Storage: Supabase `bi_partners` when Shared Core ships (not localStorage).
+ * Partners — Shared Core entity (business-scoped via bi_workspaces).
+ * App Workspaces all reference the same Partner set — never fork by context.
  */
 
 export const PARTNERS_SHARED_CORE_TABLE = "bi_partners";
 
-/** True when `bi_partners` exists and repository is wired — false until migration lands. */
-export const PARTNERS_SHARED_CORE_READY = false;
-
 export const PARTNER_CATEGORIES = [
-  "Supplier",
-  "Factory",
-  "Agency",
-  "Printer",
-  "Investor",
-  "Freelancer",
-  "Designer",
-  "Contractor",
+  "partner",
+  "supplier",
+  "factory",
+  "agency",
+  "printer",
+  "investor",
+  "freelancer",
+  "designer",
+  "contractor",
+  "consultant",
+  "service_provider",
+  "other",
 ] as const;
 
 export type PartnerCategory = (typeof PARTNER_CATEGORIES)[number];
+
+/** Owner-facing labels for Category chips / form */
+export const PARTNER_CATEGORY_LABELS: Record<PartnerCategory, string> = {
+  partner: "หุ้นส่วน",
+  supplier: "Supplier",
+  factory: "โรงงาน",
+  agency: "Agency",
+  printer: "Printer",
+  investor: "นักลงทุน",
+  freelancer: "Freelancer",
+  designer: "Designer",
+  contractor: "Contractor",
+  consultant: "ที่ปรึกษา",
+  service_provider: "ผู้ให้บริการ",
+  other: "อื่นๆ",
+};
 
 export type PartnerStatus = "active" | "pending" | "paused";
 
 export type PartnerRecord = {
   id: string;
+  workspaceId: string;
   name: string;
   category: PartnerCategory;
+  contactName: string;
+  phone: string;
+  email: string;
+  lineId: string;
+  website: string;
+  address: string;
+  notes: string;
   status: PartnerStatus;
-  /** Short role / title */
-  role: string;
-  note: string;
-  /** Optional — for Investor / equity-style partners */
-  investment: number | null;
-  percent: number | null;
   isArchived: boolean;
   createdAt: string;
   updatedAt: string;
@@ -53,4 +66,9 @@ export const PARTNER_STATUS_LABELS: Record<PartnerStatus, string> = {
 
 export function isPartnerCategory(value: string): value is PartnerCategory {
   return (PARTNER_CATEGORIES as readonly string[]).includes(value);
+}
+
+export function partnerCategoryLabel(category: string): string {
+  if (isPartnerCategory(category)) return PARTNER_CATEGORY_LABELS[category];
+  return category;
 }

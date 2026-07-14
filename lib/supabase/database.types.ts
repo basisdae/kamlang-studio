@@ -120,6 +120,24 @@ export type BiActivityLogRow = {
   created_at: string;
 };
 
+export type BiPartnerRow = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  category: string;
+  contact_name: string | null;
+  phone: string | null;
+  email: string | null;
+  line_id: string | null;
+  website: string | null;
+  address: string | null;
+  notes: string | null;
+  status: string;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -183,6 +201,15 @@ export type Database = {
           summary: string;
         };
         Update: Partial<BiActivityLogRow>;
+      };
+      bi_partners: {
+        Row: BiPartnerRow;
+        Insert: Partial<BiPartnerRow> & {
+          workspace_id: string;
+          name: string;
+          category: string;
+        };
+        Update: Partial<BiPartnerRow>;
       };
     };
   };

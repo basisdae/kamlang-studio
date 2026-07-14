@@ -45,6 +45,8 @@ Run once in SQL Editor:
 
 Current RLS is a **Temporary Shared Preview Policy** (anon can read/write `bi_*`).
 
+Partners Shared Core: run `supabase/migrations/20260714180000_create_bi_partners.sql` once in SQL Editor (same anon preview RLS). Verify with `node --env-file=.env.local scripts/apply-bi-partners.mjs`.
+
 ### TODO (next sprints)
 
 - [ ] Supabase Auth

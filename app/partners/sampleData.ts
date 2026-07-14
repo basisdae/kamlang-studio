@@ -1,6 +1,5 @@
 /**
- * Partners summary for cross-workspace readouts (e.g. Finance landing link).
- * Shared Core only — never seed/mock/localStorage.
+ * Thin helpers for Partners summary — prefer partnerService on live screens.
  */
 
 import {
@@ -8,7 +7,11 @@ import {
   type PartnersSummary,
 } from "../../lib/partners/partnerCore";
 
-export type { PartnersSummary };
+export {
+  buildPartnersSummary,
+  getEmptyPartnersSummary,
+  type PartnersSummary,
+} from "../../lib/partners/partnerCore";
 
 export function getPartnersSummary(): PartnersSummary {
   return getEmptyPartnersSummary();

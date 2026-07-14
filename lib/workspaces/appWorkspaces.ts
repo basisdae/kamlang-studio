@@ -161,7 +161,7 @@ export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
   finance: {
     id: "finance",
     label: "การเงิน",
-    description: "งบ · Quotes · Decisions — อ้างอิง Shared Core",
+    description: "งบ · Quotes · Decisions",
     icon: Wallet,
     defaultLanding: PLATFORM_LANDING_PATH,
     visibleModules: [...FINANCE_MODULES],

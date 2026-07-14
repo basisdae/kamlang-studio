@@ -2,9 +2,9 @@
 
 import Card from "../ui/Card";
 import Button from "../ui/Button";
-import { formatBaht } from "../../app/opening/sampleData";
 import {
   PARTNER_STATUS_LABELS,
+  partnerCategoryLabel,
   type PartnerRecord,
 } from "../../lib/partners/types";
 
@@ -32,8 +32,8 @@ export default function PartnerCard({
         <div className="min-w-0">
           <h3 className="kl-type-card-title">{partner.name}</h3>
           <p className="kl-type-helper mt-1">
-            {partner.category}
-            {partner.role ? ` · ${partner.role}` : ""}
+            {partnerCategoryLabel(partner.category)}
+            {partner.phone ? ` · ${partner.phone}` : ""}
           </p>
         </div>
         <span className="shrink-0 rounded-[var(--kl-radius-inner)] bg-[rgb(231_246_91/0.55)] px-2 py-1 kl-type-caption text-[var(--bi-text-primary)]">
@@ -41,27 +41,8 @@ export default function PartnerCard({
         </span>
       </button>
 
-      {partner.investment != null || partner.percent != null ? (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="kl-type-label">เงินลงทุน</p>
-            <p className="kl-type-metric mt-1 text-[length:var(--kl-type-body-size)]">
-              {partner.investment != null
-                ? formatBaht(partner.investment)
-                : "—"}
-            </p>
-          </div>
-          <div>
-            <p className="kl-type-label">เปอร์เซ็นต์</p>
-            <p className="kl-type-metric mt-1 text-[length:var(--kl-type-body-size)]">
-              {partner.percent != null ? `${partner.percent}%` : "—"}
-            </p>
-          </div>
-        </div>
-      ) : null}
-
-      {partner.note ? (
-        <p className="kl-type-body text-kl-muted">{partner.note}</p>
+      {partner.notes ? (
+        <p className="kl-type-body text-kl-muted">{partner.notes}</p>
       ) : null}
 
       <div className="grid grid-cols-3 gap-2">

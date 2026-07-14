@@ -3,6 +3,7 @@ import { createSupabaseWorkspaceRepository } from "./supabaseWorkspaceRepository
 import { createSupabaseAssetRepository } from "./supabaseAssetRepository";
 import { createSupabaseBudgetRepository } from "./supabaseBudgetRepository";
 import { createSupabaseActivityRepository } from "./supabaseActivityRepository";
+import { createSupabasePartnerRepository } from "./supabasePartnerRepository";
 
 /** Wired Supabase repositories for browser (anon). Never touch Queue tables. */
 export function getBiRepositories() {
@@ -13,6 +14,7 @@ export function getBiRepositories() {
     assets: createSupabaseAssetRepository(client),
     budget: createSupabaseBudgetRepository(client),
     activity: createSupabaseActivityRepository(client),
+    partners: createSupabasePartnerRepository(client),
   };
 }
 
@@ -20,3 +22,4 @@ export type { WorkspaceRepository } from "./workspaceRepository";
 export type { AssetRepository } from "./assetRepository";
 export type { BudgetRepository } from "./budgetRepository";
 export type { ActivityRepository } from "./activityRepository";
+export type { PartnerRepository } from "./partnerRepository";

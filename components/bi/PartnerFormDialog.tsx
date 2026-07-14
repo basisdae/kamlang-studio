@@ -6,12 +6,11 @@ import Dialog from "../ui/Dialog";
 import { KL_FIELD_CLASS } from "../ui/designLock";
 import {
   PARTNER_CATEGORIES,
-  PARTNER_STATUS_LABELS,
+  PARTNER_CATEGORY_LABELS,
   type PartnerCategory,
   type PartnerRecord,
-  type PartnerStatus,
 } from "../../lib/partners/types";
-import type { PartnerWriteInput } from "../../lib/partners/partnerCore";
+import type { PartnerWriteInput } from "../../lib/mappers/partnerMapper";
 
 type Props = {
   open: boolean;
@@ -23,14 +22,12 @@ type Props = {
 
 const EMPTY = {
   name: "",
-  category: "Supplier" as PartnerCategory,
-  status: "active" as PartnerStatus,
-  role: "",
-  note: "",
-  investment: "",
-  percent: "",
+  category: "supplier" as PartnerCategory,
+  phone: "",
+  notes: "",
 };
 
+/** Minimal Partner form — ชื่อ · ประเภท · เบอร์ · หมายเหตุ */
 export default function PartnerFormDialog({
   open,
   initial = null,
@@ -47,12 +44,8 @@ export default function PartnerFormDialog({
       setForm({
         name: initial.name,
         category: initial.category,
-        status: initial.status,
-        role: initial.role,
-        note: initial.note,
-        investment:
-          initial.investment == null ? "" : String(initial.investment),
-        percent: initial.percent == null ? "" : String(initial.percent),
+        phone: initial.phone,
+        notes: initial.notes,
       });
     } else {
       setForm(EMPTY);
@@ -67,33 +60,12 @@ export default function PartnerFormDialog({
       setError("กรุณาใส่ชื่อ Partner");
       return;
     }
-    const investmentRaw = form.investment.trim();
-    const percentRaw = form.percent.trim();
-    let investment: number | null = null;
-    let percent: number | null = null;
-    if (investmentRaw !== "") {
-      investment = Number(investmentRaw);
-      if (Number.isNaN(investment) || investment < 0) {
-        setError("เงินลงทุนต้องเป็นตัวเลข ≥ 0 หรือเว้นว่าง");
-        return;
-      }
-    }
-    if (percentRaw !== "") {
-      percent = Number(percentRaw);
-      if (Number.isNaN(percent) || percent < 0 || percent > 100) {
-        setError("สัดส่วนต้องอยู่ระหว่าง 0–100 หรือเว้นว่าง");
-        return;
-      }
-    }
     setError("");
     await onSave({
       name,
       category: form.category,
-      status: form.status,
-      role: form.role,
-      note: form.note,
-      investment,
-      percent,
+      phone: form.phone.trim(),
+      notes: form.notes.trim(),
     });
   }
 
@@ -106,10 +78,6 @@ export default function PartnerFormDialog({
       title={initial ? "แก้ไข Partner" : "เพิ่ม Partner"}
     >
       <form className="space-y-3" onSubmit={(e) => void handleSubmit(e)}>
-        <p className="kl-type-card-title">
-          {initial ? "แก้ไข Partner" : "เพิ่ม Partner"}
-        </p>
-
         <label className="block">
           <span className="kl-type-caption text-kl-muted">ชื่อ *</span>
           <input
@@ -136,43 +104,21 @@ export default function PartnerFormDialog({
           >
             {PARTNER_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {PARTNER_CATEGORY_LABELS[c]}
               </option>
             ))}
           </select>
         </label>
 
         <label className="block">
-          <span className="kl-type-caption text-kl-muted">สถานะ</span>
-          <select
-            className={KL_FIELD_CLASS}
-            value={form.status}
-            disabled={saving}
-            onChange={(e) =>
-              setForm((f) => ({
-                ...f,
-                status: e.target.value as PartnerStatus,
-              }))
-            }
-          >
-            {(Object.keys(PARTNER_STATUS_LABELS) as PartnerStatus[]).map(
-              (s) => (
-                <option key={s} value={s}>
-                  {PARTNER_STATUS_LABELS[s]}
-                </option>
-              )
-            )}
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="kl-type-caption text-kl-muted">บทบาท</span>
+          <span className="kl-type-caption text-kl-muted">เบอร์</span>
           <input
             className={KL_FIELD_CLASS}
-            value={form.role}
+            type="tel"
+            inputMode="tel"
+            value={form.phone}
             disabled={saving}
-            placeholder="เช่น จัดซื้อ / ออกแบบเมนู"
-            onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
           />
         </label>
 
@@ -180,45 +126,11 @@ export default function PartnerFormDialog({
           <span className="kl-type-caption text-kl-muted">หมายเหตุ</span>
           <textarea
             className={`${KL_FIELD_CLASS} min-h-[4.5rem] py-2`}
-            value={form.note}
+            value={form.notes}
             disabled={saving}
-            onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
           />
         </label>
-
-        <div className="grid grid-cols-2 gap-2">
-          <label className="block">
-            <span className="kl-type-caption text-kl-muted">
-              เงินลงทุน (ถ้ามี)
-            </span>
-            <input
-              type="number"
-              min={0}
-              inputMode="decimal"
-              className={KL_FIELD_CLASS}
-              value={form.investment}
-              disabled={saving}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, investment: e.target.value }))
-              }
-            />
-          </label>
-          <label className="block">
-            <span className="kl-type-caption text-kl-muted">สัดส่วน % </span>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              inputMode="decimal"
-              className={KL_FIELD_CLASS}
-              value={form.percent}
-              disabled={saving}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, percent: e.target.value }))
-              }
-            />
-          </label>
-        </div>
 
         {error ? (
           <p className="kl-type-caption text-kl-danger-text">{error}</p>
