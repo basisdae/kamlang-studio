@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-07-14T06:44:46.924Z",
+  "openingCount": 39,
+  "marketingCount": 16,
+  "inUseCount": 8,
+  "plannedCount": 31,
+  "noPriceCount": 2,
+  "rangePriceCount": 9,
+  "moneyNeedEstimateMin": 8185,
+  "moneyOwnedEstimateMin": 1414,
+  "byCategory": {
+    "เนื้อสัตว์และของแปรรูป": 6,
+    "วัตถุดิบเพิ่มเติม": 6,
+    "ซอสและเครื่องปรุง": 8,
+    "อุปกรณ์ผสมแป้ง": 9,
+    "อุปกรณ์ทำขนมโตเกียว": 10
+  },
+  "noPriceNames": [
+    "น้ำพริกเผา aro",
+    "แยมสตรอเบอร์รี่"
+  ],
+  "inUseNames": [
+    "ตะกร้อมือใหญ่",
+    "ตะกร้อไฟฟ้า",
+    "กระชอนร่อนแป้ง",
+    "เครื่องชั่งดิจิตอล",
+    "พายใหญ่",
+    "ขวดซอส",
+    "เกรียง",
+    "กล่องพลาสติกเก็บไส้"
+  ],
+  "inserted": 39,
+  "rules": {
+    "priceColumns": "estimated_unit_price = min; range in specifications.estimatedMinPrice/MaxPrice",
+    "source": "Initial Setup",
+    "checkmark": "in_use",
+    "noCheck": "planned"
+  }
+}
