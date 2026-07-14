@@ -47,7 +47,7 @@ export default function FinanceLandingComposition() {
     <div className="min-w-0 space-y-3">
       <WorkspaceLandingHeader
         title="ภาพรวม"
-        description="งบประมาณ · Partners · Quotes · Decisions"
+        description="งบประมาณ · Quotes · Decisions — อ้างอิง Shared Core"
       />
 
       {showStatus ? (
@@ -112,7 +112,7 @@ export default function FinanceLandingComposition() {
         <SectionLink
           variant="nav"
           href="/partners"
-          title={`Partners (${partners.count})`}
+          title={`Partners · Shared Core (${partners.total})`}
         />
         <SectionLink variant="nav" href="/quotes" title="Quote Compare" />
         <SectionLink

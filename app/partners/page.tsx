@@ -1,75 +1,99 @@
+"use client";
+
+import { Handshake } from "lucide-react";
 import AppShell from "../../components/layout/AppShell";
-import DataSourceBadge from "../../components/bi/DataSourceBadge";
-import NextStepCard from "../../components/bi/NextStepCard";
-import PageHeader from "../../components/bi/PageHeader";
-import PartnerCard from "../../components/bi/PartnerCard";
 import SectionHeader from "../../components/bi/SectionHeader";
 import SummaryCard from "../../components/bi/SummaryCard";
-import ButtonLink from "../../components/ui/ButtonLink";
-import { OPENING_DATA_SOURCE } from "../../components/bi/dataSource";
-import { formatBaht } from "../opening/sampleData";
+import WorkspaceLandingHeader from "../../components/workspaces/WorkspaceLandingHeader";
+import EmptyState from "../../components/ui/EmptyState";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
 import {
-  getPartnersSummary,
-  PARTNERS,
-  WORKSPACE_NAME,
-} from "./sampleData";
+  buildPartnersSummary,
+  isPartnersWritable,
+  listPartners,
+  PARTNERS_READONLY_REASON,
+} from "../../lib/partners/partnerCore";
+import {
+  PARTNER_CATEGORIES,
+  PARTNERS_SHARED_CORE_TABLE,
+} from "../../lib/partners/types";
+
+const READONLY_HINT =
+  "Partner เป็น Shared Core — ชุดเดียวทุก Workspace · ไม่ใช่ Module ของ Finance";
 
 /**
- * Partner Dashboard — Investment view for Tang Tao partners.
- * Cards only · ROI fields are placeholders.
- * Pattern: Header → Summary → Next Action → Content → Primary Action
+ * Partners — Shared Core directory (Temporary Readonly until bi_partners ships).
  */
 export default function PartnersPage() {
-  const summary = getPartnersSummary();
+  const rows = listPartners(false);
+  const summary = buildPartnersSummary(rows);
+  const writable = isPartnersWritable();
+  const isEmpty = rows.length === 0;
 
   return (
     <AppShell title="" hidePageHeader compact>
-      <PageHeader
-        title="Business Insight"
-        workspace={WORKSPACE_NAME}
-        subtitle="Partner Dashboard"
+      <WorkspaceLandingHeader
+        title="Partners"
+        description="คนและองค์กรรอบร้าน — Shared Core ชุดเดียวทุก Workspace"
       />
-      <p className="kl-type-helper -mt-1">
-        หุ้นส่วนร้านตั้งเตา · เดย์ · ครีม · เก็ต · เหมียว
-      </p>
-      <DataSourceBadge source={OPENING_DATA_SOURCE} />
 
-      <SummaryCard title="สรุปการลงทุน">
-        <div className="grid grid-cols-2 gap-2">
-          <Metric label="หุ้นส่วน" value={`${summary.count}`} />
-          <Metric label="ทำงานอยู่" value={`${summary.activeCount}`} />
-          <Metric
-            label="เงินลงทุนรวม"
-            value={formatBaht(summary.totalInvestment)}
-          />
-          <Metric label="สัดส่วนรวม" value={`${summary.totalPercent}%`} />
-        </div>
-        <p className="kl-type-helper">
-          การคืนทุน · เงินปันผล · เบิกคืน — ยังเป็น Placeholder
+      <Card className="space-y-2 !p-3">
+        <p className="kl-type-caption text-kl-muted">
+          แหล่งข้อมูล: Shared Core · {PARTNERS_SHARED_CORE_TABLE}
         </p>
+        <p className="kl-type-helper">{READONLY_HINT}</p>
+        {!writable ? (
+          <p className="kl-type-caption text-[var(--bi-text-primary)]">
+            {PARTNERS_READONLY_REASON}
+          </p>
+        ) : null}
+      </Card>
+
+      <SummaryCard title="สรุป">
+        <div className="grid grid-cols-2 gap-2">
+          <Metric label="Partner ทั้งหมด" value={`${summary.total}`} />
+          <Metric label="Active" value={`${summary.active}`} />
+          <Metric label="Supplier" value={`${summary.supplier}`} />
+          <Metric label="Investor" value={`${summary.investor}`} />
+        </div>
       </SummaryCard>
 
-      <NextStepCard
-        message="สัดส่วนครบ 100% แล้ว — นัดทีมยืนยันบทบาทและความรับผิดชอบก่อนเปิด"
-        href="/opening/team"
-        actionLabel="ดูทีมบริหาร"
-      />
+      <SectionHeader title="ประเภทที่รองรับ" />
+      <Card className="!p-3">
+        <p className="kl-type-helper">
+          Category เดียว — {PARTNER_CATEGORIES.join(" · ")}
+        </p>
+      </Card>
 
-      <section className="space-y-3">
-        <SectionHeader title="หุ้นส่วน" />
-        <div className="space-y-3">
-          {PARTNERS.map((partner) => (
-            <PartnerCard key={partner.id} partner={partner} />
-          ))}
-        </div>
-      </section>
+      {isEmpty ? (
+        <EmptyState
+          icon={Handshake}
+          title="ยังไม่มี Partner"
+          hint="เมื่อ Shared Core พร้อม จะเพิ่มคนและองค์กรรอบร้านได้จากหน้านี้"
+        />
+      ) : null}
 
-      <ButtonLink href="/opening" fullWidth>
-        ไปแผนเปิดร้าน
-      </ButtonLink>
-      <ButtonLink href="/opening/team" variant="secondary" fullWidth>
-        เทียบกับทีมบริหาร
-      </ButtonLink>
+      <div className="space-y-2">
+        <Button
+          type="button"
+          fullWidth
+          disabled
+          title={PARTNERS_READONLY_REASON}
+          aria-disabled
+        >
+          เพิ่ม Partner รายแรก
+        </Button>
+        <p className="kl-type-caption text-center text-kl-muted">
+          {PARTNERS_READONLY_REASON}
+        </p>
+      </div>
+
+      {!isEmpty ? (
+        <p className="kl-type-helper text-kl-muted">
+          มี {rows.length} รายการ — รอ CRUD ผ่าน Shared Core
+        </p>
+      ) : null}
     </AppShell>
   );
 }
@@ -77,7 +101,7 @@ export default function PartnersPage() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[var(--kl-radius-inner)] bg-kl-surface px-2 py-2 text-center">
-      <p className="kl-type-caption">{label}</p>
+      <p className="kl-type-caption text-kl-muted">{label}</p>
       <p className="kl-type-metric mt-1 text-[length:var(--kl-type-body-size)]">
         {value}
       </p>

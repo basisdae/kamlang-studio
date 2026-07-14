@@ -19,6 +19,8 @@ export const ALWAYS_VISIBLE_NAV_IDS = [
   "insight",
   "settings",
   "search",
+  /** Shared Core — same Partner list across Workspaces */
+  "partners",
 ] as const;
 
 /** App Workspace Context only — not Business / Tenant */
@@ -83,7 +85,6 @@ const MARKETING_MODULES = [
 const FINANCE_MODULES = [
   "overview",
   "opening-budget",
-  "partners",
   "quotes",
   "decisions",
 ] as const;
@@ -160,7 +161,7 @@ export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
   finance: {
     id: "finance",
     label: "การเงิน",
-    description: "งบ Partners Quotes และมุมเงินที่มีอยู่",
+    description: "งบ · Quotes · Decisions — อ้างอิง Shared Core",
     icon: Wallet,
     defaultLanding: PLATFORM_LANDING_PATH,
     visibleModules: [...FINANCE_MODULES],

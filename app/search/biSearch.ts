@@ -10,7 +10,6 @@ import {
   OPENING_DOCUMENTS,
   OPENING_INITIAL_STOCK,
   OPENING_QUOTES,
-  PARTNERS,
   QUOTE_COMPARE_GROUPS,
   SUPPLIERS,
 } from "../../data/seed/tangtao";
@@ -92,16 +91,7 @@ function buildIndex(): SearchHit[] {
     });
   }
 
-  for (const partner of PARTNERS) {
-    hits.push({
-      id: `partner-${partner.id}`,
-      group: "partners",
-      title: partner.name,
-      subtitle: partner.role,
-      href: "/partners",
-      keywords: `${partner.name} ${partner.role} หุ้นส่วน partner`,
-    });
-  }
+  // Partners: Shared Core bi_partners — indexed when repository ships.
 
   for (const item of OPENING_BUDGET_ITEMS) {
     hits.push({
