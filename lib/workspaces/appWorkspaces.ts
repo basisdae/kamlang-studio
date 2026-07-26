@@ -224,15 +224,19 @@ export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
   },
 };
 
-/** Workspaces only — Explorer Hub is /modes, not listed here */
+/**
+ * Workspaces only — Explorer Hub is /modes, not listed here.
+ * Front/Back sit after Operations so they appear early in Switcher/Chooser
+ * (not only below the fold under bottom nav).
+ */
 export const APP_WORKSPACE_LIST: AppWorkspaceConfig[] = [
   APP_WORKSPACES.opening,
   APP_WORKSPACES.operations,
+  APP_WORKSPACES.frontstore,
+  APP_WORKSPACES.backstore,
   APP_WORKSPACES.lab,
   APP_WORKSPACES.marketing,
   APP_WORKSPACES.finance,
-  APP_WORKSPACES.frontstore,
-  APP_WORKSPACES.backstore,
 ];
 
 export function getAppWorkspaceConfig(

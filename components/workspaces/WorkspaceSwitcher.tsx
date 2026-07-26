@@ -91,7 +91,8 @@ export default function WorkspaceSwitcher() {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+        // Above .kl-nav-dock (z-50) so the last workspaces are not covered by bottom nav
+        <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
           <button
             type="button"
             className="absolute inset-0 bg-black/35"
@@ -102,11 +103,11 @@ export default function WorkspaceSwitcher() {
             role="dialog"
             aria-modal="true"
             aria-label="เปลี่ยน Workspace"
-            className="relative z-10 mx-4 mb-6 w-full max-w-[var(--bi-app-width)] sm:mb-0"
+            className="relative z-10 mx-4 w-full max-w-[var(--bi-app-width)] mb-[calc(var(--kl-nav-bar-height)+var(--kl-nav-float-gap)+env(safe-area-inset-bottom,0px)+0.75rem)] sm:mb-0"
           >
             <Card className="space-y-3 !p-4">
               <p className="kl-type-card-title">เปลี่ยน Workspace</p>
-              <div className="max-h-[45vh] space-y-1.5 overflow-y-auto">
+              <div className="max-h-[min(70vh,28rem)] space-y-1.5 overflow-y-auto">
                 {APP_WORKSPACE_LIST.map((ws) => {
                   const RowIcon = ws.icon;
                   const active = ws.id === config.id;
