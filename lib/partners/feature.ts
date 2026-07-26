@@ -5,7 +5,7 @@
  * /partners is treated as out-of-workspace (WorkspaceGate redirects away).
  * Developers re-enable by flipping this flag.
  */
-export const PARTNERS_MODULE_ENABLED = false;
+export const PARTNERS_MODULE_ENABLED = true;
 
 export function isPartnersPath(pathname: string): boolean {
   return pathname === "/partners" || pathname.startsWith("/partners/");
