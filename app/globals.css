@@ -25,6 +25,10 @@
   --ws-marketing-soft: rgb(194 106 46 / 0.12);
   --ws-finance: #6b5b8c;
   --ws-finance-soft: rgb(107 91 140 / 0.12);
+  --ws-frontstore: #5c6b1f;
+  --ws-frontstore-soft: rgb(231 246 91 / 0.28);
+  --ws-backstore: #4a5560;
+  --ws-backstore-soft: rgb(74 85 96 / 0.12);
 
   /* Legacy kl-* aliases → BI tokens (keep class names for existing screens) */
   --kl-primary: var(--bi-text-primary);

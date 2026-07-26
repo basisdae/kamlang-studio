@@ -9,12 +9,14 @@ import {
   Scale,
   GitCompare,
   Home,
+  Images,
   LayoutGrid,
   Lightbulb,
   Map,
   Package,
   Search,
   Settings,
+  ShoppingBag,
   ShoppingCart,
   Soup,
   History,
@@ -24,6 +26,7 @@ import {
   Wrench,
   FlaskConical,
 } from "lucide-react";
+import { PARTNERS_MODULE_ENABLED } from "../../lib/partners/feature";
 
 /**
  * Extensible navigation model.
@@ -173,15 +176,19 @@ export const navigationItems: NavigationItem[] = [
     desktop: true,
     mobilePlacement: "more",
   },
-  {
-    id: "partners",
-    title: "Partners",
-    href: "/partners",
-    icon: Handshake,
-    mobile: true,
-    desktop: true,
-    mobilePlacement: "more",
-  },
+  ...(PARTNERS_MODULE_ENABLED
+    ? [
+        {
+          id: "partners",
+          title: "Partners",
+          href: "/partners",
+          icon: Handshake,
+          mobile: true,
+          desktop: true,
+          mobilePlacement: "more" as const,
+        },
+      ]
+    : []),
   {
     id: "decisions",
     title: "Decisions",
@@ -250,6 +257,42 @@ export const navigationItems: NavigationItem[] = [
     title: "ต้นทุน",
     href: "/costing",
     icon: Calculator,
+    mobile: true,
+    desktop: true,
+    mobilePlacement: "more",
+  },
+  {
+    id: "front-order",
+    title: "สั่งอาหาร",
+    href: "/order",
+    icon: ShoppingBag,
+    mobile: true,
+    desktop: true,
+    mobilePlacement: "more",
+  },
+  {
+    id: "front-orders",
+    title: "ออเดอร์หน้าร้าน",
+    href: "/orders",
+    icon: ClipboardList,
+    mobile: true,
+    desktop: true,
+    mobilePlacement: "more",
+  },
+  {
+    id: "media-library",
+    title: "คลังรูปภาพ",
+    href: "/media",
+    icon: Images,
+    mobile: true,
+    desktop: true,
+    mobilePlacement: "more",
+  },
+  {
+    id: "food-menu",
+    title: "เมนูอาหาร",
+    href: "/food-menu",
+    icon: UtensilsCrossed,
     mobile: true,
     desktop: true,
     mobilePlacement: "more",
@@ -345,7 +388,8 @@ export function getMobileMoreItems(): NavigationItem[] {
     (item) =>
       Boolean(item.mobile) &&
       item.mobilePlacement !== "tab" &&
-      item.group !== "legacy"
+      item.group !== "legacy" &&
+      (PARTNERS_MODULE_ENABLED || item.id !== "partners")
   );
 }
 
@@ -377,7 +421,9 @@ export function getDesktopNavItems(): NavigationItem[] {
     }
   }
 
-  return rows;
+  return rows.filter(
+    (item) => PARTNERS_MODULE_ENABLED || item.id !== "partners"
+  );
 }
 
 export const moreNavIcon = LayoutGrid;

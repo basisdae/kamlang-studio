@@ -9,7 +9,9 @@ export type AppWorkspaceId =
   | "operations"
   | "lab"
   | "marketing"
-  | "finance";
+  | "finance"
+  | "frontstore"
+  | "backstore";
 
 /** Master nav item ids (and future module keys). */
 export type ModuleId = string;
@@ -35,7 +37,9 @@ export type WorkspaceAccent =
   | "operations"
   | "lab"
   | "marketing"
-  | "finance";
+  | "finance"
+  | "frontstore"
+  | "backstore";
 
 export type AppWorkspaceConfig = {
   id: AppWorkspaceId;

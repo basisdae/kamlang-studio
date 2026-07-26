@@ -12,6 +12,8 @@ import LabLandingComposition from "../../components/landings/LabLandingCompositi
 import OperationsLandingComposition from "../../components/landings/OperationsLandingComposition";
 import FinanceLandingComposition from "../../components/landings/FinanceLandingComposition";
 import MarketingLandingComposition from "../../components/landings/MarketingLandingComposition";
+import FrontstoreLandingComposition from "../../components/landings/FrontstoreLandingComposition";
+import BackstoreLandingComposition from "../../components/landings/BackstoreLandingComposition";
 
 /**
  * Platform Landing entry — Composition by Workspace context.
@@ -53,6 +55,12 @@ export default function PlatformLandingPage() {
       break;
     case "marketing":
       body = <MarketingLandingComposition />;
+      break;
+    case "frontstore":
+      body = <FrontstoreLandingComposition />;
+      break;
+    case "backstore":
+      body = <BackstoreLandingComposition />;
       break;
     default:
       body = (

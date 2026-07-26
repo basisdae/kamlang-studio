@@ -4,23 +4,26 @@
  */
 
 import {
+  Boxes,
   FlaskConical,
   Map,
   Megaphone,
+  ShoppingBag,
   Store,
   Wallet,
 } from "lucide-react";
 import type { AppWorkspaceConfig, AppWorkspaceId } from "./types";
+import { PARTNERS_MODULE_ENABLED } from "../partners/feature";
 
 /**
  * Always-on nav — Insight is Observer layer, not a Workspace.
+ * Partners stays Shared Core but only in nav when the module is live.
  */
 export const ALWAYS_VISIBLE_NAV_IDS = [
   "insight",
   "settings",
   "search",
-  /** Shared Core — same Partner list across Workspaces */
-  "partners",
+  ...(PARTNERS_MODULE_ENABLED ? (["partners"] as const) : []),
 ] as const;
 
 /** App Workspace Context only — not Business / Tenant */
@@ -44,6 +47,8 @@ export const WORKSPACE_LANDING_PATHS: Record<AppWorkspaceId, string[]> = {
   lab: [PLATFORM_LANDING_PATH],
   marketing: [PLATFORM_LANDING_PATH],
   finance: [PLATFORM_LANDING_PATH],
+  frontstore: [PLATFORM_LANDING_PATH],
+  backstore: [PLATFORM_LANDING_PATH],
 };
 
 const OPENING_MODULES = [
@@ -87,6 +92,18 @@ const FINANCE_MODULES = [
   "opening-budget",
   "quotes",
   "decisions",
+] as const;
+
+const FRONTSTORE_MODULES = [
+  "overview",
+  "front-order",
+  "front-orders",
+] as const;
+
+const BACKSTORE_MODULES = [
+  "overview",
+  "media-library",
+  "food-menu",
 ] as const;
 
 export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
@@ -167,15 +184,43 @@ export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
     visibleModules: [...FINANCE_MODULES],
     shortcuts: [
       { label: "งบประมาณ", href: "/opening/budget" },
-      { label: "Partners", href: "/partners" },
+      ...(PARTNERS_MODULE_ENABLED
+        ? [{ label: "Partners", href: "/partners" as const }]
+        : []),
     ],
-    accent: "finance",
+    accent: "finance" as const,
     moduleConfig: {
       "opening-budget": {
         summaryMode: "finance",
         defaultFilter: "need",
       },
     },
+  },
+  frontstore: {
+    id: "frontstore",
+    label: "หน้าร้าน",
+    description: "รับออเดอร์และดูแลคิวหน้าร้าน",
+    icon: ShoppingBag,
+    defaultLanding: PLATFORM_LANDING_PATH,
+    visibleModules: [...FRONTSTORE_MODULES],
+    shortcuts: [
+      { label: "สั่งอาหาร", href: "/order" },
+      { label: "ออเดอร์หน้าร้าน", href: "/orders" },
+    ],
+    accent: "frontstore",
+  },
+  backstore: {
+    id: "backstore",
+    label: "หลังร้าน",
+    description: "คลังรูปภาพและเมนูอาหาร",
+    icon: Boxes,
+    defaultLanding: PLATFORM_LANDING_PATH,
+    visibleModules: [...BACKSTORE_MODULES],
+    shortcuts: [
+      { label: "คลังรูปภาพ", href: "/media" },
+      { label: "เมนูอาหาร", href: "/food-menu" },
+    ],
+    accent: "backstore",
   },
 };
 
@@ -186,6 +231,8 @@ export const APP_WORKSPACE_LIST: AppWorkspaceConfig[] = [
   APP_WORKSPACES.lab,
   APP_WORKSPACES.marketing,
   APP_WORKSPACES.finance,
+  APP_WORKSPACES.frontstore,
+  APP_WORKSPACES.backstore,
 ];
 
 export function getAppWorkspaceConfig(
