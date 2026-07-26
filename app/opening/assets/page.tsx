@@ -43,6 +43,8 @@ import { useWorkspace } from "../../providers/WorkspaceProvider";
 import { getAssetsSummary, useAssets } from "./AssetsProvider";
 import AssetCompactRow from "./components/AssetCompactRow";
 import AssetListCard from "./components/AssetListCard";
+import AssetQuickView from "./components/AssetQuickView";
+import type { AssetItem } from "../../../data/seed/tangtao";
 
 type ViewMode = "card" | "list";
 type FilterAll = "all";
@@ -85,6 +87,7 @@ function OpeningAssetsInner() {
   const [priority, setPriority] = useState<FilterAll | AssetPriority>("all");
   const [ownFilter, setOwnFilter] = useState<UxFilter>("all");
   const [sort, setSort] = useState<ListSortKey>("name");
+  const [quickViewItem, setQuickViewItem] = useState<AssetItem | null>(null);
 
   function setViewPersist(next: ViewMode) {
     setView(next);
@@ -373,19 +376,33 @@ function OpeningAssetsInner() {
             ) : view === "list" ? (
               <Card className="!overflow-hidden !p-0">
                 {filtered.map((item) => (
-                  <AssetCompactRow key={item.id} item={item} />
+                  <AssetCompactRow
+                    key={item.id}
+                    item={item}
+                    onOpenQuickView={setQuickViewItem}
+                  />
                 ))}
               </Card>
             ) : (
               <div className="space-y-3">
                 {filtered.map((item) => (
-                  <AssetListCard key={item.id} item={item} />
+                  <AssetListCard
+                    key={item.id}
+                    item={item}
+                    onOpenQuickView={setQuickViewItem}
+                  />
                 ))}
               </div>
             )}
           </section>
         </>
       ) : null}
+
+      <AssetQuickView
+        item={quickViewItem}
+        open={quickViewItem != null}
+        onClose={() => setQuickViewItem(null)}
+      />
 
       <div className="h-16" />
 

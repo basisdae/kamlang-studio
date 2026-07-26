@@ -10,7 +10,12 @@ import {
 } from "../../../../data/seed/tangtao";
 import { formatBaht } from "../../sampleData";
 
-export default function AssetListCard({ item }: { item: AssetItem }) {
+type Props = {
+  item: AssetItem;
+  onOpenQuickView: (item: AssetItem) => void;
+};
+
+export default function AssetListCard({ item, onOpenQuickView }: Props) {
   const noPrice = assetHasNoPrice(item);
   const unit = item.estimatedPrice;
   const total = unit != null ? unit * item.quantity : null;
@@ -18,7 +23,12 @@ export default function AssetListCard({ item }: { item: AssetItem }) {
 
   return (
     <Card className="space-y-3">
-      <div className="flex items-start justify-between gap-3">
+      <button
+        type="button"
+        className="flex w-full items-start justify-between gap-3 text-left kl-pressable"
+        onClick={() => onOpenQuickView(item)}
+        aria-label={`แก้ไขด่วน ${item.name}`}
+      >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="kl-type-card-title">{item.name}</h3>
@@ -31,8 +41,12 @@ export default function AssetListCard({ item }: { item: AssetItem }) {
           </p>
         </div>
         <StatusBadge assetStatus={item.status} />
-      </div>
-      <div className="grid grid-cols-3 gap-2">
+      </button>
+      <button
+        type="button"
+        className="grid w-full grid-cols-3 gap-2 text-left kl-pressable"
+        onClick={() => onOpenQuickView(item)}
+      >
         <div>
           <p className="kl-type-label">จำนวน</p>
           <p className="kl-type-body mt-1">
@@ -51,7 +65,7 @@ export default function AssetListCard({ item }: { item: AssetItem }) {
             {total != null ? formatBaht(total) : "ยังไม่ใส่ราคา"}
           </p>
         </div>
-      </div>
+      </button>
       <p className="kl-type-caption">
         {hasSupplier ? `ร้านซื้อเดิม: ${item.supplier}` : "ยังไม่มีร้านซื้อเดิม"}
       </p>
@@ -59,17 +73,17 @@ export default function AssetListCard({ item }: { item: AssetItem }) {
         <Link
           href={`/opening/assets/${item.id}`}
           className="kl-type-caption font-medium text-[var(--bi-text-primary)]"
+          onClick={(e) => e.stopPropagation()}
         >
           ดูรายละเอียด →
         </Link>
-        {noPrice ? (
-          <Link
-            href={`/opening/assets/${item.id}/edit`}
-            className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline"
-          >
-            ใส่ราคา
-          </Link>
-        ) : null}
+        <button
+          type="button"
+          className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline kl-pressable"
+          onClick={() => onOpenQuickView(item)}
+        >
+          {noPrice ? "ใส่ราคา" : "แก้ไขด่วน"}
+        </button>
       </div>
     </Card>
   );

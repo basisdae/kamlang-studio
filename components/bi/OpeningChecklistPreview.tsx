@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import Card from "../ui/Card";
 import EmptyState from "../ui/EmptyState";
@@ -15,10 +14,12 @@ import {
   type AssetItem,
 } from "../../data/seed/tangtao";
 import { uxStatusLabel } from "../../app/opening/lib/openingDomain";
+import Link from "next/link";
 
 type Props = {
   items: AssetItem[];
   totalRemaining: number;
+  onOpenQuickView?: (item: AssetItem) => void;
 };
 
 /**
@@ -27,6 +28,7 @@ type Props = {
 export default function OpeningChecklistPreview({
   items,
   totalRemaining,
+  onOpenQuickView,
 }: Props) {
   return (
     <section className="space-y-3">
@@ -49,38 +51,59 @@ export default function OpeningChecklistPreview({
         />
       ) : (
         <Card className="!overflow-hidden !p-0">
-          {items.map((item) => (
-            <Link
-              key={item.id}
-              href={
-                assetHasNoPrice(item)
-                  ? `/opening/assets/${item.id}/edit`
-                  : `/opening/assets/${item.id}`
-              }
-              className="flex min-h-[2.75rem] items-center justify-between gap-3 border-b border-[var(--kl-border)] px-3 py-2.5 last:border-b-0 kl-pressable"
-            >
-              <div className="min-w-0">
-                <p className="kl-type-body truncate font-medium">{item.name}</p>
-                <p className="kl-type-caption mt-0.5 truncate">
-                  {item.category}
-                  {assetHasNoPrice(item) ? " · ยังไม่ใส่ราคา" : ""}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <span className="kl-type-caption">
-                  {assetHasNoPrice(item)
-                    ? "ใส่ราคา"
-                    : uxStatusLabel(item.status) ||
-                      ASSET_STATUS_LABELS[item.status]}
-                </span>
-                <ChevronRight
-                  className={KL_ICON_CLASS}
-                  strokeWidth={KL_ICON_STROKE}
-                  aria-hidden
-                />
-              </div>
-            </Link>
-          ))}
+          {items.map((item) => {
+            const body = (
+              <>
+                <div className="min-w-0">
+                  <p className="kl-type-body truncate font-medium">{item.name}</p>
+                  <p className="kl-type-caption mt-0.5 truncate">
+                    {item.category}
+                    {assetHasNoPrice(item) ? " · ยังไม่ใส่ราคา" : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="kl-type-caption">
+                    {assetHasNoPrice(item)
+                      ? "ใส่ราคา"
+                      : uxStatusLabel(item.status) ||
+                        ASSET_STATUS_LABELS[item.status]}
+                  </span>
+                  <ChevronRight
+                    className={KL_ICON_CLASS}
+                    strokeWidth={KL_ICON_STROKE}
+                    aria-hidden
+                  />
+                </div>
+              </>
+            );
+
+            if (onOpenQuickView) {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onOpenQuickView(item)}
+                  className="flex min-h-[2.75rem] w-full items-center justify-between gap-3 border-b border-[var(--kl-border)] px-3 py-2.5 last:border-b-0 text-left kl-pressable"
+                >
+                  {body}
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.id}
+                href={
+                  assetHasNoPrice(item)
+                    ? `/opening/assets/${item.id}/edit`
+                    : `/opening/assets/${item.id}`
+                }
+                className="flex min-h-[2.75rem] items-center justify-between gap-3 border-b border-[var(--kl-border)] px-3 py-2.5 last:border-b-0 kl-pressable"
+              >
+                {body}
+              </Link>
+            );
+          })}
           {totalRemaining > items.length ? (
             <p className="px-3 py-2 kl-type-caption text-center">
               และอีก {totalRemaining - items.length} รายการใน Checklist

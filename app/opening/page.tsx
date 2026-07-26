@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import AppShell from "../../components/layout/AppShell";
 import BiDataStatus from "../../components/bi/BiDataStatus";
 import NextStepCard from "../../components/bi/NextStepCard";
@@ -13,6 +13,8 @@ import ButtonLink from "../../components/ui/ButtonLink";
 import WorkspaceLandingHeader from "../../components/workspaces/WorkspaceLandingHeader";
 import { useWorkspace } from "../providers/WorkspaceProvider";
 import { useAssets } from "./assets/AssetsProvider";
+import AssetQuickView from "./assets/components/AssetQuickView";
+import type { AssetItem } from "../../data/seed/tangtao";
 import {
   buildOpeningSummary,
   nextOpeningFocus,
@@ -37,7 +39,7 @@ export default function OpeningHubPage() {
     error: assetsError,
     retry: retryAssets,
   } = useAssets();
-
+  const [quickViewItem, setQuickViewItem] = useState<AssetItem | null>(null);
   const summary = useMemo(() => buildOpeningSummary(assets), [assets]);
   const focus = useMemo(() => nextOpeningFocus(assets), [assets]);
   const preview = useMemo(
@@ -120,6 +122,7 @@ export default function OpeningHubPage() {
           <OpeningChecklistPreview
             items={preview}
             totalRemaining={summary.remainingCount}
+            onOpenQuickView={setQuickViewItem}
           />
 
           <RecommendationPanel assets={assets} limit={5} />
@@ -138,6 +141,12 @@ export default function OpeningHubPage() {
           </ButtonLink>
         </div>
       ) : null}
+
+      <AssetQuickView
+        item={quickViewItem}
+        open={quickViewItem != null}
+        onClose={() => setQuickViewItem(null)}
+      />
     </AppShell>
   );
 }

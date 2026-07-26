@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import StatusBadge from "../../../../components/bi/StatusBadge";
 import Badge from "../../../../components/ui/Badge";
 import {
@@ -12,18 +11,24 @@ import { formatBaht } from "../../sampleData";
 
 type AssetCompactRowProps = {
   item: AssetItem;
+  onOpenQuickView: (item: AssetItem) => void;
 };
 
-export default function AssetCompactRow({ item }: AssetCompactRowProps) {
+export default function AssetCompactRow({
+  item,
+  onOpenQuickView,
+}: AssetCompactRowProps) {
   const noPrice = assetHasNoPrice(item);
   const unit = item.estimatedPrice;
   const hasSupplier = Boolean(item.supplier.trim());
 
   return (
     <div className="flex min-h-[2.75rem] items-start gap-3 border-b border-[var(--kl-border)] px-3 py-2.5 last:border-b-0">
-      <Link
-        href={`/opening/assets/${item.id}`}
-        className="min-w-0 flex-1 kl-pressable"
+      <button
+        type="button"
+        className="min-w-0 flex-1 text-left kl-pressable"
+        onClick={() => onOpenQuickView(item)}
+        aria-label={`แก้ไขด่วน ${item.name}`}
       >
         <div className="flex flex-wrap items-center gap-2">
           <p className="kl-type-card-title truncate">{item.name}</p>
@@ -36,19 +41,20 @@ export default function AssetCompactRow({ item }: AssetCompactRowProps) {
         <p className="kl-type-caption mt-0.5">
           {hasSupplier ? `ร้านซื้อเดิม: ${item.supplier}` : "ยังไม่มีร้านซื้อเดิม"}
         </p>
-      </Link>
+      </button>
       <div className="shrink-0 text-right space-y-1">
         <StatusBadge assetStatus={item.status} />
         <p className="kl-type-body mt-0.5 tabular-nums">
           {noPrice ? "ยังไม่ใส่ราคา" : formatBaht(unit!)}
         </p>
         {noPrice ? (
-          <Link
-            href={`/opening/assets/${item.id}/edit`}
-            className="inline-block kl-type-caption font-medium text-[var(--bi-text-primary)] underline"
+          <button
+            type="button"
+            className="inline-block kl-type-caption font-medium text-[var(--bi-text-primary)] underline kl-pressable"
+            onClick={() => onOpenQuickView(item)}
           >
             ใส่ราคา
-          </Link>
+          </button>
         ) : null}
       </div>
     </div>

@@ -48,6 +48,7 @@ import { PLATFORM_LANDING_PATH } from "../../../lib/workspaces/appWorkspaces";
 import SmartBudgetBreakdown from "./components/SmartBudgetBreakdown";
 import SmartBudgetExportButton from "./components/SmartBudgetExportButton";
 import SmartBudgetVarianceCard from "./components/SmartBudgetVarianceCard";
+import AssetQuickView from "../assets/components/AssetQuickView";
 import SmartBudgetWaterfall from "./components/SmartBudgetWaterfall";
 
 type ContentFilter = "all" | BudgetStatus;
@@ -85,6 +86,7 @@ export default function OpeningBudgetPage() {
   const [drill, setDrill] = useState<DrillTab>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<ListSortKey>("name");
+  const [quickViewItem, setQuickViewItem] = useState<AssetItem | null>(null);
 
   useEffect(() => {
     if (view.defaultFilter === "need") setDrill("need");
@@ -373,7 +375,14 @@ export default function OpeningBudgetPage() {
             ) : (
               <Card className="!overflow-hidden !p-0">
                 {visibleDrill.map((row) => (
-                  <InventoryDrillRow key={row.id} row={row} />
+                  <InventoryDrillRow
+                    key={row.id}
+                    row={row}
+                    onOpenQuickView={() => {
+                      const asset = assets.find((a) => a.id === row.id) ?? null;
+                      if (asset) setQuickViewItem(asset);
+                    }}
+                  />
                 ))}
               </Card>
             )}
@@ -611,15 +620,32 @@ export default function OpeningBudgetPage() {
       <ButtonLink href="/opening" fullWidth>
         กลับแผนเปิดร้าน
       </ButtonLink>
+
+      <AssetQuickView
+        item={quickViewItem}
+        open={quickViewItem != null}
+        onClose={() => setQuickViewItem(null)}
+      />
     </AppShell>
   );
 }
 
-function InventoryDrillRow({ row }: { row: InventoryLine }) {
+function InventoryDrillRow({
+  row,
+  onOpenQuickView,
+}: {
+  row: InventoryLine;
+  onOpenQuickView: () => void;
+}) {
   const noPrice = row.unitPrice == null;
   return (
     <div className="flex min-h-[2.75rem] items-start gap-3 border-b border-[var(--kl-border)] px-3 py-2.5 last:border-b-0">
-      <div className="min-w-0 flex-1">
+      <button
+        type="button"
+        className="min-w-0 flex-1 text-left kl-pressable"
+        onClick={onOpenQuickView}
+        aria-label={`แก้ไขด่วน ${row.name}`}
+      >
         <div className="flex flex-wrap items-center gap-2">
           <p className="kl-type-card-title truncate">{row.name}</p>
           {noPrice ? (
@@ -635,22 +661,24 @@ function InventoryDrillRow({ row }: { row: InventoryLine }) {
             : ` · ${formatBaht(row.unitPrice!)} / หน่วย`}
         </p>
         <p className="kl-type-caption mt-0.5">{row.statusLabel}</p>
-      </div>
+      </button>
       <div className="shrink-0 text-right space-y-1">
         <p className="kl-type-body tabular-nums">
           {noPrice ? "ยังไม่ใส่ราคา" : formatBaht(row.lineTotal!)}
         </p>
         {noPrice ? (
-          <Link
-            href={`/opening/assets/${row.id}/edit`}
-            className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline"
+          <button
+            type="button"
+            className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline kl-pressable"
+            onClick={onOpenQuickView}
           >
             ใส่ราคา
-          </Link>
+          </button>
         ) : (
           <Link
             href={`/opening/assets/${row.id}`}
             className="kl-type-caption text-[var(--bi-text-primary)] underline"
+            onClick={(e) => e.stopPropagation()}
           >
             ดู
           </Link>
