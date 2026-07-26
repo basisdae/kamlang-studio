@@ -1,24 +1,28 @@
 "use client";
 
-import { ImageOff, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
+import type { MockOrderProduct } from "../../lib/order/mockCatalog";
 import type { OrderProduct } from "../../lib/order/types";
 
 type Props = {
-  product: OrderProduct;
+  product: OrderProduct | MockOrderProduct;
   qty: number;
   onInc: () => void;
   onDec: () => void;
-  onOpenAddons?: () => void;
 };
+
+function isMock(p: OrderProduct | MockOrderProduct): p is MockOrderProduct {
+  return "isMock" in p && p.isMock === true;
+}
 
 export default function OrderProductRow({
   product,
   qty,
   onInc,
   onDec,
-  onOpenAddons,
 }: Props) {
   const soldOut = product.soldOut;
+  const mock = isMock(product);
 
   return (
     <article
@@ -26,7 +30,14 @@ export default function OrderProductRow({
         soldOut ? "opacity-70" : ""
       }`}
     >
-      <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[var(--order-radius-sm)] bg-[var(--order-disabled-bg)]">
+      <div
+        className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[var(--order-radius-sm)]"
+        style={{
+          background: mock
+            ? product.placeholderColor
+            : "var(--order-disabled-bg)",
+        }}
+      >
         {product.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -36,20 +47,9 @@ export default function OrderProductRow({
             loading="lazy"
             onError={(e) => {
               e.currentTarget.style.display = "none";
-              const fallback = e.currentTarget.nextElementSibling;
-              if (fallback instanceof HTMLElement) fallback.hidden = false;
             }}
           />
         ) : null}
-        <div
-          className={`flex h-full w-full flex-col items-center justify-center gap-1 text-[var(--order-text-muted)] ${
-            product.imageUrl ? "hidden" : ""
-          }`}
-          hidden={Boolean(product.imageUrl)}
-        >
-          <ImageOff className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-          <span className="text-[11px]">ไม่มีรูป</span>
-        </div>
         {soldOut ? (
           <span className="absolute left-1.5 top-1.5 rounded-full bg-[var(--order-text)] px-2 py-0.5 text-[11px] font-medium text-[var(--order-card)]">
             หมด
@@ -61,29 +61,25 @@ export default function OrderProductRow({
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[var(--order-text)]">
           {product.name}
         </h3>
-        {product.description ? (
+        {mock ? (
+          <p className="mt-0.5 text-[12px] font-medium text-[var(--order-accent)]">
+            ข้อมูลตัวอย่าง
+          </p>
+        ) : product.description ? (
           <p className="mt-0.5 line-clamp-1 text-[13px] text-[var(--order-text-muted)]">
             {product.description}
           </p>
         ) : null}
         <p className="mt-1 text-[15px] font-semibold tabular-nums text-[var(--order-text)]">
           {product.price.toLocaleString("th-TH")} บาท
+          {mock ? (
+            <span className="ml-1 text-[12px] font-normal text-[var(--order-text-muted)]">
+              (ตัวอย่าง)
+            </span>
+          ) : null}
         </p>
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          {onOpenAddons ? (
-            <button
-              type="button"
-              disabled={soldOut}
-              onClick={onOpenAddons}
-              className="min-h-[40px] text-[13px] font-medium text-[var(--order-text-muted)] underline disabled:no-underline disabled:opacity-40"
-            >
-              ตัวเลือกเพิ่ม
-            </button>
-          ) : (
-            <span />
-          )}
-
+        <div className="mt-auto flex items-center justify-end gap-2 pt-2">
           {qty <= 0 ? (
             <button
               type="button"

@@ -1,10 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, Store } from "lucide-react";
-import { loadOrderAddons } from "../../lib/order/addons";
-import { loadOrderCatalog } from "../../lib/order/catalog";
+import {
+  MOCK_CATEGORY_TILES,
+  MOCK_ORDER_PRODUCTS,
+  TOKYO_FILTERS,
+  categoryLabel,
+  filterTokyoProducts,
+  getMockProductById,
+  getMockProductsByCategory,
+  type ProductCategoryId,
+  type TokyoFilterId,
+} from "../../lib/order/mockCatalog";
 import {
   ORDER_DELIVERY_LINE_NOTICE,
   ORDER_RESULT_DESCRIPTION,
@@ -15,13 +24,9 @@ import {
 } from "../../lib/order/config";
 import type {
   CartLine,
-  OrderAddon,
   OrderFulfillment,
-  OrderProduct,
   OrderSource,
-  PickupMode,
 } from "../../lib/order/types";
-import OrderAddonRow from "../../components/order/OrderAddonRow";
 import OrderCartBar from "../../components/order/OrderCartBar";
 import OrderCartSheet from "../../components/order/OrderCartSheet";
 import OrderCheckoutSheet from "../../components/order/OrderCheckoutSheet";
@@ -29,82 +34,121 @@ import OrderProductRow from "../../components/order/OrderProductRow";
 import OrderResultPanel from "../../components/order/OrderResultPanel";
 import OrderThemeToggle from "../../components/order/OrderThemeToggle";
 
-type LoadState = "loading" | "ready" | "error";
-type Step = "welcome" | "fulfillment" | "menu" | "addons" | "result";
+type Step = "welcome" | "fulfillment" | "categories" | "products" | "result";
+
+type FlowState = {
+  step: Step;
+  categoryId: ProductCategoryId | null;
+  tokyoFilter: TokyoFilterId;
+};
+
+function readFlowFromUrl(params: URLSearchParams): FlowState {
+  const stepRaw = params.get("step");
+  const step: Step =
+    stepRaw === "fulfillment" ||
+    stepRaw === "categories" ||
+    stepRaw === "products" ||
+    stepRaw === "result"
+      ? stepRaw
+      : "welcome";
+
+  const cat = params.get("category");
+  const categoryId =
+    cat === "tokyo" ||
+    cat === "sandwich" ||
+    cat === "burger" ||
+    cat === "ricebox"
+      ? cat
+      : null;
+
+  const tab = params.get("tokyoTab");
+  const tokyoFilter: TokyoFilterId =
+    tab === "bestsellers" ||
+    tab === "regular" ||
+    tab === "special" ||
+    tab === "featured"
+      ? tab
+      : "featured";
+
+  return {
+    step: step === "products" && !categoryId ? "categories" : step,
+    categoryId,
+    tokyoFilter,
+  };
+}
 
 export default function OrderPageClient() {
   const searchParams = useSearchParams();
   const orderSource: OrderSource =
     searchParams.get("source") === "staff" ? "staff" : "customer";
 
-  const [step, setStep] = useState<Step>("welcome");
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [products, setProducts] = useState<OrderProduct[]>([]);
-  const [emptyReason, setEmptyReason] = useState<string | null>(null);
-  const [missingForCatalog, setMissingForCatalog] = useState<string[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
+  const [flow, setFlow] = useState<FlowState>(() =>
+    readFlowFromUrl(new URLSearchParams(searchParams.toString()))
+  );
   const [fulfillment, setFulfillment] = useState<OrderFulfillment>("pickup");
-  const [pickupMode, setPickupMode] = useState<PickupMode>("takeaway");
   const [cart, setCart] = useState<Record<string, number>>({});
-
-  const [addonProduct, setAddonProduct] = useState<OrderProduct | null>(null);
-  const [addons, setAddons] = useState<OrderAddon[]>([]);
-  const [addonQty, setAddonQty] = useState<Record<string, number>>({});
-  const [addonMissing, setAddonMissing] = useState<string[]>([]);
-  const [addonEmptyReason, setAddonEmptyReason] = useState<string | null>(null);
-  const [addonLoading, setAddonLoading] = useState(false);
-
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await loadOrderCatalog();
-        if (cancelled) return;
-        setProducts(result.products);
-        setEmptyReason(result.emptyReason);
-        setMissingForCatalog(result.missingForCatalog);
-        setLoadState("ready");
-      } catch {
-        if (cancelled) return;
-        setLoadError("โหลดเมนูไม่สำเร็จ ลองใหม่อีกครั้ง");
-        setLoadState("error");
+  const syncUrl = useCallback(
+    (next: FlowState, mode: "push" | "replace" = "push") => {
+      const url = new URL(window.location.href);
+      url.searchParams.set("step", next.step);
+      if (orderSource === "staff") {
+        url.searchParams.set("source", "staff");
+      } else {
+        url.searchParams.delete("source");
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      if (next.step === "products" && next.categoryId) {
+        url.searchParams.set("category", next.categoryId);
+      } else {
+        url.searchParams.delete("category");
+      }
+      if (next.step === "products" && next.categoryId === "tokyo") {
+        url.searchParams.set("tokyoTab", next.tokyoFilter);
+      } else {
+        url.searchParams.delete("tokyoTab");
+      }
+      const href = `${url.pathname}${url.search}`;
+      if (mode === "push") {
+        window.history.pushState({ orderFlow: next }, "", href);
+      } else {
+        window.history.replaceState({ orderFlow: next }, "", href);
+      }
+      setFlow(next);
+    },
+    [orderSource]
+  );
+
+  useEffect(() => {
+    const initial = readFlowFromUrl(
+      new URLSearchParams(window.location.search)
+    );
+    window.history.replaceState({ orderFlow: initial }, "", window.location.href);
+    setFlow(initial);
+
+    function onPop() {
+      const fromUrl = readFlowFromUrl(
+        new URLSearchParams(window.location.search)
+      );
+      setFlow(fromUrl);
+    }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
 
   const productById = useMemo(() => {
-    const map = new Map<string, OrderProduct>();
-    for (const p of products) map.set(p.id, p);
+    const map = new Map(
+      MOCK_ORDER_PRODUCTS.map((p) => [p.id, p] as const)
+    );
     return map;
-  }, [products]);
-
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    for (const p of products) {
-      if (p.category) set.add(p.category);
-    }
-    return [...set];
-  }, [products]);
-
-  const [activeCategory, setActiveCategory] = useState<string | "all">("all");
-
-  const visibleProducts = useMemo(() => {
-    if (activeCategory === "all") return products;
-    return products.filter((p) => p.category === activeCategory);
-  }, [products, activeCategory]);
+  }, []);
 
   const lines: CartLine[] = useMemo(() => {
     return Object.entries(cart)
       .filter(([, qty]) => qty > 0)
       .map(([productId, qty]) => {
-        const p = productById.get(productId);
+        const p = productById.get(productId) ?? getMockProductById(productId);
         return {
           productId,
           name: p?.name ?? "สินค้า",
@@ -119,21 +163,10 @@ export default function OrderPageClient() {
     [lines]
   );
 
-  const productTotal = useMemo(
+  const totalBaht = useMemo(
     () => lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0),
     [lines]
   );
-
-  const addonTotal = useMemo(
-    () =>
-      Object.entries(addonQty).reduce((sum, [id, qty]) => {
-        const a = addons.find((x) => x.id === id);
-        return sum + (a ? a.price * qty : 0);
-      }, 0),
-    [addonQty, addons]
-  );
-
-  const totalBaht = productTotal + (step === "addons" ? addonTotal : 0);
 
   function qtyOf(id: string) {
     return cart[id] ?? 0;
@@ -149,9 +182,9 @@ export default function OrderPageClient() {
     setCart((c) => {
       const next = (c[productId] ?? 0) - 1;
       if (next <= 0) {
-        const nextCart = { ...c };
-        delete nextCart[productId];
-        return nextCart;
+        const copy = { ...c };
+        delete copy[productId];
+        return copy;
       }
       return { ...c, [productId]: next };
     });
@@ -159,26 +192,20 @@ export default function OrderPageClient() {
 
   function remove(productId: string) {
     setCart((c) => {
-      const nextCart = { ...c };
-      delete nextCart[productId];
-      return nextCart;
+      const copy = { ...c };
+      delete copy[productId];
+      return copy;
     });
   }
 
-  async function openAddons(product: OrderProduct) {
-    setAddonProduct(product);
-    setAddonQty({});
-    setAddonLoading(true);
-    setStep("addons");
-    try {
-      const result = await loadOrderAddons(product.id);
-      setAddons(result.addons);
-      setAddonEmptyReason(result.emptyReason);
-      setAddonMissing(result.missingForAddons);
-    } finally {
-      setAddonLoading(false);
+  const categoryProducts = useMemo(() => {
+    if (!flow.categoryId) return [];
+    const list = getMockProductsByCategory(flow.categoryId);
+    if (flow.categoryId === "tokyo") {
+      return filterTokyoProducts(list, flow.tokyoFilter);
     }
-  }
+    return list;
+  }, [flow.categoryId, flow.tokyoFilter]);
 
   function HeaderBar({
     title,
@@ -211,11 +238,27 @@ export default function OrderPageClient() {
     );
   }
 
+  function goBackFromProducts() {
+    syncUrl({
+      step: "categories",
+      categoryId: null,
+      tokyoFilter: flow.tokyoFilter,
+    });
+  }
+
+  function goBackFromCategories() {
+    syncUrl({
+      step: "fulfillment",
+      categoryId: null,
+      tokyoFilter: flow.tokyoFilter,
+    });
+  }
+
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col overflow-x-hidden">
       <span className="sr-only" data-order-source={orderSource} aria-hidden />
 
-      {step === "welcome" ? (
+      {flow.step === "welcome" ? (
         <>
           <HeaderBar />
           <main className="flex flex-1 flex-col px-4 pb-8">
@@ -242,14 +285,20 @@ export default function OrderPageClient() {
               >
                 <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 px-4 text-[var(--order-text-muted)]">
                   <Store className="h-10 w-10" strokeWidth={1.5} aria-hidden />
-                  <p className="text-[13px]">พื้นที่ภาพร้าน — เปลี่ยน Asset ได้ภายหลัง</p>
+                  <p className="text-[13px]">พื้นที่ภาพร้าน</p>
                 </div>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={() => setStep("fulfillment")}
+              onClick={() =>
+                syncUrl({
+                  step: "fulfillment",
+                  categoryId: null,
+                  tokyoFilter: flow.tokyoFilter,
+                })
+              }
               className="mt-6 flex min-h-[56px] w-full items-center justify-center rounded-[var(--order-radius-lg)] bg-[var(--order-accent)] text-[17px] font-semibold text-[var(--order-accent-ink)]"
             >
               เริ่มสั่งอาหาร
@@ -258,9 +307,18 @@ export default function OrderPageClient() {
         </>
       ) : null}
 
-      {step === "fulfillment" ? (
+      {flow.step === "fulfillment" ? (
         <>
-          <HeaderBar title="ประเภทออเดอร์" onBack={() => setStep("welcome")} />
+          <HeaderBar
+            title="ประเภทการสั่ง"
+            onBack={() =>
+              syncUrl({
+                step: "welcome",
+                categoryId: null,
+                tokyoFilter: flow.tokyoFilter,
+              })
+            }
+          />
           <main className="flex flex-1 flex-col px-4 pb-8 pt-2">
             {orderSource === "staff" ? <StaffBadge /> : null}
             <p className="mb-4 text-[14px] text-[var(--order-text-muted)]">
@@ -268,291 +326,194 @@ export default function OrderPageClient() {
             </p>
 
             <div className="grid grid-cols-2 gap-2">
-              <FulfillmentCard
+              <ChoiceCard
                 active={fulfillment === "pickup"}
                 label="รับหน้าร้าน"
-                onClick={() => setFulfillment("pickup")}
+                onClick={() => {
+                  setFulfillment("pickup");
+                  syncUrl({
+                    step: "categories",
+                    categoryId: null,
+                    tokyoFilter: flow.tokyoFilter,
+                  });
+                }}
               />
-              <FulfillmentCard
+              <ChoiceCard
                 active={fulfillment === "delivery"}
                 label="จัดส่ง"
-                onClick={() => setFulfillment("delivery")}
+                onClick={() => {
+                  setFulfillment("delivery");
+                  syncUrl({
+                    step: "categories",
+                    categoryId: null,
+                    tokyoFilter: flow.tokyoFilter,
+                  });
+                }}
               />
             </div>
 
-            {fulfillment === "pickup" ? (
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <FulfillmentCard
-                  active={pickupMode === "dine_wait"}
-                  label="นั่งรอ"
-                  compact
-                  onClick={() => setPickupMode("dine_wait")}
-                />
-                <FulfillmentCard
-                  active={pickupMode === "takeaway"}
-                  label="นำกลับ"
-                  compact
-                  onClick={() => setPickupMode("takeaway")}
-                />
-              </div>
-            ) : (
-              <p className="mt-4 rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-3 text-[13px] leading-relaxed text-[var(--order-text)] shadow-[var(--order-shadow)]">
-                {ORDER_DELIVERY_LINE_NOTICE}
-              </p>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setStep("menu")}
-              className="mt-auto flex min-h-[52px] w-full items-center justify-center rounded-[var(--order-radius)] bg-[var(--order-accent)] text-[16px] font-semibold text-[var(--order-accent-ink)]"
-            >
-              ดูเมนู
-            </button>
+            <p className="mt-4 rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-3 text-[13px] leading-relaxed text-[var(--order-text-muted)]">
+              {ORDER_DELIVERY_LINE_NOTICE}
+            </p>
           </main>
         </>
       ) : null}
 
-      {step === "menu" ? (
+      {flow.step === "categories" ? (
         <>
           <header className="sticky top-0 z-30 border-b border-[var(--order-border)] bg-[var(--order-bg)]/95 backdrop-blur-sm">
             <HeaderBar
-              title={ORDER_SHOP_NAME}
-              onBack={() => setStep("fulfillment")}
+              title="สั่งอาหาร"
+              onBack={goBackFromCategories}
             />
-            <div className="px-3 pb-3">
-              <TrialBanner />
-              {orderSource === "staff" ? (
-                <div className="mb-2">
-                  <StaffBadge />
-                </div>
-              ) : null}
-              <div className="grid grid-cols-2 gap-1 rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] p-1">
-                <Chip
-                  active={fulfillment === "pickup"}
-                  label="รับหน้าร้าน"
-                  onClick={() => setFulfillment("pickup")}
-                />
-                <Chip
-                  active={fulfillment === "delivery"}
-                  label="จัดส่ง"
-                  onClick={() => setFulfillment("delivery")}
-                />
-              </div>
-              {fulfillment === "pickup" ? (
-                <div className="mt-2 grid grid-cols-2 gap-1 rounded-[var(--order-radius-sm)] border border-[var(--order-border)] bg-[var(--order-card)] p-1">
-                  <Chip
-                    active={pickupMode === "dine_wait"}
-                    label="นั่งรอ"
-                    onClick={() => setPickupMode("dine_wait")}
-                  />
-                  <Chip
-                    active={pickupMode === "takeaway"}
-                    label="นำกลับ"
-                    onClick={() => setPickupMode("takeaway")}
-                  />
-                </div>
-              ) : (
-                <p className="mt-2 rounded-[var(--order-radius-sm)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-2 text-[12px] leading-relaxed text-[var(--order-text-muted)]">
-                  {ORDER_DELIVERY_LINE_NOTICE}
-                </p>
-              )}
-              {categories.length > 0 ? (
-                <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <Chip
-                    active={activeCategory === "all"}
-                    label="ทั้งหมด"
-                    onClick={() => setActiveCategory("all")}
-                  />
-                  {categories.map((c) => (
-                    <Chip
-                      key={c}
-                      active={activeCategory === c}
-                      label={c}
-                      onClick={() => setActiveCategory(c)}
-                    />
-                  ))}
-                </div>
-              ) : null}
+            <div className="flex items-center justify-between gap-2 px-3 pb-3">
+              <p className="rounded-full border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-1 text-[12px] text-[var(--order-text)]">
+                {fulfillment === "pickup" ? "รับหน้าร้าน" : "จัดส่ง"}
+              </p>
+              <button
+                type="button"
+                onClick={goBackFromCategories}
+                className="min-h-[40px] text-[13px] font-medium text-[var(--order-accent)] underline"
+              >
+                เปลี่ยน
+              </button>
             </div>
           </header>
 
           <main className="flex-1 space-y-3 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3">
-            {loadState === "loading" ? (
-              <p className="py-16 text-center text-[15px] text-[var(--order-text-muted)]">
-                กำลังโหลดเมนู…
+            <TrialBanner />
+            {orderSource === "staff" ? <StaffBadge /> : null}
+
+            <div
+              className="flex h-20 items-center justify-center rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-hero)] px-4"
+              aria-label="แบนเนอร์โปรโมชัน"
+            >
+              <p className="text-center text-[14px] font-medium text-[var(--order-text-muted)]">
+                โปรโมชันและเมนูแนะนำ · Placeholder
               </p>
-            ) : null}
-            {loadState === "error" ? (
-              <div className="rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-4 py-10 text-center">
-                <p className="text-[15px] font-medium">{loadError}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {MOCK_CATEGORY_TILES.map((tile) => (
                 <button
+                  key={tile.id}
                   type="button"
-                  className="mt-4 min-h-[44px] rounded-[var(--order-radius-sm)] bg-[var(--order-accent)] px-4 text-[14px] font-semibold text-[var(--order-accent-ink)]"
-                  onClick={() => window.location.reload()}
-                >
-                  ลองใหม่
-                </button>
-              </div>
-            ) : null}
-            {loadState === "ready" && products.length === 0 ? (
-              <div className="rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-4 py-8 shadow-[var(--order-shadow)]">
-                <p className="text-center text-[16px] font-semibold">
-                  {emptyReason}
-                </p>
-                <p className="mt-2 text-center text-[14px] text-[var(--order-text-muted)]">
-                  การ์ดเมนูจะแสดงแบบแนวนอน 1 รายการต่อแถว เมื่อมีข้อมูลสินค้าจริง
-                </p>
-                {missingForCatalog.length > 0 ? (
-                  <ul className="mt-4 space-y-2 border-t border-[var(--order-border)] pt-4 text-[13px] text-[var(--order-text-muted)]">
-                    <li className="font-medium text-[var(--order-text)]">
-                      ข้อมูลที่ยังขาด:
-                    </li>
-                    {missingForCatalog.map((item) => (
-                      <li key={item}>· {item}</li>
-                    ))}
-                  </ul>
-                ) : null}
-                <button
-                  type="button"
-                  className="mx-auto mt-4 flex min-h-[44px] text-[13px] font-medium text-[var(--order-text-muted)] underline"
                   onClick={() =>
-                    openAddons({
-                      id: "_preview",
-                      name: "ยังไม่มีสินค้าจริง",
-                      price: 0,
-                      imageUrl: null,
-                      soldOut: false,
+                    syncUrl({
+                      step: "products",
+                      categoryId: tile.id,
+                      tokyoFilter:
+                        tile.id === "tokyo" ? flow.tokyoFilter : "featured",
                     })
                   }
+                  className="flex min-h-[112px] flex-col items-center justify-center gap-2 rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] p-3 shadow-[var(--order-shadow)]"
                 >
-                  ดูโครงหน้า Add-on (ยังไม่มีข้อมูล)
-                </button>
-                <button
-                  type="button"
-                  className="mx-auto mt-2 flex min-h-[44px] text-[13px] font-medium text-[var(--order-text-muted)] underline"
-                  onClick={() => setCheckoutOpen(true)}
-                >
-                  ดูตัวอย่างฟอร์มยืนยัน
-                </button>
-              </div>
-            ) : null}
-            {loadState === "ready" && visibleProducts.length > 0
-              ? visibleProducts.map((p) => (
-                  <OrderProductRow
-                    key={p.id}
-                    product={p}
-                    qty={qtyOf(p.id)}
-                    onInc={() => inc(p.id)}
-                    onDec={() => dec(p.id)}
-                    onOpenAddons={() => openAddons(p)}
+                  <span
+                    className="h-12 w-12 rounded-[var(--order-radius-sm)]"
+                    style={{ background: tile.color }}
+                    aria-hidden
                   />
-                ))
-              : null}
+                  <span className="text-[16px] font-semibold text-[var(--order-text)]">
+                    {tile.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </main>
 
           <OrderCartBar
             itemCount={itemCount}
-            totalBaht={productTotal}
+            totalBaht={totalBaht}
             onOpenCart={() => setCartOpen(true)}
           />
         </>
       ) : null}
 
-      {step === "addons" && addonProduct ? (
+      {flow.step === "products" && flow.categoryId ? (
         <>
-          <HeaderBar
-            title="ตัวเลือกเพิ่ม"
-            onBack={() => setStep("menu")}
-          />
-          <main className="flex-1 space-y-3 px-3 pb-8 pt-2">
-            <div className="rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-3 shadow-[var(--order-shadow)]">
-              <p className="text-[13px] text-[var(--order-text-muted)]">สินค้า</p>
-              <p className="text-[16px] font-semibold">{addonProduct.name}</p>
-            </div>
-
-            {addonLoading ? (
-              <p className="py-10 text-center text-[var(--order-text-muted)]">
-                กำลังโหลดตัวเลือก…
-              </p>
-            ) : addons.length === 0 ? (
-              <div className="rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-4 py-6 shadow-[var(--order-shadow)]">
-                <p className="text-center text-[15px] font-semibold">
-                  {addonEmptyReason}
-                </p>
-                <ul className="mt-4 space-y-2 text-[13px] text-[var(--order-text-muted)]">
-                  {addonMissing.map((m) => (
-                    <li key={m}>· {m}</li>
-                  ))}
-                </ul>
+          <header className="sticky top-0 z-30 border-b border-[var(--order-border)] bg-[var(--order-bg)]/95 backdrop-blur-sm">
+            <HeaderBar
+              title={categoryLabel(flow.categoryId)}
+              onBack={goBackFromProducts}
+            />
+            {flow.categoryId === "tokyo" ? (
+              <div className="flex gap-1 overflow-x-auto px-3 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {TOKYO_FILTERS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() =>
+                      syncUrl(
+                        {
+                          step: "products",
+                          categoryId: "tokyo",
+                          tokyoFilter: tab.id,
+                        },
+                        "replace"
+                      )
+                    }
+                    className={`min-h-[40px] shrink-0 rounded-full px-3.5 text-[13px] font-medium ${
+                      flow.tokyoFilter === tab.id
+                        ? "bg-[var(--order-accent)] text-[var(--order-accent-ink)]"
+                        : "border border-[var(--order-border)] bg-[var(--order-card)] text-[var(--order-text-muted)]"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
+            ) : null}
+          </header>
+
+          <main className="flex-1 space-y-3 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3">
+            {categoryProducts.length === 0 ? (
+              <p className="py-12 text-center text-[15px] text-[var(--order-text-muted)]">
+                ยังไม่มีรายการในหมวดนี้
+              </p>
             ) : (
-              addons.map((a) => (
-                <OrderAddonRow
-                  key={a.id}
-                  addon={a}
-                  qty={addonQty[a.id] ?? 0}
-                  onInc={() =>
-                    setAddonQty((q) => ({
-                      ...q,
-                      [a.id]: (q[a.id] ?? 0) + 1,
-                    }))
-                  }
-                  onDec={() =>
-                    setAddonQty((q) => {
-                      const next = (q[a.id] ?? 0) - 1;
-                      if (next <= 0) {
-                        const copy = { ...q };
-                        delete copy[a.id];
-                        return copy;
-                      }
-                      return { ...q, [a.id]: next };
-                    })
-                  }
+              categoryProducts.map((p) => (
+                <OrderProductRow
+                  key={p.id}
+                  product={p}
+                  qty={qtyOf(p.id)}
+                  onInc={() => inc(p.id)}
+                  onDec={() => dec(p.id)}
                 />
               ))
             )}
-
-            <div className="flex items-center justify-between rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-3">
-              <span className="text-[14px] text-[var(--order-text-muted)]">
-                ยอด Add-on
-              </span>
-              <span className="font-semibold tabular-nums">
-                {addonTotal.toLocaleString("th-TH")} บาท
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (addonProduct.id !== "_preview" && !addonProduct.soldOut) {
-                  inc(addonProduct.id);
-                }
-                setStep("menu");
-              }}
-              className="flex min-h-[52px] w-full items-center justify-center rounded-[var(--order-radius)] bg-[var(--order-accent)] text-[16px] font-semibold text-[var(--order-accent-ink)]"
-            >
-              กลับไปเมนู
-            </button>
           </main>
+
+          <OrderCartBar
+            itemCount={itemCount}
+            totalBaht={totalBaht}
+            onOpenCart={() => setCartOpen(true)}
+          />
         </>
       ) : null}
 
-      {step === "result" ? (
+      {flow.step === "result" ? (
         <>
           <HeaderBar />
           <OrderResultPanel
             kind="trial_preview"
             title={ORDER_RESULT_TITLE}
             description={ORDER_RESULT_DESCRIPTION}
-            primaryLabel="กลับไปเมนู"
-            onPrimary={() => {
-              setCheckoutOpen(false);
-              setStep("menu");
-            }}
+            primaryLabel="กลับไปเลือกเมนู"
+            onPrimary={() =>
+              syncUrl({
+                step: "categories",
+                categoryId: null,
+                tokyoFilter: flow.tokyoFilter,
+              })
+            }
             secondaryLabel="เริ่มใหม่"
             onSecondary={() => {
               setCart({});
-              setStep("welcome");
+              syncUrl({
+                step: "welcome",
+                categoryId: null,
+                tokyoFilter: "featured",
+              });
             }}
           />
         </>
@@ -561,7 +522,7 @@ export default function OrderPageClient() {
       <OrderCartSheet
         open={cartOpen}
         lines={lines}
-        totalBaht={productTotal}
+        totalBaht={totalBaht}
         onClose={() => setCartOpen(false)}
         onInc={inc}
         onDec={dec}
@@ -575,64 +536,39 @@ export default function OrderPageClient() {
       <OrderCheckoutSheet
         open={checkoutOpen}
         fulfillment={fulfillment}
-        pickupMode={pickupMode}
         lines={lines}
-        totalBaht={productTotal}
+        totalBaht={totalBaht}
         onClose={() => setCheckoutOpen(false)}
         onConfirmPreview={() => {
           setCheckoutOpen(false);
-          setStep("result");
+          syncUrl({
+            step: "result",
+            categoryId: null,
+            tokyoFilter: flow.tokyoFilter,
+          });
         }}
       />
     </div>
   );
 }
 
-function FulfillmentCard({
+function ChoiceCard({
   active,
   label,
   onClick,
-  compact = false,
 }: {
   active: boolean;
   label: string;
   onClick: () => void;
-  compact?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-[var(--order-radius)] border text-[15px] font-semibold transition-colors ${
-        compact ? "min-h-[48px]" : "min-h-[72px]"
-      } ${
+      className={`min-h-[72px] rounded-[var(--order-radius)] border text-[15px] font-semibold ${
         active
           ? "border-[var(--order-accent)] bg-[var(--order-accent)] text-[var(--order-accent-ink)] shadow-[var(--order-shadow)]"
           : "border-[var(--order-border)] bg-[var(--order-card)] text-[var(--order-text)]"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
-
-function Chip({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`min-h-[44px] shrink-0 rounded-[var(--order-radius-sm)] px-3 text-[14px] font-medium ${
-        active
-          ? "bg-[var(--order-accent)] text-[var(--order-accent-ink)]"
-          : "text-[var(--order-text-muted)]"
       }`}
     >
       {label}

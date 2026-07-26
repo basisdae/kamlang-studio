@@ -12,13 +12,11 @@ import type {
   DeliveryCheckoutDraft,
   OrderFulfillment,
   PickupCheckoutDraft,
-  PickupMode,
 } from "../../lib/order/types";
 
 type Props = {
   open: boolean;
   fulfillment: OrderFulfillment;
-  pickupMode: PickupMode;
   lines: CartLine[];
   totalBaht: number;
   onClose: () => void;
@@ -31,7 +29,6 @@ const FIELD =
 export default function OrderCheckoutSheet({
   open,
   fulfillment,
-  pickupMode,
   lines,
   totalBaht,
   onClose,
@@ -48,14 +45,13 @@ export default function OrderCheckoutSheet({
     note: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const lineOa = getOrderLineOaUrl();
 
   if (!open) return null;
 
   function validate(): boolean {
     setError(null);
-    // Empty-cart preview (no real catalog yet) — allow opening result panel for UX review
-    if (lines.length === 0) return true;
     if (fulfillment === "pickup") {
       if (!pickup.nickname.trim()) {
         setError("กรุณาใส่ชื่อเล่น");
@@ -83,8 +79,11 @@ export default function OrderCheckoutSheet({
   }
 
   function handleConfirm() {
+    if (submitting) return;
     if (!validate()) return;
+    setSubmitting(true);
     onConfirmPreview();
+    setSubmitting(false);
   }
 
   return (
@@ -122,11 +121,7 @@ export default function OrderCheckoutSheet({
           <section>
             <p className="text-[13px] text-[var(--order-text-muted)]">ประเภท</p>
             <p className="mt-1 text-[15px] font-medium text-[var(--order-text)]">
-              {fulfillment === "pickup"
-                ? `รับหน้าร้าน · ${
-                    pickupMode === "takeaway" ? "นำกลับ" : "นั่งรอ"
-                  }`
-                : "จัดส่ง"}
+              {fulfillment === "pickup" ? "รับหน้าร้าน" : "จัดส่ง"}
             </p>
           </section>
 
@@ -134,21 +129,27 @@ export default function OrderCheckoutSheet({
             <p className="text-[13px] font-medium text-[var(--order-text-muted)]">
               รายการ
             </p>
-            <ul className="space-y-1.5">
-              {lines.map((l) => (
-                <li
-                  key={l.productId}
-                  className="flex justify-between gap-2 text-[14px] text-[var(--order-text)]"
-                >
-                  <span className="min-w-0 truncate">
-                    {l.name} × {l.qty}
-                  </span>
-                  <span className="shrink-0 tabular-nums">
-                    {(l.unitPrice * l.qty).toLocaleString("th-TH")} บาท
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {lines.length === 0 ? (
+              <p className="text-[14px] text-[var(--order-text-muted)]">
+                ยังไม่มีสินค้าในตะกร้า
+              </p>
+            ) : (
+              <ul className="space-y-1.5">
+                {lines.map((l) => (
+                  <li
+                    key={l.productId}
+                    className="flex justify-between gap-2 text-[14px] text-[var(--order-text)]"
+                  >
+                    <span className="min-w-0 truncate">
+                      {l.name} × {l.qty}
+                    </span>
+                    <span className="shrink-0 tabular-nums">
+                      {(l.unitPrice * l.qty).toLocaleString("th-TH")} บาท
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="flex justify-between border-t border-[var(--order-border)] pt-2 text-[16px] font-semibold text-[var(--order-text)]">
               <span>ยอดรวม</span>
               <span className="tabular-nums">
@@ -195,9 +196,7 @@ export default function OrderCheckoutSheet({
               </p>
               {!lineOa ? (
                 <p className="text-[12px] text-[var(--order-text-muted)]">
-                  ยังไม่ได้ตั้งค่า LINE OA URL — ใส่{" "}
-                  <code className="text-[11px]">NEXT_PUBLIC_ORDER_LINE_OA_URL</code>{" "}
-                  ภายหลัง
+                  ยังไม่ได้ตั้งค่า LINE ของร้าน
                 </p>
               ) : (
                 <a
@@ -272,8 +271,9 @@ export default function OrderCheckoutSheet({
         <div className="border-t border-[var(--order-border)] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
           <button
             type="button"
+            disabled={submitting}
             onClick={handleConfirm}
-            className="flex min-h-[52px] w-full items-center justify-center rounded-[var(--order-radius)] bg-[var(--order-accent)] text-[16px] font-semibold text-[var(--order-accent-ink)]"
+            className="flex min-h-[52px] w-full items-center justify-center rounded-[var(--order-radius)] bg-[var(--order-accent)] text-[16px] font-semibold text-[var(--order-accent-ink)] disabled:opacity-60"
           >
             ดูสรุปทดลอง (ยังไม่ส่ง)
           </button>
