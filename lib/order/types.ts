@@ -15,6 +15,27 @@ export type OrderProduct = {
   /** When true, add buttons are disabled */
   soldOut: boolean;
   category?: string;
+  description?: string;
+  /** True when real add-on options exist for this product */
+  hasAddons?: boolean;
+};
+
+export type OrderAddon = {
+  id: string;
+  productId: string;
+  name: string;
+  description?: string;
+  price: number;
+  imageUrl: string | null;
+  soldOut: boolean;
+  available: boolean;
+};
+
+export type CartAddonLine = {
+  addonId: string;
+  name: string;
+  unitPrice: number;
+  qty: number;
 };
 
 export type CartLine = {
@@ -22,6 +43,7 @@ export type CartLine = {
   name: string;
   unitPrice: number;
   qty: number;
+  addons?: CartAddonLine[];
 };
 
 export type OrderSource = "customer" | "staff";

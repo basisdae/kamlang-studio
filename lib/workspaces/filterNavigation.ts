@@ -106,7 +106,8 @@ export function isPathInWorkspace(
     pathname.startsWith("/setup") ||
     pathname.startsWith("/status") ||
     pathname.startsWith("/auth") ||
-    pathname.startsWith("/order")
+    pathname.startsWith("/order") ||
+    pathname.startsWith("/orders")
   ) {
     return true;
   }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ORDER_SHOP_NAME } from "../../lib/order/config";
+import { OrderThemeProvider } from "../../components/order/OrderThemeProvider";
 
 export const metadata: Metadata = {
   title: `สั่งอาหาร · ${ORDER_SHOP_NAME}`,
@@ -9,16 +10,12 @@ export const metadata: Metadata = {
 
 /**
  * Standalone order shell — no AppShell / BI nav.
- * Root WorkspaceGate treats /order as public.
+ * Theme tokens scoped to [data-order-surface].
  */
 export default function OrderLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-dvh bg-[#f7f7f4] text-[var(--bi-text-primary)] antialiased">
-      {children}
-    </div>
-  );
+  return <OrderThemeProvider>{children}</OrderThemeProvider>;
 }

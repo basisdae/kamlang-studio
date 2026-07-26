@@ -8,7 +8,7 @@ export default function OrderPage() {
     <Suspense
       fallback={
         <div className="flex min-h-dvh items-center justify-center px-4">
-          <p className="text-[15px] text-kl-muted">กำลังโหลด…</p>
+          <p className="text-[15px] text-[var(--order-text-muted)]">กำลังโหลด…</p>
         </div>
       }
     >
