@@ -202,7 +202,7 @@ export function useRecipeBuilder() {
     setLines((current) => current.filter((_, i) => i !== index));
   }
 
-  function handleSave(): boolean {
+  function handleSave(): string | false {
     const errors = validateRecipeForSave(menuName, lines);
 
     if (hasValidationErrors(errors)) {
@@ -232,9 +232,12 @@ export function useRecipeBuilder() {
         profit: savedProfit,
         createdAt: existing.createdAt,
         updatedAt: now,
+        status: existing.status ?? "draft",
+        linkedMenuId: existing.linkedMenuId,
+        detailState: existing.detailState,
       });
 
-      return true;
+      return editingRecipeId;
     }
 
     const newId = crypto.randomUUID();
@@ -249,6 +252,7 @@ export function useRecipeBuilder() {
       profit: savedProfit,
       createdAt: now,
       updatedAt: now,
+      status: "draft",
     });
 
     setEditingRecipeId(newId);
@@ -257,7 +261,7 @@ export function useRecipeBuilder() {
     url.searchParams.set("id", newId);
     window.history.replaceState(null, "", url.toString());
 
-    return true;
+    return newId;
   }
 
   return {

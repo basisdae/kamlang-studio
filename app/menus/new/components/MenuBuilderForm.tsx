@@ -13,12 +13,16 @@ type Props = {
   recipeId: string;
   packagingSetId: string;
   sellingPrice: string;
+  isActive: boolean;
+  notes: string;
   validationErrors: MenuBuilderValidationErrors;
   onNameChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onRecipeIdChange: (value: string) => void;
   onPackagingSetIdChange: (value: string) => void;
   onSellingPriceChange: (value: string) => void;
+  onIsActiveChange: (value: boolean) => void;
+  onNotesChange: (value: string) => void;
 };
 
 const fieldClassName = "kl-input mt-2";
@@ -31,12 +35,16 @@ export default function MenuBuilderForm({
   recipeId,
   packagingSetId,
   sellingPrice,
+  isActive,
+  notes,
   validationErrors,
   onNameChange,
   onCategoryChange,
   onRecipeIdChange,
   onPackagingSetIdChange,
   onSellingPriceChange,
+  onIsActiveChange,
+  onNotesChange,
 }: Props) {
   return (
     <Card className="space-y-4">
@@ -113,7 +121,7 @@ export default function MenuBuilderForm({
           value={sellingPrice}
           onChange={(event) => onSellingPriceChange(event.target.value)}
           className={fieldClassName}
-          placeholder="เช่น 69"
+          placeholder="ยังไม่ตั้ง — กรอกเอง"
         />
         {validationErrors.sellingPrice ? (
           <div className="kl-type-caption mt-1 text-kl-danger-text">
@@ -121,6 +129,31 @@ export default function MenuBuilderForm({
           </div>
         ) : null}
       </div>
+
+      <div>
+        <label className="kl-type-label">รายละเอียดสำหรับลูกค้า</label>
+        <textarea
+          value={notes}
+          onChange={(event) => onNotesChange(event.target.value)}
+          className={`${fieldClassName} min-h-[88px]`}
+          placeholder="ยังไม่ใส่ — กรอกเอง"
+        />
+      </div>
+
+      <label className="flex min-h-[48px] items-center gap-3">
+        <input
+          type="checkbox"
+          checked={isActive}
+          onChange={(event) => onIsActiveChange(event.target.checked)}
+          className="h-5 w-5"
+        />
+        <span className="kl-type-body">พร้อมขาย (เปิดในเมนูขาย)</span>
+      </label>
+      {!isActive ? (
+        <p className="kl-type-caption text-kl-muted">
+          ตอนนี้เป็นแบบร่าง — ยังไม่เปิดขาย
+        </p>
+      ) : null}
     </Card>
   );
 }

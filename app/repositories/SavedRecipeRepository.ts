@@ -6,7 +6,12 @@
  *
  * @see app/recipes/README.md
  */
-import type { SavedRecipe } from "../recipes/builder/types";
+import type {
+  SavedRecipe,
+  SavedRecipeLifecycleStatus,
+} from "../recipes/builder/types";
+import { normalizeSavedRecipeStatus } from "../recipes/builder/status";
+import { getSavedMenuById, getSavedMenuByRecipeId } from "./SavedMenuRepository";
 import { addVersion } from "./VersionHistoryRepository";
 
 export const KL_BUILDER_RECIPES_KEY = "kl-builder-recipes";
@@ -45,13 +50,23 @@ export function getBuilderSavedRecipes(): SavedRecipe[] {
   );
 }
 
+/** Main library list — hide archived unless includeArchived. */
+export function getActiveBuilderRecipes(): SavedRecipe[] {
+  return getBuilderSavedRecipes().filter(
+    (recipe) => normalizeSavedRecipeStatus(recipe) !== "archived"
+  );
+}
+
 export function getSavedRecipeById(id: string): SavedRecipe | undefined {
   return readAll().find((recipe) => recipe.id === id);
 }
 
 export function createSavedRecipe(recipe: SavedRecipe): void {
   const recipes = readAll();
-  recipes.push(recipe);
+  recipes.push({
+    ...recipe,
+    status: recipe.status ?? "draft",
+  });
   writeAll(recipes);
 }
 
@@ -79,8 +94,53 @@ export function updateSavedRecipe(
   writeAll(recipes);
 }
 
-export function deleteSavedRecipe(id: string): void {
+export function setSavedRecipeStatus(
+  id: string,
+  status: SavedRecipeLifecycleStatus
+): SavedRecipe | null {
+  const existing = getSavedRecipeById(id);
+  if (!existing) return null;
+
+  const next: SavedRecipe = {
+    ...existing,
+    status,
+    updatedAt: new Date().toISOString(),
+  };
+  updateSavedRecipe(next, { recordVersion: false });
+  return next;
+}
+
+export function archiveSavedRecipe(id: string): SavedRecipe | null {
+  return setSavedRecipeStatus(id, "archived");
+}
+
+export function restoreSavedRecipe(id: string): SavedRecipe | null {
+  const existing = getSavedRecipeById(id);
+  if (!existing) return null;
+  const linked =
+    (existing.linkedMenuId
+      ? getSavedMenuById(existing.linkedMenuId)
+      : undefined) ?? getSavedMenuByRecipeId(id);
+  const nextStatus: SavedRecipeLifecycleStatus = linked ? "imported" : "draft";
+  return setSavedRecipeStatus(id, nextStatus);
+}
+
+export type DeleteSavedRecipeResult =
+  | { ok: true }
+  | { ok: false; reason: "linked_menu"; menuId: string };
+
+export function deleteSavedRecipe(id: string): DeleteSavedRecipeResult {
+  const existing = getSavedRecipeById(id);
+  const linked =
+    (existing?.linkedMenuId
+      ? getSavedMenuById(existing.linkedMenuId)
+      : undefined) ?? getSavedMenuByRecipeId(id);
+  if (linked) {
+    return { ok: false, reason: "linked_menu", menuId: linked.id };
+  }
+
   writeAll(readAll().filter((recipe) => recipe.id !== id));
+  return { ok: true };
 }
 
 export function duplicateSavedRecipe(id: string): SavedRecipe | null {
@@ -96,6 +156,8 @@ export function duplicateSavedRecipe(id: string): SavedRecipe | null {
     createdAt: now,
     updatedAt: now,
     detailState: undefined,
+    status: "draft",
+    linkedMenuId: undefined,
   };
 
   createSavedRecipe(copy);

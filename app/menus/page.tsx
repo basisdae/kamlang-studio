@@ -34,6 +34,11 @@ export default function MenusPage() {
     [savedMenus]
   );
 
+  const draftSavedMenus = useMemo(
+    () => savedMenus.filter((menu) => !menu.isActive),
+    [savedMenus]
+  );
+
   const standardMenusWithCost = useMemo(
     () =>
       standardMenus.map((menu) => ({
@@ -88,7 +93,16 @@ export default function MenusPage() {
   );
 
   const hasSearch = search.trim().length > 0;
-  const hasVisibleResults = filteredMenus.length > 0;
+  const filteredDraftMenus = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return draftSavedMenus;
+    return draftSavedMenus.filter((menu) =>
+      menu.name.toLowerCase().includes(q)
+    );
+  }, [draftSavedMenus, search]);
+
+  const hasVisibleResults =
+    filteredMenus.length > 0 || filteredDraftMenus.length > 0;
 
   return (
     <AppShell
@@ -117,6 +131,43 @@ export default function MenusPage() {
         ) : (
           <EmptyState {...EMPTY_STATE.menus.none} />
         )
+      ) : null}
+
+      {filteredDraftMenus.length > 0 ? (
+        <section className="space-y-3">
+          <SectionTitle module="menus">แบบร่างเมนู</SectionTitle>
+          <div className="space-y-3">
+            {filteredDraftMenus.map((savedMenu) => {
+              let cost;
+              try {
+                cost = calculateMenuCost({
+                  recipeId: savedMenu.recipeId,
+                  packagingSetId: savedMenu.packagingSetId,
+                  sellingPrice:
+                    savedMenu.sellingPrice > 0 ? savedMenu.sellingPrice : 0.01,
+                });
+                if (savedMenu.sellingPrice <= 0) {
+                  cost = {
+                    ...cost,
+                    sellingPrice: 0,
+                    grossProfit: 0 - cost.totalCost,
+                    grossProfitPercent: 0,
+                  };
+                }
+              } catch {
+                return null;
+              }
+              return (
+                <MenuLibraryCard
+                  key={savedMenu.id}
+                  menu={savedMenuToMenu(savedMenu)}
+                  cost={cost}
+                  href={`/menus/${savedMenu.id}/edit`}
+                />
+              );
+            })}
+          </div>
+        </section>
       ) : null}
 
       {filteredSavedMenus.length > 0 ? (

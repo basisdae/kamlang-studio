@@ -40,6 +40,13 @@ export function getSavedMenuById(id: string): SavedMenu | undefined {
   return readAll().find((menu) => menu.id === id);
 }
 
+/** First menu draft/sale linked to a recipe (1:1 for this queue). */
+export function getSavedMenuByRecipeId(
+  recipeId: string
+): SavedMenu | undefined {
+  return readAll().find((menu) => menu.recipeId === recipeId);
+}
+
 export function createSavedMenu(menu: SavedMenu): void {
   const menus = readAll();
   menus.push(menu);

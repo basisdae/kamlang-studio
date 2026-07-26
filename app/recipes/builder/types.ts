@@ -14,6 +14,17 @@ export type DetailDraftState = {
   overrides: Record<number, { quantity: number; unit: string; note?: string }>;
 };
 
+/**
+ * Builder recipe lifecycle (UI Thai via status.ts).
+ * Optional on disk for backward compatibility with older localStorage rows.
+ */
+export type SavedRecipeLifecycleStatus =
+  | "draft"
+  | "experimenting"
+  | "ready"
+  | "imported"
+  | "archived";
+
 export type SavedRecipe = {
   id: string;
   menuName: string;
@@ -25,6 +36,10 @@ export type SavedRecipe = {
   createdAt: string;
   updatedAt: string;
   detailState?: DetailDraftState;
+  /** Missing on legacy rows → treat as draft */
+  status?: SavedRecipeLifecycleStatus;
+  /** Linked store-menu draft id when imported (1:1 this queue) */
+  linkedMenuId?: string;
 };
 
 export type SaveValidationErrors = {
@@ -70,5 +85,8 @@ export type BottomSummaryProps = {
   suggestedPrice: number;
   profit: number;
   profitPercent: number;
-  onSave: () => boolean;
+  /** Returns saved recipe id, or false on validation failure */
+  onSave: () => string | false;
+  /** After successful save — open “ทำอะไรต่อ?” */
+  onSaved?: (recipeId: string) => void;
 };

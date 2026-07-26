@@ -78,6 +78,7 @@ const LAB_MODULES = [
   "ingredients",
   "recipe-builder",
   "costing",
+  "menus",
 ] as const;
 
 const MARKETING_MODULES = [
@@ -146,6 +147,7 @@ export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
     shortcuts: [
       { label: "สูตร", href: "/recipes" },
       { label: "สร้างสูตร", href: "/recipes/builder" },
+      { label: "เมนูขาย", href: "/menus" },
     ],
     accent: "lab",
   },

@@ -21,7 +21,8 @@ function parseSellingPrice(value: string) {
 function validateForSave(
   name: string,
   recipeId: string,
-  sellingPrice: number
+  sellingPrice: number,
+  isActive: boolean
 ): MenuBuilderValidationErrors {
   const errors: MenuBuilderValidationErrors = {};
 
@@ -33,8 +34,8 @@ function validateForSave(
     errors.recipeId = "กรุณาเลือกสูตร";
   }
 
-  if (sellingPrice <= 0) {
-    errors.sellingPrice = "กรุณาใส่ราคาขายที่มากกว่า 0";
+  if (isActive && sellingPrice <= 0) {
+    errors.sellingPrice = "เปิดขายได้เมื่อใส่ราคาขายที่มากกว่า 0";
   }
 
   return errors;
@@ -52,9 +53,25 @@ export function useMenuBuilder(editingMenuId?: string) {
   const [category, setCategory] = useState("");
   const [recipeId, setRecipeId] = useState("");
   const [packagingSetId, setPackagingSetId] = useState("");
-  const [sellingPrice, setSellingPrice] = useState("69");
+  const [sellingPrice, setSellingPrice] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const [notes, setNotes] = useState("");
   const [validationErrors, setValidationErrors] =
     useState<MenuBuilderValidationErrors>({});
+
+  useEffect(() => {
+    if (editingMenuId) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const fromRecipe = params.get("recipeId");
+    if (!fromRecipe) return;
+
+    const match = recipes.find((recipe) => recipe.id === fromRecipe);
+    if (!match) return;
+
+    setRecipeId(match.id);
+    setName((current) => current.trim() || match.name);
+  }, [editingMenuId, recipes]);
 
   useEffect(() => {
     if (!editingMenuId) return;
@@ -71,7 +88,11 @@ export function useMenuBuilder(editingMenuId?: string) {
     setCategory(savedMenu.category);
     setRecipeId(savedMenu.recipeId);
     setPackagingSetId(savedMenu.packagingSetId ?? "");
-    setSellingPrice(String(savedMenu.sellingPrice));
+    setSellingPrice(
+      savedMenu.sellingPrice > 0 ? String(savedMenu.sellingPrice) : ""
+    );
+    setIsActive(savedMenu.isActive);
+    setNotes(savedMenu.notes ?? "");
     setIsLoaded(true);
   }, [editingMenuId]);
 
@@ -79,23 +100,36 @@ export function useMenuBuilder(editingMenuId?: string) {
   const parsedSellingPrice = parseSellingPrice(sellingPrice);
 
   const preview = useMemo(() => {
-    if (!recipeId || parsedSellingPrice <= 0) {
-      return null;
-    }
+    if (!recipeId) return null;
 
     try {
-      return calculateMenuCost({
+      const priceForCalc = parsedSellingPrice > 0 ? parsedSellingPrice : 0.01;
+      const result = calculateMenuCost({
         recipeId,
         packagingSetId: packagingSetId || undefined,
-        sellingPrice: parsedSellingPrice,
+        sellingPrice: priceForCalc,
       });
+      if (parsedSellingPrice <= 0) {
+        return {
+          ...result,
+          sellingPrice: 0,
+          grossProfit: 0 - result.totalCost,
+          grossProfitPercent: 0,
+        };
+      }
+      return result;
     } catch {
       return null;
     }
   }, [recipeId, packagingSetId, parsedSellingPrice]);
 
   function handleSave() {
-    const errors = validateForSave(name, recipeId, parsedSellingPrice);
+    const errors = validateForSave(
+      name,
+      recipeId,
+      parsedSellingPrice,
+      isActive
+    );
     setValidationErrors(errors);
 
     if (Object.keys(errors).length > 0) {
@@ -111,10 +145,12 @@ export function useMenuBuilder(editingMenuId?: string) {
       const updatedMenu: SavedMenu = {
         ...existing,
         name: name.trim(),
-        category: category.trim() || "ทั่วไป",
+        category: category.trim(),
         recipeId,
         packagingSetId: packagingSetId || undefined,
         sellingPrice: parsedSellingPrice,
+        isActive,
+        notes: notes.trim() || undefined,
         updatedAt: now,
       };
 
@@ -126,17 +162,18 @@ export function useMenuBuilder(editingMenuId?: string) {
     const savedMenu: SavedMenu = {
       id: crypto.randomUUID(),
       name: name.trim(),
-      category: category.trim() || "ทั่วไป",
+      category: category.trim(),
       recipeId,
       packagingSetId: packagingSetId || undefined,
       sellingPrice: parsedSellingPrice,
-      isActive: true,
+      isActive,
+      notes: notes.trim() || undefined,
       createdAt: now,
       updatedAt: now,
     };
 
     createSavedMenu(savedMenu);
-    router.push("/menus");
+    router.push(isActive ? "/menus" : `/menus/${savedMenu.id}`);
     return true;
   }
 
@@ -148,6 +185,8 @@ export function useMenuBuilder(editingMenuId?: string) {
     recipeId,
     packagingSetId,
     sellingPrice,
+    isActive,
+    notes,
     validationErrors,
     preview,
     isEditMode,
@@ -158,6 +197,8 @@ export function useMenuBuilder(editingMenuId?: string) {
     setRecipeId,
     setPackagingSetId,
     setSellingPrice,
+    setIsActive,
+    setNotes,
     handleSave,
   };
 }
