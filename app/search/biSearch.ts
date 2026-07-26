@@ -13,6 +13,7 @@ import {
   QUOTE_COMPARE_GROUPS,
   SUPPLIERS,
 } from "../../data/seed/tangtao";
+import { PARTNERS_MODULE_ENABLED } from "../../lib/partners/feature";
 
 export type SearchGroupId =
   | "assets"
@@ -44,7 +45,7 @@ export const SEARCH_GROUP_LABELS: Record<SearchGroupId, string> = {
   quotes: "Quote",
 };
 
-export const SEARCH_GROUP_ORDER: SearchGroupId[] = [
+const SEARCH_GROUP_ORDER_ALL: SearchGroupId[] = [
   "assets",
   "stock",
   "suppliers",
@@ -54,6 +55,11 @@ export const SEARCH_GROUP_ORDER: SearchGroupId[] = [
   "documents",
   "quotes",
 ];
+
+/** Partners group omitted while the module feature flag is off */
+export const SEARCH_GROUP_ORDER: SearchGroupId[] = SEARCH_GROUP_ORDER_ALL.filter(
+  (group) => PARTNERS_MODULE_ENABLED || group !== "partners"
+);
 
 function buildIndex(): SearchHit[] {
   const hits: SearchHit[] = [];
@@ -91,7 +97,7 @@ function buildIndex(): SearchHit[] {
     });
   }
 
-  // Partners: Shared Core bi_partners — indexed when repository ships.
+  // Partners hits only when PARTNERS_MODULE_ENABLED
 
   for (const item of OPENING_BUDGET_ITEMS) {
     hits.push({
@@ -150,7 +156,9 @@ function buildIndex(): SearchHit[] {
     }
   }
 
-  return hits;
+  return hits.filter(
+    (hit) => PARTNERS_MODULE_ENABLED || hit.group !== "partners"
+  );
 }
 
 const SEARCH_INDEX = buildIndex();

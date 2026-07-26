@@ -43,8 +43,7 @@ export default function SearchPage() {
         subtitle="ค้นหา"
       />
       <p className="kl-type-helper -mt-1">
-        อุปกรณ์ · วัตถุดิบ · Supplier · หุ้นส่วน · Budget · Checklist ·
-        Documents · Quote
+        อุปกรณ์ · วัตถุดิบ · Supplier · Budget · Checklist · Documents · Quote
       </p>
       <DataSourceBadge source={OPENING_DATA_SOURCE} />
 

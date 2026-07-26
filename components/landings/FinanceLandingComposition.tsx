@@ -16,6 +16,7 @@ import {
   getEmptyPartnersSummary,
   type PartnersSummary,
 } from "../../lib/partners/partnerCore";
+import { PARTNERS_MODULE_ENABLED } from "../../lib/partners/feature";
 import { partnerService } from "../../lib/services/partnerService";
 import { getDecisionsSummary } from "../../app/decisions/sampleData";
 
@@ -40,27 +41,47 @@ export default function FinanceLandingComposition() {
   } = useAssets();
 
   const summary = useMemo(() => buildOpeningSummary(assets), [assets]);
-  const [partners, setPartners] = useState<PartnersSummary>(
-    getEmptyPartnersSummary
-  );
+  const [partnersLoaded, setPartnersLoaded] = useState<{
+    workspaceId: string;
+    summary: PartnersSummary;
+  } | null>(null);
+
   useEffect(() => {
-    if (!configured || !workspaceId) {
-      setPartners(getEmptyPartnersSummary());
+    if (!PARTNERS_MODULE_ENABLED || !configured || !workspaceId) {
       return;
     }
+    const requestWorkspaceId = workspaceId;
     let cancelled = false;
     void partnerService
-      .list(workspaceId)
+      .list(requestWorkspaceId)
       .then((rows) => {
-        if (!cancelled) setPartners(buildPartnersSummary(rows));
+        if (!cancelled) {
+          setPartnersLoaded({
+            workspaceId: requestWorkspaceId,
+            summary: buildPartnersSummary(rows),
+          });
+        }
       })
       .catch(() => {
-        if (!cancelled) setPartners(getEmptyPartnersSummary());
+        if (!cancelled) {
+          setPartnersLoaded({
+            workspaceId: requestWorkspaceId,
+            summary: getEmptyPartnersSummary(),
+          });
+        }
       });
     return () => {
       cancelled = true;
     };
   }, [configured, workspaceId]);
+
+  const partners =
+    PARTNERS_MODULE_ENABLED &&
+    configured &&
+    workspaceId &&
+    partnersLoaded?.workspaceId === workspaceId
+      ? partnersLoaded.summary
+      : getEmptyPartnersSummary();
   const decisions = useMemo(() => getDecisionsSummary(), []);
   const showStatus = !configured || browserOffline || Boolean(error);
 
@@ -135,11 +156,13 @@ export default function FinanceLandingComposition() {
 
       <Card className="space-y-1 !p-2">
         <SectionLink variant="nav" href="/opening/budget" title="งบประมาณ" />
-        <SectionLink
-          variant="nav"
-          href="/partners"
-          title={`Partners (${partners.total})`}
-        />
+        {PARTNERS_MODULE_ENABLED ? (
+          <SectionLink
+            variant="nav"
+            href="/partners"
+            title={`Partners (${partners.total})`}
+          />
+        ) : null}
         <SectionLink variant="nav" href="/quotes" title="Quote Compare" />
         <SectionLink
           variant="nav"
