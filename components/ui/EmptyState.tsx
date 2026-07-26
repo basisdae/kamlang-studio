@@ -8,7 +8,7 @@ import ButtonLink from "./ButtonLink";
 
 type EmptyStateProps = {
   title: string;
-  hint: string;
+  hint?: string;
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
@@ -40,7 +40,9 @@ export default function EmptyState({
 
       <div className="space-y-1.5">
         <p className="kl-type-card-title text-kl-text">{title}</p>
-        <p className="kl-type-helper text-kl-muted">{hint}</p>
+        {hint ? (
+          <p className="kl-type-helper text-kl-muted">{hint}</p>
+        ) : null}
       </div>
 
       {showLink ? (

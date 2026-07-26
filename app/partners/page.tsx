@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Handshake } from "lucide-react";
 import AppShell from "../../components/layout/AppShell";
 import PartnerCard from "../../components/bi/PartnerCard";
@@ -29,16 +30,57 @@ import {
   type PartnerCategory,
   type PartnerRecord,
 } from "../../lib/partners/types";
+import {
+  PARTNERS_MODULE_ENABLED,
+  partnersDevLog,
+} from "../../lib/partners/feature";
 import { showInfoToast } from "../lib/biInfoToast";
-import { userFacingMessage } from "../../lib/supabase/errors";
+import { biRuntimeError, userFacingMessage } from "../../lib/supabase/errors";
 
 type CategoryFilter = "all" | PartnerCategory;
 type StatusFilter = "all" | "active" | "pending" | "paused";
 
+/** Owner-facing copy only — technical detail stays in console. */
+function ownerErrorMessage(error: unknown): string {
+  const raw = userFacingMessage(error);
+  const lower = raw.toLowerCase();
+  if (
+    lower.includes("supabase") ||
+    lower.includes("rls") ||
+    lower.includes("bi_") ||
+    lower.includes("shared core") ||
+    lower.includes("postgrest") ||
+    lower.includes("schema cache")
+  ) {
+    return "โหลดหรือบันทึกไม่สำเร็จ — ลองใหม่";
+  }
+  return raw;
+}
+
 /**
- * Partners — Shared Core. Same list for every App Workspace.
+ * Partners route — when feature flag is off, leave the surface immediately.
  */
 export default function PartnersPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!PARTNERS_MODULE_ENABLED) {
+      router.replace("/home");
+    }
+  }, [router]);
+
+  if (!PARTNERS_MODULE_ENABLED) {
+    return (
+      <div className="mx-auto flex min-h-[40vh] max-w-[var(--bi-app-width)] items-center justify-center px-4">
+        <p className="kl-type-caption text-kl-muted">กำลังกลับ…</p>
+      </div>
+    );
+  }
+
+  return <PartnersPageLive />;
+}
+
+function PartnersPageLive() {
   const {
     workspaceId,
     configured,
@@ -50,8 +92,13 @@ export default function PartnersPage() {
   } = useWorkspace();
 
   const [rows, setRows] = useState<PartnerRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /** Workspace id whose list/error currently match `rows` / `error`. */
+  const [loadedWorkspaceId, setLoadedWorkspaceId] = useState<string | null>(
+    null
+  );
+  /** True only while a user-triggered reload is in flight (event handlers). */
+  const [fetching, setFetching] = useState(false);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -63,34 +110,74 @@ export default function PartnersPage() {
     null
   );
 
+  const canFetch = Boolean(configured && workspaceId);
+  const loading =
+    canFetch && (fetching || loadedWorkspaceId !== workspaceId);
+  const visibleRows = useMemo(
+    () =>
+      canFetch && loadedWorkspaceId === workspaceId ? rows : [],
+    [canFetch, loadedWorkspaceId, workspaceId, rows]
+  );
+  const visibleError =
+    canFetch && loadedWorkspaceId === workspaceId ? error : null;
+
   const reload = useCallback(async () => {
     if (!configured || !workspaceId) {
-      setRows([]);
-      setLoading(false);
       return;
     }
-    setLoading(true);
+    setFetching(true);
     setError(null);
     try {
       const list = await partnerService.list(workspaceId);
       setRows(list);
+      setLoadedWorkspaceId(workspaceId);
     } catch (e) {
-      setError(userFacingMessage(e));
+      biRuntimeError("PartnersPage", "list", e);
+      partnersDevLog("list failed", e);
+      setError(ownerErrorMessage(e));
       setRows([]);
+      setLoadedWorkspaceId(workspaceId);
     } finally {
-      setLoading(false);
+      setFetching(false);
     }
   }, [configured, workspaceId]);
 
+  // Hydrate from service when workspace is ready — setState only after await.
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (!configured || !workspaceId) {
+      return;
+    }
+    const requestWorkspaceId = workspaceId;
+    let cancelled = false;
+    void partnerService
+      .list(requestWorkspaceId)
+      .then((list) => {
+        if (cancelled) return;
+        setRows(list);
+        setError(null);
+        setLoadedWorkspaceId(requestWorkspaceId);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        biRuntimeError("PartnersPage", "list", e);
+        partnersDevLog("list failed", e);
+        setError(ownerErrorMessage(e));
+        setRows([]);
+        setLoadedWorkspaceId(requestWorkspaceId);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [configured, workspaceId]);
 
-  const summary = useMemo(() => buildPartnersSummary(rows), [rows]);
+  const summary = useMemo(
+    () => buildPartnersSummary(visibleRows),
+    [visibleRows]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return rows.filter((p) => {
+    return visibleRows.filter((p) => {
       if (categoryFilter !== "all" && p.category !== categoryFilter) {
         return false;
       }
@@ -100,7 +187,7 @@ export default function PartnersPage() {
         `${p.name} ${partnerCategoryLabel(p.category)} ${p.phone} ${p.notes}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [rows, query, categoryFilter, statusFilter]);
+  }, [visibleRows, query, categoryFilter, statusFilter]);
 
   const categoryMetrics = Object.entries(summary.byCategory).sort((a, b) =>
     a[0].localeCompare(b[0], "th")
@@ -138,7 +225,9 @@ export default function PartnersPage() {
       setEditing(null);
       await reload();
     } catch (e) {
-      showInfoToast(userFacingMessage(e));
+      biRuntimeError("PartnersPage", "save", e);
+      partnersDevLog("save failed", e);
+      showInfoToast(ownerErrorMessage(e));
     } finally {
       setSaving(false);
     }
@@ -154,16 +243,19 @@ export default function PartnersPage() {
       setDetail(null);
       await reload();
     } catch (e) {
-      showInfoToast(userFacingMessage(e));
+      biRuntimeError("PartnersPage", "archive", e);
+      partnersDevLog("archive failed", e);
+      showInfoToast(ownerErrorMessage(e));
     } finally {
       setSaving(false);
     }
   }
 
-  const showStatus =
-    !configured || browserOffline || Boolean(error || workspaceError);
-  const isEmpty = !loading && !error && rows.length === 0;
-  const canWrite = configured && online && !error;
+  const connectionIssue = !configured || browserOffline;
+  const isEmpty = !loading && !visibleError && visibleRows.length === 0;
+  /** Show CTA only when create can actually open a working form path */
+  const showAddCta =
+    configured && !browserOffline && !visibleError && !loading;
 
   return (
     <AppShell title="" hidePageHeader compact>
@@ -172,21 +264,29 @@ export default function PartnersPage() {
         description="คนและองค์กรรอบร้าน"
       />
 
-      {showStatus ? (
+      {connectionIssue || workspaceError ? (
         <BiDataStatus
-          loading={loading || !workspaceReady}
+          loading={!workspaceReady}
           ready={workspaceReady}
           configured={configured}
           online={online}
           browserOffline={browserOffline}
-          error={error ?? workspaceError}
-          empty={isEmpty}
+          error={workspaceError}
           skeleton={false}
           onRetry={() => {
             void retryWs();
             void reload();
           }}
         />
+      ) : null}
+
+      {!loading && visibleError ? (
+        <Card className="!p-4 space-y-2">
+          <p className="kl-type-helper">{visibleError}</p>
+          <Button type="button" variant="secondary" size="sm" onClick={() => void reload()}>
+            ลองใหม่
+          </Button>
+        </Card>
       ) : null}
 
       <SummaryCard title="สรุป">
@@ -199,7 +299,7 @@ export default function PartnersPage() {
         </div>
       </SummaryCard>
 
-      {!isEmpty && !loading && !error ? (
+      {!isEmpty && !loading && !visibleError ? (
         <div className="space-y-2">
           <SearchBar
             placeholder="ค้นหาชื่อ ประเภท เบอร์…"
@@ -254,24 +354,20 @@ export default function PartnersPage() {
         <EmptyState
           icon={Handshake}
           title="ยังไม่มี Partner"
-          hint="เก็บรายชื่อคนและองค์กรที่เกี่ยวกับร้านไว้ที่เดียว"
-          actionLabel={canWrite ? "เพิ่ม Partner รายแรก" : undefined}
-          onAction={canWrite ? openCreate : undefined}
+          actionLabel={showAddCta ? "เพิ่ม Partner" : undefined}
+          onAction={showAddCta ? openCreate : undefined}
         />
       ) : null}
 
-      {!loading && !error && !isEmpty ? (
+      {!loading && !visibleError && !isEmpty ? (
         <>
           <div className="flex items-center justify-between gap-2">
             <SectionHeader title="รายชื่อ" />
-            <Button
-              type="button"
-              size="sm"
-              disabled={!canWrite}
-              onClick={openCreate}
-            >
-              เพิ่ม Partner
-            </Button>
+            {showAddCta ? (
+              <Button type="button" size="sm" onClick={openCreate}>
+                เพิ่ม Partner
+              </Button>
+            ) : null}
           </div>
 
           {filtered.length === 0 ? (

@@ -112,7 +112,7 @@ export function userFacingMessage(error: unknown): string {
   const bi = normalizeError(error);
   if (bi.code === "config") return bi.message;
   if (bi.code === "network") return "เชื่อมต่อฐานข้อมูลไม่ได้ — ตรวจเน็ตแล้วกดลองใหม่";
-  if (bi.code === "permission") return "ยังไม่มีสิทธิ์เขียนข้อมูล (ตรวจ RLS / preview policy)";
+  if (bi.code === "permission") return "ยังไม่มีสิทธิ์บันทึกข้อมูลนี้";
   if (bi.code === "not_found") return bi.message;
   if (bi.code === "validation") return bi.message;
   // Production UI: avoid dumping raw technical strings when possible
