@@ -17,7 +17,6 @@ import type {
   OrderFulfillment,
   OrderProduct,
   OrderSource,
-  PickupMode,
 } from "../../lib/order/types";
 import OrderAddonRow from "../../components/order/OrderAddonRow";
 import OrderCartBar from "../../components/order/OrderCartBar";
@@ -43,7 +42,6 @@ export default function OrderPageClient() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [fulfillment, setFulfillment] = useState<OrderFulfillment>("pickup");
-  const [pickupMode, setPickupMode] = useState<PickupMode>("takeaway");
   const [cart, setCart] = useState<Record<string, number>>({});
 
   const [addonProduct, setAddonProduct] = useState<OrderProduct | null>(null);
@@ -262,50 +260,31 @@ export default function OrderPageClient() {
           <HeaderBar title="ประเภทออเดอร์" onBack={() => setStep("welcome")} />
           <main className="flex flex-1 flex-col px-4 pb-8 pt-2">
             <p className="mb-4 text-[14px] text-[var(--order-text-muted)]">
-              เลือกรับหน้าร้านหรือจัดส่ง
+              เลือกรับหน้าร้านหรือจัดส่ง แล้วไปเมนูได้ทันที
             </p>
 
             <div className="grid grid-cols-2 gap-2">
               <FulfillmentCard
                 active={fulfillment === "pickup"}
                 label="รับหน้าร้าน"
-                onClick={() => setFulfillment("pickup")}
+                onClick={() => {
+                  setFulfillment("pickup");
+                  setStep("menu");
+                }}
               />
               <FulfillmentCard
                 active={fulfillment === "delivery"}
                 label="จัดส่ง"
-                onClick={() => setFulfillment("delivery")}
+                onClick={() => {
+                  setFulfillment("delivery");
+                  setStep("menu");
+                }}
               />
             </div>
 
-            {fulfillment === "pickup" ? (
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <FulfillmentCard
-                  active={pickupMode === "dine_wait"}
-                  label="นั่งรอ"
-                  compact
-                  onClick={() => setPickupMode("dine_wait")}
-                />
-                <FulfillmentCard
-                  active={pickupMode === "takeaway"}
-                  label="นำกลับ"
-                  compact
-                  onClick={() => setPickupMode("takeaway")}
-                />
-              </div>
-            ) : (
-              <p className="mt-4 rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-3 text-[13px] leading-relaxed text-[var(--order-text)] shadow-[var(--order-shadow)]">
-                {ORDER_DELIVERY_LINE_NOTICE}
-              </p>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setStep("menu")}
-              className="mt-auto flex min-h-[52px] w-full items-center justify-center rounded-[var(--order-radius)] bg-[var(--order-accent)] text-[16px] font-semibold text-[var(--order-accent-ink)]"
-            >
-              ดูเมนู
-            </button>
+            <p className="mt-4 rounded-[var(--order-radius)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-3 text-[13px] leading-relaxed text-[var(--order-text-muted)] shadow-[var(--order-shadow)]">
+              ถ้าเลือกจัดส่ง ร้านจะยืนยันหลังติดต่อและชำระผ่าน LINE
+            </p>
           </main>
         </>
       ) : null}
@@ -333,19 +312,10 @@ export default function OrderPageClient() {
                   onClick={() => setFulfillment("delivery")}
                 />
               </div>
-              {fulfillment === "pickup" ? (
-                <div className="mt-2 grid grid-cols-2 gap-1 rounded-[var(--order-radius-sm)] border border-[var(--order-border)] bg-[var(--order-card)] p-1">
-                  <Chip
-                    active={pickupMode === "dine_wait"}
-                    label="นั่งรอ"
-                    onClick={() => setPickupMode("dine_wait")}
-                  />
-                  <Chip
-                    active={pickupMode === "takeaway"}
-                    label="นำกลับ"
-                    onClick={() => setPickupMode("takeaway")}
-                  />
-                </div>
+              {fulfillment === "delivery" ? (
+                <p className="mt-2 rounded-[var(--order-radius-sm)] border border-[var(--order-border)] bg-[var(--order-card)] px-3 py-2 text-[12px] leading-relaxed text-[var(--order-text-muted)]">
+                  {ORDER_DELIVERY_LINE_NOTICE}
+                </p>
               ) : null}
               {categories.length > 0 ? (
                 <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -566,7 +536,6 @@ export default function OrderPageClient() {
       <OrderCheckoutSheet
         open={checkoutOpen}
         fulfillment={fulfillment}
-        pickupMode={pickupMode}
         lines={lines}
         totalBaht={productTotal}
         onClose={() => setCheckoutOpen(false)}
@@ -583,20 +552,16 @@ function FulfillmentCard({
   active,
   label,
   onClick,
-  compact = false,
 }: {
   active: boolean;
   label: string;
   onClick: () => void;
-  compact?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-[var(--order-radius)] border text-[15px] font-semibold transition-colors ${
-        compact ? "min-h-[48px]" : "min-h-[72px]"
-      } ${
+      className={`min-h-[72px] rounded-[var(--order-radius)] border text-[15px] font-semibold transition-colors ${
         active
           ? "border-[var(--order-accent)] bg-[var(--order-accent)] text-[var(--order-accent-ink)] shadow-[var(--order-shadow)]"
           : "border-[var(--order-border)] bg-[var(--order-card)] text-[var(--order-text)]"

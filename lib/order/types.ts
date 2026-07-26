@@ -4,7 +4,10 @@
 
 export type OrderFulfillment = "pickup" | "delivery";
 
-/** Pickup-only sub-mode (no table number). */
+/**
+ * Legacy pickup sub-mode — kept for backward compatibility with older data only.
+ * New order flow does not collect or require this field.
+ */
 export type PickupMode = "dine_wait" | "takeaway";
 
 export type OrderProduct = {

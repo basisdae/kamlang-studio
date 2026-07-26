@@ -12,13 +12,11 @@ import type {
   DeliveryCheckoutDraft,
   OrderFulfillment,
   PickupCheckoutDraft,
-  PickupMode,
 } from "../../lib/order/types";
 
 type Props = {
   open: boolean;
   fulfillment: OrderFulfillment;
-  pickupMode: PickupMode;
   lines: CartLine[];
   totalBaht: number;
   onClose: () => void;
@@ -31,7 +29,6 @@ const FIELD =
 export default function OrderCheckoutSheet({
   open,
   fulfillment,
-  pickupMode,
   lines,
   totalBaht,
   onClose,
@@ -122,11 +119,7 @@ export default function OrderCheckoutSheet({
           <section>
             <p className="text-[13px] text-[var(--order-text-muted)]">ประเภท</p>
             <p className="mt-1 text-[15px] font-medium text-[var(--order-text)]">
-              {fulfillment === "pickup"
-                ? `รับหน้าร้าน · ${
-                    pickupMode === "takeaway" ? "นำกลับ" : "นั่งรอ"
-                  }`
-                : "จัดส่ง"}
+              {fulfillment === "pickup" ? "รับหน้าร้าน" : "จัดส่ง"}
             </p>
           </section>
 

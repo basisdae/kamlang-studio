@@ -17,6 +17,9 @@ export type StoreOrder = {
   /** ISO timestamp — FIFO source of truth */
   receivedAt: string;
   fulfillment: "pickup" | "delivery";
+  /**
+   * Legacy optional field — not shown for new orders; kept if older rows still have it.
+   */
   pickupMode?: "dine_wait" | "takeaway";
   nickname: string;
   phone: string;
@@ -51,7 +54,6 @@ export const TRIAL_STORE_ORDERS: StoreOrder[] = [
     orderNumber: "T-001",
     receivedAt: "2026-07-26T09:00:00.000Z",
     fulfillment: "pickup",
-    pickupMode: "takeaway",
     nickname: "ตัวอย่าง ก",
     phone: "0800000001",
     lines: [{ name: "รายการทดลอง", qty: 2 }],
@@ -85,7 +87,6 @@ export const TRIAL_STORE_ORDERS: StoreOrder[] = [
     orderNumber: "T-003",
     receivedAt: "2026-07-26T09:12:00.000Z",
     fulfillment: "pickup",
-    pickupMode: "dine_wait",
     nickname: "ตัวอย่าง ค",
     phone: "0800000003",
     lines: [{ name: "รายการทดลอง", qty: 3 }],
