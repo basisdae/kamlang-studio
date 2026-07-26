@@ -5,8 +5,8 @@
 export type OrderFulfillment = "pickup" | "delivery";
 
 /**
- * Legacy pickup sub-mode — kept for backward compatibility with older data only.
- * New order flow does not collect or require this field.
+ * Pickup sub-mode collected in the customer order flow.
+ * Optional on store order records for backward compatibility with older rows.
  */
 export type PickupMode = "dine_wait" | "takeaway";
 

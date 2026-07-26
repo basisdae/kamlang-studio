@@ -78,7 +78,7 @@ export default function StoreOrdersPageClient() {
         </div>
 
         {source === "trial_samples" ? (
-          <p className="mx-3 mb-2 rounded-[var(--order-radius-sm)] bg-[var(--order-accent)] px-3 py-1.5 text-center text-[12px] font-medium text-[var(--order-accent-ink)]">
+          <p className="mx-3 mb-2 rounded-[var(--order-radius-sm)] border border-[var(--order-accent)]/30 bg-[var(--order-accent-soft)] px-3 py-1.5 text-center text-[12px] font-medium text-[var(--order-accent)]">
             {ORDER_TRIAL_RESULT_BANNER}
           </p>
         ) : null}
@@ -156,7 +156,17 @@ export default function StoreOrdersPageClient() {
               </div>
 
               <p className="mt-3 text-[14px] text-[var(--order-text)]">
-                {order.fulfillment === "pickup" ? "รับหน้าร้าน" : "จัดส่ง"}
+                {order.fulfillment === "pickup"
+                  ? `รับหน้าร้าน${
+                      order.pickupMode
+                        ? ` · ${
+                            order.pickupMode === "dine_wait"
+                              ? "นั่งรอ"
+                              : "นำกลับ"
+                          }`
+                        : ""
+                    }`
+                  : "จัดส่ง"}
               </p>
               <p className="mt-1 text-[14px]">
                 <span className="font-medium">{order.nickname}</span>

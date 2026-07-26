@@ -11,7 +11,12 @@ export const ORDER_TRIAL_BANNER =
 export const ORDER_TRIAL_RESULT_BANNER =
   "โหมดทดลอง — ยังไม่ได้ส่งออเดอร์เข้าร้าน";
 
-export const ORDER_WELCOME_TAGLINE = "สั่งง่าย รับหน้าร้านหรือจัดส่ง";
+export const ORDER_RESULT_TITLE = "ตรวจสอบข้อมูลเรียบร้อย";
+
+export const ORDER_RESULT_DESCRIPTION =
+  "ขณะนี้ยังเป็นโหมดทดลอง ข้อมูลยังไม่ได้ถูกส่งเข้าร้าน";
+
+export const ORDER_WELCOME_TAGLINE = "Modern Street Food · สั่งง่าย รับเร็ว";
 
 /** Empty until env is set — never invent a LINE link. */
 export function getOrderLineOaUrl(): string | null {

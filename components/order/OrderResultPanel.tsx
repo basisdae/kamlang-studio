@@ -3,7 +3,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
-  CheckCircle2,
+  ClipboardCheck,
   ExternalLink,
   Loader2,
   MessageCircle,
@@ -35,7 +35,7 @@ type Props = {
 };
 
 const ICON: Record<OrderResultKind, LucideIcon> = {
-  trial_preview: CheckCircle2,
+  trial_preview: ClipboardCheck,
   waiting_confirm: Loader2,
   line_handoff: MessageCircle,
   external_link: ExternalLink,
@@ -51,6 +51,9 @@ function toneClass(kind: OrderResultKind): string {
   }
   if (kind === "waiting_confirm" || kind === "loading") {
     return "bg-[var(--order-warning-soft)] text-[var(--order-warning)]";
+  }
+  if (kind === "trial_preview") {
+    return "bg-[var(--order-accent-soft)] text-[var(--order-accent)]";
   }
   return "bg-[var(--order-accent)] text-[var(--order-accent-ink)]";
 }
@@ -72,7 +75,7 @@ export default function OrderResultPanel({
   return (
     <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10 text-center">
       {showTrialBanner ? (
-        <p className="mb-6 w-full rounded-[var(--order-radius-sm)] bg-[var(--order-accent)] px-3 py-2 text-[13px] font-medium text-[var(--order-accent-ink)]">
+        <p className="mb-6 w-full rounded-[var(--order-radius-sm)] border border-[var(--order-accent)]/30 bg-[var(--order-accent-soft)] px-3 py-2 text-[13px] font-medium text-[var(--order-accent)]">
           {ORDER_TRIAL_RESULT_BANNER}
         </p>
       ) : null}
