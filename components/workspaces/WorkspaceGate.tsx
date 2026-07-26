@@ -13,6 +13,7 @@ const PUBLIC_PREFIXES = [
   "/status",
   "/auth",
   "/dev",
+  "/order",
 ];
 
 function isPublicPath(pathname: string): boolean {
