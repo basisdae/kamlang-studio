@@ -143,8 +143,9 @@ export default function RecipeNextStepSheet({
               <Button
                 fullWidth
                 onClick={() => {
-                  resetAndClose();
-                  router.push(`/menus/${menuId}/edit`);
+                  const id = menuId;
+                  // Hard navigate so WorkspaceGate cannot drop a soft client push
+                  window.location.assign(`/menus/${id}/edit`);
                 }}
               >
                 {phase === "import_exists"

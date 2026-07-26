@@ -112,6 +112,12 @@ export function isPathInWorkspace(
     return true;
   }
 
+  // Menu drafts linked from Lab recipes — match /menus and nested edit routes
+  if (pathname === "/menus" || pathname.startsWith("/menus/")) {
+    if (visibleModules === "all") return true;
+    if (visibleModules.includes("menus")) return true;
+  }
+
   if (isWorkspaceLandingPath(pathname, workspaceId)) {
     return true;
   }
