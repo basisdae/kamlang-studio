@@ -11,16 +11,22 @@ import {
 type PartnerCardProps = {
   partner: PartnerRecord;
   onEdit: () => void;
-  onArchive: () => void;
+  onPause: () => void;
+  onResume: () => void;
   onOpenDetail: () => void;
+  statusBusy?: boolean;
 };
 
 export default function PartnerCard({
   partner,
   onEdit,
-  onArchive,
+  onPause,
+  onResume,
   onOpenDetail,
+  statusBusy = false,
 }: PartnerCardProps) {
+  const isPaused = partner.status === "paused";
+
   return (
     <Card className="space-y-3">
       <button
@@ -45,16 +51,36 @@ export default function PartnerCard({
         <p className="kl-type-body text-kl-muted">{partner.notes}</p>
       ) : null}
 
-      <div className="grid grid-cols-3 gap-2">
-        <Button variant="secondary" fullWidth size="sm" onClick={onOpenDetail}>
-          ดู
-        </Button>
-        <Button variant="secondary" fullWidth size="sm" onClick={onEdit}>
-          แก้ไข
-        </Button>
-        <Button variant="secondary" fullWidth size="sm" onClick={onArchive}>
-          Archive
-        </Button>
+      <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" fullWidth size="sm" onClick={onOpenDetail}>
+            ดู
+          </Button>
+          <Button variant="secondary" fullWidth size="sm" onClick={onEdit}>
+            แก้ไข
+          </Button>
+        </div>
+        {isPaused ? (
+          <Button
+            variant="secondary"
+            fullWidth
+            size="sm"
+            disabled={statusBusy}
+            onClick={onResume}
+          >
+            นำกลับมาใช้งาน
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            fullWidth
+            size="sm"
+            disabled={statusBusy}
+            onClick={onPause}
+          >
+            พักไว้
+          </Button>
+        )}
       </div>
     </Card>
   );

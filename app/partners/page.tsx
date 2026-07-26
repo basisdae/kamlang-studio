@@ -106,9 +106,11 @@ function PartnersPageLive() {
   const [editing, setEditing] = useState<PartnerRecord | null>(null);
   const [saving, setSaving] = useState(false);
   const [detail, setDetail] = useState<PartnerRecord | null>(null);
-  const [archiveTarget, setArchiveTarget] = useState<PartnerRecord | null>(
-    null
-  );
+  /** Confirm before changing status (พักไว้ / นำกลับมาใช้งาน). */
+  const [statusTarget, setStatusTarget] = useState<{
+    partner: PartnerRecord;
+    nextStatus: "paused" | "active";
+  } | null>(null);
 
   const canFetch = Boolean(configured && workspaceId);
   const loading =
@@ -233,18 +235,37 @@ function PartnersPageLive() {
     }
   }
 
-  async function handleArchiveConfirm() {
-    if (!archiveTarget || !workspaceId) return;
+  function applyLocalStatus(
+    partnerId: string,
+    nextStatus: "paused" | "active"
+  ) {
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === partnerId ? { ...row, status: nextStatus } : row
+      )
+    );
+    setDetail((prev) =>
+      prev && prev.id === partnerId ? { ...prev, status: nextStatus } : prev
+    );
+  }
+
+  async function handleStatusConfirm() {
+    if (!statusTarget || !workspaceId || saving) return;
+    const { partner, nextStatus } = statusTarget;
     setSaving(true);
     try {
-      await partnerService.archive(archiveTarget.id, workspaceId);
-      showInfoToast("Archive แล้ว");
-      setArchiveTarget(null);
-      setDetail(null);
+      await partnerService.update(partner.id, workspaceId, {
+        status: nextStatus,
+      });
+      applyLocalStatus(partner.id, nextStatus);
+      setStatusTarget(null);
+      showInfoToast(
+        nextStatus === "paused" ? "พักไว้แล้ว" : "นำกลับมาใช้งานแล้ว"
+      );
       await reload();
     } catch (e) {
-      biRuntimeError("PartnersPage", "archive", e);
-      partnersDevLog("archive failed", e);
+      biRuntimeError("PartnersPage", "status", e);
+      partnersDevLog("status update failed", e);
       showInfoToast(ownerErrorMessage(e));
     } finally {
       setSaving(false);
@@ -389,8 +410,14 @@ function PartnersPageLive() {
                 <PartnerCard
                   key={partner.id}
                   partner={partner}
+                  statusBusy={saving}
                   onEdit={() => openEdit(partner)}
-                  onArchive={() => setArchiveTarget(partner)}
+                  onPause={() =>
+                    setStatusTarget({ partner, nextStatus: "paused" })
+                  }
+                  onResume={() =>
+                    setStatusTarget({ partner, nextStatus: "active" })
+                  }
                   onOpenDetail={() => setDetail(partner)}
                 />
               ))}
@@ -432,13 +459,29 @@ function PartnersPageLive() {
               >
                 แก้ไข
               </Button>
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => setArchiveTarget(detail)}
-              >
-                Archive
-              </Button>
+              {detail.status === "paused" ? (
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  disabled={saving}
+                  onClick={() =>
+                    setStatusTarget({ partner: detail, nextStatus: "active" })
+                  }
+                >
+                  นำกลับมาใช้งาน
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  disabled={saving}
+                  onClick={() =>
+                    setStatusTarget({ partner: detail, nextStatus: "paused" })
+                  }
+                >
+                  พักไว้
+                </Button>
+              )}
             </div>
             <Button variant="text" fullWidth onClick={() => setDetail(null)}>
               ปิด
@@ -447,34 +490,44 @@ function PartnersPageLive() {
         </Dialog>
       ) : null}
 
-      {archiveTarget ? (
+      {statusTarget ? (
         <Dialog
           open
           onClose={() => {
             if (saving) return;
-            setArchiveTarget(null);
+            setStatusTarget(null);
           }}
-          title="Archive Partner?"
+          title={
+            statusTarget.nextStatus === "paused"
+              ? "พัก Partner ไว้?"
+              : "นำกลับมาใช้งาน?"
+          }
           role="alertdialog"
         >
           <p className="kl-type-body">
-            Archive “{archiveTarget.name}”? รายการจะหายจากรายชื่อ (ไม่ลบถาวร)
+            {statusTarget.nextStatus === "paused"
+              ? `พักไว้ “${statusTarget.partner.name}”? รายการจะยังอยู่ แต่ไม่นับเป็น Active`
+              : `นำ “${statusTarget.partner.name}” กลับมาใช้งานอีกครั้ง?`}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="secondary"
               fullWidth
               disabled={saving}
-              onClick={() => setArchiveTarget(null)}
+              onClick={() => setStatusTarget(null)}
             >
               ยกเลิก
             </Button>
             <Button
               fullWidth
               disabled={saving}
-              onClick={() => void handleArchiveConfirm()}
+              onClick={() => void handleStatusConfirm()}
             >
-              {saving ? "กำลังบันทึก…" : "Archive"}
+              {saving
+                ? "กำลังบันทึก…"
+                : statusTarget.nextStatus === "paused"
+                  ? "พักไว้"
+                  : "นำกลับมาใช้งาน"}
             </Button>
           </div>
         </Dialog>
