@@ -48,6 +48,21 @@ Current RLS is a **Temporary Shared Preview Policy** (anon can read/write `bi_*`
 Partners module: gated by `PARTNERS_MODULE_ENABLED` in `lib/partners/feature.ts`.  
 When false, Partners is hidden from Navigation. Migration SQL stays at `supabase/migrations/20260714180000_create_bi_partners.sql`.
 
+### Media library (คลังรูปภาพ)
+
+Run once in SQL Editor:
+
+`supabase/migrations/20260727120000_create_bi_media_and_storage.sql`
+
+Creates:
+
+- table `public.bi_media`
+- storage bucket `bi-media` (public read)
+- temp policies: anon select · authenticated upload/delete
+
+App path pattern: `{workspace_id}/{uuid}/{file_name}`  
+Upload/delete in UI requires signed-in user (`/login`).
+
 ### TODO (next sprints)
 
 - [ ] Supabase Auth
