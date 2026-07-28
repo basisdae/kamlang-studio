@@ -26,6 +26,7 @@ import { showUndoToast } from "../../../lib/biInfoToast";
 import ChecklistBulkBar from "./ChecklistBulkBar";
 import ChecklistQuickAdd from "./ChecklistQuickAdd";
 import ChecklistRow from "./ChecklistRow";
+import AssetQuickView from "../../assets/components/AssetQuickView";
 
 const STATUS_CHIPS: { id: StatusFilter; label: string }[] = [
   { id: "all", label: "ทั้งหมด" },
@@ -64,6 +65,7 @@ export default function ChecklistTopicBoard({
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<ListSortKey>("name");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [quickViewItem, setQuickViewItem] = useState<AssetItem | null>(null);
 
   const filtered = useMemo(() => {
     const byStatus = filterByUxStatus(topicAssets, statusFilter).filter((a) =>
@@ -217,11 +219,18 @@ export default function ChecklistTopicBoard({
                 onToggleSelect={() => toggleSelect(item.id)}
                 onRename={(name) => handleRename(item.id, name)}
                 onStatusChange={(status) => setStatus(item.id, status)}
+                onOpenQuickView={setQuickViewItem}
               />
             ))}
           </Card>
         )}
       </section>
+
+      <AssetQuickView
+        item={quickViewItem}
+        open={quickViewItem != null}
+        onClose={() => setQuickViewItem(null)}
+      />
     </div>
   );
 }

@@ -2,12 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Badge from "../../../../components/ui/Badge";
 import {
   ASSET_STATUS_FLOW,
   ASSET_STATUS_LABELS,
+  assetHasNoPrice,
   type AssetItem,
   type AssetStatus,
 } from "../../../../data/seed/tangtao";
+import { formatBaht } from "../../sampleData";
 
 type Props = {
   item: AssetItem;
@@ -15,11 +18,12 @@ type Props = {
   onToggleSelect: () => void;
   onRename: (name: string) => Promise<boolean>;
   onStatusChange: (status: AssetStatus) => Promise<void>;
+  onOpenQuickView: (item: AssetItem) => void;
   disabled?: boolean;
 };
 
 /**
- * Checklist row — checkbox, inline name edit, status select.
+ * Checklist row — checkbox, inline name, status; price opens Quick View.
  */
 export default function ChecklistRow({
   item,
@@ -27,19 +31,23 @@ export default function ChecklistRow({
   onToggleSelect,
   onRename,
   onStatusChange,
+  onOpenQuickView,
   disabled = false,
 }: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.name);
   const [saving, setSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const noPrice = assetHasNoPrice(item);
 
   useEffect(() => {
-    setDraft(item.name);
-  }, [item.name]);
+    if (editing) return;
+    queueMicrotask(() => setDraft(item.name));
+  }, [item.name, editing]);
 
   useEffect(() => {
-    if (editing) inputRef.current?.focus();
+    if (!editing) return;
+    queueMicrotask(() => inputRef.current?.focus());
   }, [editing]);
 
   async function commit() {
@@ -70,6 +78,7 @@ export default function ChecklistRow({
         disabled={disabled}
         aria-label={`เลือก ${item.name}`}
         onChange={onToggleSelect}
+        onClick={(e) => e.stopPropagation()}
       />
 
       <div className="min-w-0 flex-1 space-y-1.5">
@@ -91,13 +100,14 @@ export default function ChecklistRow({
               }
             }}
             onBlur={() => void commit()}
+            onClick={(e) => e.stopPropagation()}
           />
         ) : (
           <button
             type="button"
             className="kl-type-body w-full truncate text-left font-medium kl-pressable"
             disabled={disabled}
-            onClick={() => setEditing(true)}
+            onClick={() => onOpenQuickView(item)}
           >
             {item.name}
           </button>
@@ -109,6 +119,7 @@ export default function ChecklistRow({
             value={item.status}
             disabled={disabled || saving}
             aria-label={`สถานะ ${item.name}`}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) =>
               void onStatusChange(e.target.value as AssetStatus)
             }
@@ -119,9 +130,28 @@ export default function ChecklistRow({
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            className="kl-type-caption font-medium underline text-[var(--bi-text-primary)] kl-pressable"
+            disabled={disabled}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenQuickView(item);
+            }}
+          >
+            {noPrice ? (
+              <span className="inline-flex items-center gap-1">
+                <Badge tone="draft">ยังไม่ใส่ราคา</Badge>
+                ใส่ราคา
+              </span>
+            ) : (
+              formatBaht(item.estimatedPrice!)
+            )}
+          </button>
           <Link
             href={`/opening/assets/${item.id}`}
             className="kl-type-caption underline text-[var(--bi-text-primary)]"
+            onClick={(e) => e.stopPropagation()}
           >
             รายละเอียด
           </Link>

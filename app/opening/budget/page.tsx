@@ -644,7 +644,9 @@ function InventoryDrillRow({
         type="button"
         className="min-w-0 flex-1 text-left kl-pressable"
         onClick={onOpenQuickView}
-        aria-label={`แก้ไขด่วน ${row.name}`}
+        aria-label={
+          noPrice ? `ใส่ราคา ${row.name}` : `แก้ไขด่วน ${row.name}`
+        }
       >
         <div className="flex flex-wrap items-center gap-2">
           <p className="kl-type-card-title truncate">{row.name}</p>
@@ -663,26 +665,25 @@ function InventoryDrillRow({
         <p className="kl-type-caption mt-0.5">{row.statusLabel}</p>
       </button>
       <div className="shrink-0 text-right space-y-1">
-        <p className="kl-type-body tabular-nums">
-          {noPrice ? "ยังไม่ใส่ราคา" : formatBaht(row.lineTotal!)}
-        </p>
-        {noPrice ? (
-          <button
-            type="button"
-            className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline kl-pressable"
-            onClick={onOpenQuickView}
-          >
-            ใส่ราคา
-          </button>
-        ) : (
-          <Link
-            href={`/opening/assets/${row.id}`}
-            className="kl-type-caption text-[var(--bi-text-primary)] underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            ดู
-          </Link>
-        )}
+        <button
+          type="button"
+          className="block w-full text-right kl-pressable"
+          onClick={onOpenQuickView}
+        >
+          <p className="kl-type-body tabular-nums">
+            {noPrice ? "ยังไม่ใส่ราคา" : formatBaht(row.lineTotal!)}
+          </p>
+          <span className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline">
+            {noPrice ? "ใส่ราคา" : "แก้ไขด่วน"}
+          </span>
+        </button>
+        <Link
+          href={`/opening/assets/${row.id}`}
+          className="kl-type-caption text-[var(--bi-text-primary)] underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          ดูรายละเอียด
+        </Link>
       </div>
     </div>
   );

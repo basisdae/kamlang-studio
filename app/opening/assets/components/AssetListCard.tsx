@@ -80,7 +80,10 @@ export default function AssetListCard({ item, onOpenQuickView }: Props) {
         <button
           type="button"
           className="kl-type-caption font-medium text-[var(--bi-text-primary)] underline kl-pressable"
-          onClick={() => onOpenQuickView(item)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenQuickView(item);
+          }}
         >
           {noPrice ? "ใส่ราคา" : "แก้ไขด่วน"}
         </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import Button from "../../../../components/ui/Button";
 import Card from "../../../../components/ui/Card";
@@ -25,7 +25,9 @@ function priceToInput(value: number | null): string {
   return value == null ? "" : String(value);
 }
 
-function parsePrice(raw: string): { ok: true; value: number | null } | { ok: false; error: string } {
+function parsePrice(
+  raw: string
+): { ok: true; value: number | null } | { ok: false; error: string } {
   const trimmed = raw.trim();
   if (trimmed === "") return { ok: true, value: null };
   const normalized = trimmed.replace(/,/g, "");
@@ -50,14 +52,41 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
   const [status, setStatus] = useState<AssetStatus>("planned");
   const [error, setError] = useState<string | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [localSaving, setLocalSaving] = useState(false);
+  const scrollYRef = useRef(0);
+  const busy = saving || localSaving;
 
   useEffect(() => {
     if (!open || !item) return;
-    setPriceText(priceToInput(item.estimatedPrice));
-    setStatus(item.status);
-    setError(null);
-    setConfirmDiscard(false);
+    queueMicrotask(() => {
+      setPriceText(priceToInput(item.estimatedPrice));
+      setStatus(item.status);
+      setError(null);
+      setConfirmDiscard(false);
+    });
   }, [open, item]);
+
+  /** Lock body scroll while open; restore exact Y on close (iOS-safe). */
+  useEffect(() => {
+    if (!open) return;
+    scrollYRef.current = window.scrollY;
+    const { body } = document;
+    const prevOverflow = body.style.overflow;
+    const prevPosition = body.style.position;
+    const prevTop = body.style.top;
+    const prevWidth = body.style.width;
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollYRef.current}px`;
+    body.style.width = "100%";
+    return () => {
+      body.style.overflow = prevOverflow;
+      body.style.position = prevPosition;
+      body.style.top = prevTop;
+      body.style.width = prevWidth;
+      window.scrollTo(0, scrollYRef.current);
+    };
+  }, [open]);
 
   const dirty =
     item != null &&
@@ -65,7 +94,7 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
       priceToInput(item.estimatedPrice) !== priceText.trim());
 
   function requestClose() {
-    if (saving) return;
+    if (busy) return;
     if (dirty && !confirmDiscard) {
       setConfirmDiscard(true);
       return;
@@ -85,10 +114,10 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close uses latest dirty/saving
-  }, [open, dirty, saving, confirmDiscard]);
+  }, [open, dirty, busy, confirmDiscard]);
 
   async function handleSave() {
-    if (!item || saving) return;
+    if (!item || busy) return;
     setError(null);
     setConfirmDiscard(false);
 
@@ -102,16 +131,21 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
       return;
     }
 
-    const updated = await updateAsset(item.id, {
-      estimatedPrice: parsed.value,
-      status,
-    });
+    setLocalSaving(true);
+    try {
+      const updated = await updateAsset(item.id, {
+        estimatedPrice: parsed.value,
+        status,
+      });
 
-    if (!updated) {
-      setError("บันทึกไม่สำเร็จ — ตรวจเน็ตแล้วลองใหม่");
-      return;
+      if (!updated) {
+        setError("บันทึกไม่สำเร็จ — ตรวจเน็ตแล้วลองใหม่");
+        return;
+      }
+      onClose();
+    } finally {
+      setLocalSaving(false);
     }
-    onClose();
   }
 
   if (!open || !item) return null;
@@ -128,128 +162,130 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
         className="mx-auto w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
-      <Card className="space-y-3 !p-3.5 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p id={titleId} className="kl-type-card-title truncate">
-              {item.name}
-            </p>
-            <p className="kl-type-helper mt-0.5 truncate">
-              {item.category} · {item.quantity} {item.unit}
-            </p>
+        <Card className="space-y-3 !p-3.5 max-h-[85vh] overflow-y-auto">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p id={titleId} className="kl-type-card-title truncate">
+                {item.name}
+              </p>
+              <p className="kl-type-helper mt-0.5 truncate">
+                {item.category} · {item.quantity} {item.unit}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="text"
+              size="sm"
+              disabled={busy}
+              onClick={requestClose}
+              aria-label="ปิด"
+            >
+              ปิด
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="text"
-            size="sm"
-            disabled={saving}
-            onClick={requestClose}
-            aria-label="ปิด"
-          >
-            ปิด
-          </Button>
-        </div>
 
-        <label className="block">
-          <span className="kl-type-caption text-kl-muted">ราคา (บาท / หน่วย)</span>
-          <input
-            className={KL_FIELD_CLASS}
-            type="text"
-            inputMode="decimal"
-            enterKeyHint="done"
-            autoComplete="off"
-            value={priceText}
-            disabled={saving}
-            placeholder="เช่น 1500"
-            onChange={(e) => {
-              setPriceText(e.target.value);
-              setError(null);
-              setConfirmDiscard(false);
-            }}
-          />
-          {item.estimatedPrice != null ? (
-            <p className="kl-type-caption mt-1 text-kl-muted">
-              ค่าปัจจุบัน: {formatBaht(item.estimatedPrice)}
+          <label className="block">
+            <span className="kl-type-caption text-kl-muted">
+              ราคา (บาท / หน่วย)
+            </span>
+            <input
+              className={KL_FIELD_CLASS}
+              type="text"
+              inputMode="decimal"
+              enterKeyHint="done"
+              autoComplete="off"
+              value={priceText}
+              disabled={busy}
+              placeholder="เช่น 1500"
+              onChange={(e) => {
+                setPriceText(e.target.value);
+                setError(null);
+                setConfirmDiscard(false);
+              }}
+            />
+            {item.estimatedPrice != null ? (
+              <p className="kl-type-caption mt-1 text-kl-muted">
+                ค่าปัจจุบัน: {formatBaht(item.estimatedPrice)}
+              </p>
+            ) : null}
+          </label>
+
+          <label className="block">
+            <span className="kl-type-caption text-kl-muted">สถานะ</span>
+            <select
+              className={KL_FIELD_CLASS}
+              value={status}
+              disabled={busy}
+              onChange={(e) => {
+                setStatus(e.target.value as AssetStatus);
+                setError(null);
+                setConfirmDiscard(false);
+              }}
+            >
+              {ASSET_STATUS_FLOW.map((s) => (
+                <option key={s} value={s}>
+                  {ASSET_STATUS_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {error ? (
+            <p className="kl-type-caption text-kl-danger-text" role="alert">
+              {error}
             </p>
           ) : null}
-        </label>
 
-        <label className="block">
-          <span className="kl-type-caption text-kl-muted">สถานะ</span>
-          <select
-            className={KL_FIELD_CLASS}
-            value={status}
-            disabled={saving}
-            onChange={(e) => {
-              setStatus(e.target.value as AssetStatus);
-              setError(null);
-              setConfirmDiscard(false);
+          {confirmDiscard ? (
+            <div className="space-y-2 rounded-[var(--kl-radius-inner)] bg-kl-surface p-3">
+              <p className="kl-type-helper">
+                มีการแก้ไขที่ยังไม่บันทึก — ต้องการปิดโดยไม่บันทึกหรือไม่?
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => setConfirmDiscard(false)}
+                >
+                  กลับไปแก้
+                </Button>
+                <Button
+                  type="button"
+                  fullWidth
+                  onClick={() => {
+                    setConfirmDiscard(false);
+                    onClose();
+                  }}
+                >
+                  ปิดโดยไม่บันทึก
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <SheetActions
+              cancelLabel="ยกเลิก"
+              confirmLabel={busy ? "กำลังบันทึก…" : "บันทึก"}
+              onCancel={requestClose}
+              onConfirm={() => void handleSave()}
+              isCancelDisabled={busy}
+              isConfirmDisabled={busy}
+            />
+          )}
+
+          <Link
+            href={`/opening/assets/${item.id}/edit`}
+            className="block text-center kl-type-caption underline text-[var(--bi-text-primary)]"
+            onClick={(e) => {
+              if (dirty) {
+                e.preventDefault();
+                setConfirmDiscard(true);
+              }
             }}
           >
-            {ASSET_STATUS_FLOW.map((s) => (
-              <option key={s} value={s}>
-                {ASSET_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {error ? (
-          <p className="kl-type-caption text-kl-danger-text" role="alert">
-            {error}
-          </p>
-        ) : null}
-
-        {confirmDiscard ? (
-          <div className="space-y-2 rounded-[var(--kl-radius-inner)] bg-kl-surface p-3">
-            <p className="kl-type-helper">
-              มีการแก้ไขที่ยังไม่บันทึก — ต้องการปิดโดยไม่บันทึกหรือไม่?
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                fullWidth
-                onClick={() => setConfirmDiscard(false)}
-              >
-                กลับไปแก้
-              </Button>
-              <Button
-                type="button"
-                fullWidth
-                onClick={() => {
-                  setConfirmDiscard(false);
-                  onClose();
-                }}
-              >
-                ปิดโดยไม่บันทึก
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <SheetActions
-            cancelLabel="ยกเลิก"
-            confirmLabel={saving ? "กำลังบันทึก…" : "บันทึก"}
-            onCancel={requestClose}
-            onConfirm={() => void handleSave()}
-            isCancelDisabled={saving}
-            isConfirmDisabled={saving}
-          />
-        )}
-
-        <Link
-          href={`/opening/assets/${item.id}/edit`}
-          className="block text-center kl-type-caption underline text-[var(--bi-text-primary)]"
-          onClick={(e) => {
-            if (dirty) {
-              e.preventDefault();
-              setConfirmDiscard(true);
-            }
-          }}
-        >
-          แก้ไขแบบเต็ม →
-        </Link>
-      </Card>
+            แก้ไขแบบเต็ม →
+          </Link>
+        </Card>
       </div>
     </div>
   );
