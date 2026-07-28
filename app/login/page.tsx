@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppShell from "../../components/layout/AppShell";
 import PageHeader from "../../components/bi/PageHeader";
 import Card from "../../components/ui/Card";
@@ -10,16 +10,48 @@ import FormField from "../../components/ui/FormField";
 import { WORKSPACE_NAME } from "../../data/seed/tangtao";
 import { useAuth } from "../auth/AuthProvider";
 
-export default function LoginPage() {
+const DEFAULT_AFTER_LOGIN = "/opening/assets";
+
+/** Same-origin relative path only — blocks open redirects. */
+function safeNextPath(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {
+    return DEFAULT_AFTER_LOGIN;
+  }
+  return raw;
+}
+
+function LoginFallback() {
+  return (
+    <AppShell title="" hidePageHeader compact backHref="/">
+      <Card className="!p-4">
+        <p className="kl-type-helper">กำลังโหลด…</p>
+      </Card>
+    </AppShell>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
-  const { configured, signInWithMagicLink, signInWithPassword, loading } =
-    useAuth();
+  const searchParams = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"));
+  const {
+    configured,
+    user,
+    signInWithMagicLink,
+    signInWithPassword,
+    loading,
+  } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"magic" | "password">("magic");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    router.replace(nextPath);
+  }, [loading, user, nextPath, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,17 +60,30 @@ export default function LoginPage() {
     setBusy(true);
     try {
       if (mode === "magic") {
-        const err = await signInWithMagicLink(email.trim());
+        const err = await signInWithMagicLink(email.trim(), { next: nextPath });
         if (err) setError(err);
-        else setMessage("ส่งลิงก์เข้าสู่ระบบไปที่อีเมลแล้ว — เปิดจากมือถือเครื่องนี้");
+        else
+          setMessage(
+            "ส่งลิงก์เข้าสู่ระบบไปที่อีเมลแล้ว — เปิดจากมือถือเครื่องนี้"
+          );
       } else {
         const err = await signInWithPassword(email.trim(), password);
         if (err) setError(err);
-        else router.replace("/opening/assets");
+        else router.replace(nextPath);
       }
     } finally {
       setBusy(false);
     }
+  }
+
+  if (loading || user) {
+    return (
+      <AppShell title="" hidePageHeader compact backHref="/">
+        <Card className="!p-4">
+          <p className="kl-type-helper">กำลังเข้าสู่ระบบ…</p>
+        </Card>
+      </AppShell>
+    );
   }
 
   return (
@@ -62,9 +107,17 @@ export default function LoginPage() {
         </Card>
       ) : (
         <Card className="space-y-4">
-          <p className="kl-type-helper">
-            สมาชิกตั้งเตา: เดย์ · ครีม · เก็ต · เหมียว — สิทธิ์เท่ากันในช่วงแรก
-          </p>
+          <div className="space-y-1.5">
+            <p className="kl-type-card-title">บัญชีเจ้าของครั้งแรก</p>
+            <p className="kl-type-helper">
+              ระบบยังไม่เปิดสมัครสาธารณะ — สร้างผู้ใช้ใน Supabase Dashboard
+              (Authentication → Users → Add user) ด้วยอีเมลจริงของคุณ แล้วตั้งรหัสผ่าน
+              จากนั้นกลับมาล็อกอินที่นี่
+            </p>
+            <p className="kl-type-caption text-kl-muted">
+              ชื่อบนหน้าเว็บหลังล็อกอินมาจากอีเมล Auth จริง ไม่ใช่รายชื่อทีมตัวอย่าง
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button
               variant={mode === "magic" ? "primary" : "secondary"}
@@ -120,5 +173,13 @@ export default function LoginPage() {
         </Card>
       )}
     </AppShell>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
