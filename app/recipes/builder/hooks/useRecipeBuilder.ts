@@ -9,6 +9,7 @@ import {
   getSavedRecipeById,
   updateSavedRecipe,
 } from "../../../repositories/SavedRecipeRepository";
+import { linkRecipeToSavedMenu } from "../../../repositories/SavedMenuRepository";
 import type { RecipeLine, SaveValidationErrors } from "../types";
 import {
   calcLineCost,
@@ -36,9 +37,24 @@ function prepareLinesForSave(lines: RecipeLine[]) {
   });
 }
 
+function readBuilderQuery() {
+  if (typeof window === "undefined") {
+    return { id: null as string | null, linkMenuId: null as string | null, menuName: "" };
+  }
+  const params = new URLSearchParams(window.location.search);
+  return {
+    id: params.get("id"),
+    linkMenuId: params.get("linkMenuId"),
+    menuName: params.get("menuName") ?? "",
+  };
+}
+
 export function useRecipeBuilder() {
   const ingredients = useMemo(() => getAllIngredients(), []);
-  const [menuName, setMenuName] = useState("");
+  const initialQuery = useMemo(() => readBuilderQuery(), []);
+  const [menuName, setMenuName] = useState(
+    () => initialQuery.menuName || ""
+  );
   const [category, setCategory] = useState("");
   const [isIngredientPopupOpen, setIsIngredientPopupOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -52,20 +68,27 @@ export function useRecipeBuilder() {
     useState<SaveValidationErrors>({});
   const [editingRecipeId, setEditingRecipeId] = useState<string | null>(null);
   const [editingLineIndex, setEditingLineIndex] = useState<number | null>(null);
+  const [pendingLinkMenuId, setPendingLinkMenuId] = useState<string | null>(
+    () => initialQuery.linkMenuId
+  );
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+    const id = initialQuery.id;
     if (!id) return;
 
-    const recipe = getSavedRecipeById(id);
-    if (!recipe) return;
+    queueMicrotask(() => {
+      const recipe = getSavedRecipeById(id);
+      if (!recipe) return;
 
-    setEditingRecipeId(recipe.id);
-    setMenuName(recipe.menuName);
-    setCategory(recipe.category);
-    setLines(recipe.ingredients);
-  }, []);
+      setEditingRecipeId(recipe.id);
+      setMenuName(recipe.menuName);
+      setCategory(recipe.category);
+      setLines(recipe.ingredients);
+      if (recipe.linkedMenuId) {
+        setPendingLinkMenuId(recipe.linkedMenuId);
+      }
+    });
+  }, [initialQuery.id]);
 
   const filteredIngredients = useMemo(
     () => filterIngredients(ingredients, search),
@@ -89,15 +112,6 @@ export function useRecipeBuilder() {
     () => calcProfitPercent(totalCost, suggestedPrice),
     [totalCost, suggestedPrice]
   );
-
-  useEffect(() => {
-    if (lines.length > 0 && validationErrors.ingredients) {
-      setValidationErrors((current) => ({
-        ...current,
-        ingredients: undefined,
-      }));
-    }
-  }, [lines.length, validationErrors.ingredients]);
 
   function handleMenuNameChange(value: string) {
     setMenuName(value);
@@ -194,6 +208,13 @@ export function useRecipeBuilder() {
       },
     ]);
 
+    if (validationErrors.ingredients) {
+      setValidationErrors((current) => ({
+        ...current,
+        ingredients: undefined,
+      }));
+    }
+
     setSelectedIngredientId(null);
     return true;
   }
@@ -222,6 +243,8 @@ export function useRecipeBuilder() {
       const existing = getSavedRecipeById(editingRecipeId);
       if (!existing) return false;
 
+      const linkedMenuId = pendingLinkMenuId ?? existing.linkedMenuId;
+
       updateSavedRecipe({
         id: editingRecipeId,
         menuName: menuName.trim(),
@@ -232,15 +255,20 @@ export function useRecipeBuilder() {
         profit: savedProfit,
         createdAt: existing.createdAt,
         updatedAt: now,
-        status: existing.status ?? "draft",
-        linkedMenuId: existing.linkedMenuId,
+        status: linkedMenuId ? "imported" : existing.status ?? "draft",
+        linkedMenuId,
         detailState: existing.detailState,
       });
+
+      if (linkedMenuId) {
+        linkRecipeToSavedMenu(linkedMenuId, editingRecipeId);
+      }
 
       return editingRecipeId;
     }
 
     const newId = crypto.randomUUID();
+    const linkedMenuId = pendingLinkMenuId ?? undefined;
 
     createSavedRecipe({
       id: newId,
@@ -252,8 +280,13 @@ export function useRecipeBuilder() {
       profit: savedProfit,
       createdAt: now,
       updatedAt: now,
-      status: "draft",
+      status: linkedMenuId ? "imported" : "draft",
+      linkedMenuId,
     });
+
+    if (linkedMenuId) {
+      linkRecipeToSavedMenu(linkedMenuId, newId);
+    }
 
     setEditingRecipeId(newId);
 

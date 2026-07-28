@@ -19,7 +19,10 @@ type AuthContextValue = {
   loading: boolean;
   configured: boolean;
   signInWithPassword: (email: string, password: string) => Promise<string | null>;
-  signInWithMagicLink: (email: string) => Promise<string | null>;
+  signInWithMagicLink: (
+    email: string,
+    options?: { next?: string }
+  ) => Promise<string | null>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -86,19 +89,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const signInWithMagicLink = useCallback(async (email: string) => {
-    const client = createClient();
-    if (!client) return "ยังไม่ได้ตั้งค่า Supabase";
-    const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/auth/callback`
-        : undefined;
-    const { error } = await client.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectTo },
-    });
-    return error?.message ?? null;
-  }, []);
+  const signInWithMagicLink = useCallback(
+    async (email: string, options?: { next?: string }) => {
+      const client = createClient();
+      if (!client) return "ยังไม่ได้ตั้งค่า Supabase";
+      const next =
+        options?.next &&
+        options.next.startsWith("/") &&
+        !options.next.startsWith("//")
+          ? options.next
+          : undefined;
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback${
+              next ? `?next=${encodeURIComponent(next)}` : ""
+            }`
+          : undefined;
+      const { error } = await client.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirectTo },
+      });
+      return error?.message ?? null;
+    },
+    []
+  );
 
   const signOut = useCallback(async () => {
     const client = createClient();

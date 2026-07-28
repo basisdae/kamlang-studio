@@ -66,6 +66,7 @@ export function importRecipeToMenuDraft(
     recipeId: recipe.id,
     sellingPrice: 0,
     isActive: false,
+    saleStatus: "draft",
     notes: [
       "แบบร่างจากสูตร — ยังไม่เปิดขาย",
       `ต้นทุนสูตร ฿${recipe.totalCost.toFixed(2)}`,

@@ -63,11 +63,28 @@ Creates:
 App path pattern: `{workspace_id}/{uuid}/{file_name}`  
 Upload/delete in UI requires signed-in user (`/login`).
 
+### Owner account (first login)
+
+App login supports **sign-in only** (password + magic link). There is **no public sign-up** in the UI.
+
+Names like เดย์ / ครีม on seed copy are **not** login accounts. `bi_members` seed emails (`*@tangtao.local`) are placeholders and are **not** Supabase Auth users.
+
+**Create the first owner (Dashboard — recommended):**
+
+1. Open Supabase → project **kn-queue** → **Authentication** → **Users**
+2. **Add user** → enter the owner’s real email + a password you choose (or invite by email)
+3. Confirm **Authentication → URL Configuration** includes:
+   - `http://localhost:3000/auth/callback`
+   - production `/auth/callback` if needed
+4. In the app open `/login?next=/media` → mode **อีเมล/รหัสผ่าน** → sign in with that email
+5. After success you should land on `/media` and see **อัปโหลดรูป**
+
+Do **not** put `service_role` in the app. Do **not** invent shared demo passwords in git.
+
 ### TODO (next sprints)
 
-- [ ] Supabase Auth
+- [ ] Supabase Auth / `bi_members` linking
 - [ ] Close anon write
-- [ ] Add `bi_members`
 - [ ] Real audit actor (not “ผู้ใช้งาน”)
 - [ ] Realtime (optional)
 

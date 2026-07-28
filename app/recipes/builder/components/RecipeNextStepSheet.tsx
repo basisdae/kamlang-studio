@@ -123,7 +123,7 @@ export default function RecipeNextStepSheet({
         {phase === "choose" ? (
           <div className="space-y-2">
             <Button fullWidth onClick={handleImport}>
-              นำเข้าเมนูร้าน
+              เพิ่มเป็นเมนูขาย
             </Button>
             <Button variant="secondary" fullWidth onClick={handleContinue}>
               ทดลองและแก้ไขต่อ

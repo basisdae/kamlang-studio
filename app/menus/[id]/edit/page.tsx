@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import AppShell from "../../../../components/layout/AppShell";
+import ButtonLink from "../../../../components/ui/ButtonLink";
 import EmptyState from "../../../../components/ui/EmptyState";
 import MenuBuilderPageSkeleton from "../../../../components/ui/skeletons/MenuBuilderPageSkeleton";
 import MenuBuilderForm from "../../new/components/MenuBuilderForm";
@@ -28,22 +29,14 @@ export default function EditMenuPage() {
 
   if (builder.menuNotFound) {
     return (
-      <AppShell
-        title="ไม่พบเมนูขาย"
-        backHref="/menus"
-        hidePageHeader
-      >
+      <AppShell title="ไม่พบเมนูขาย" backHref="/menus" hidePageHeader>
         <EmptyState {...EMPTY_STATE.menus.editNotFound} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell
-      title="แก้ไขเมนูขาย"
-      backHref={`/menus/${params.id}`}
-      compact
-    >
+    <AppShell title="แก้ไขเมนูขาย" backHref={`/menus/${params.id}`} compact>
       <div className="space-y-4 kl-builder-scroll">
         <VersionHistoryPanel
           entityType="saved_menu"
@@ -57,25 +50,38 @@ export default function EditMenuPage() {
           name={builder.name}
           category={builder.category}
           recipeId={builder.recipeId}
+          recipeMode={builder.recipeMode}
           packagingSetId={builder.packagingSetId}
           sellingPrice={builder.sellingPrice}
-          isActive={builder.isActive}
+          saleStatus={builder.saleStatus}
           notes={builder.notes}
+          costNotice={builder.costNotice}
           validationErrors={builder.validationErrors}
           onNameChange={builder.setName}
           onCategoryChange={builder.setCategory}
           onRecipeIdChange={builder.setRecipeId}
+          onRecipeModeChange={builder.setRecipeMode}
           onPackagingSetIdChange={builder.setPackagingSetId}
           onSellingPriceChange={builder.setSellingPrice}
-          onIsActiveChange={builder.setIsActive}
+          onSaleStatusChange={builder.setSaleStatus}
           onNotesChange={builder.setNotes}
         />
+        <ButtonLink
+          href={`/menus/${params.id}`}
+          variant="secondary"
+          fullWidth
+          className="min-h-[44px]"
+        >
+          ยกเลิก
+        </ButtonLink>
       </div>
 
       <MenuBuilderSummary
         preview={builder.preview}
         onSave={builder.handleSave}
         saveLabel="บันทึกการแก้ไข"
+        saving={builder.saving}
+        costNotice={builder.costNotice}
       />
     </AppShell>
   );

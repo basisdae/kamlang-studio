@@ -26,6 +26,12 @@ function getMenuCostForProductionLine(menuId: string) {
     throw new Error(`Production plan references unknown menu "${menuId}"`);
   }
 
+  if (!menu.recipeId) {
+    throw new Error(
+      `Production plan references menu "${menuId}" without a recipe`
+    );
+  }
+
   return calculateMenuCost({
     recipeId: menu.recipeId,
     packagingSetId: menu.packagingSetId,

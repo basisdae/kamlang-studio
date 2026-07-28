@@ -5,6 +5,7 @@
  * SavedMenu is experimental work-in-progress from the Menu Builder UI.
  */
 import type { SavedMenu } from "../menus/builder/types";
+import { normalizeSavedMenu } from "../menus/saleStatus";
 import { addActivity } from "./ActivityLogRepository";
 import { addVersion } from "./VersionHistoryRepository";
 
@@ -20,14 +21,17 @@ function readAll(): SavedMenu[] {
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
 
-    return parsed as SavedMenu[];
+    return (parsed as SavedMenu[]).map(normalizeSavedMenu);
   } catch {
     return [];
   }
 }
 
 function writeAll(menus: SavedMenu[]): void {
-  localStorage.setItem(KL_BUILDER_MENUS_KEY, JSON.stringify(menus));
+  localStorage.setItem(
+    KL_BUILDER_MENUS_KEY,
+    JSON.stringify(menus.map(normalizeSavedMenu))
+  );
 }
 
 export function getAllSavedMenus(): SavedMenu[] {
@@ -44,12 +48,13 @@ export function getSavedMenuById(id: string): SavedMenu | undefined {
 export function getSavedMenuByRecipeId(
   recipeId: string
 ): SavedMenu | undefined {
+  if (!recipeId.trim()) return undefined;
   return readAll().find((menu) => menu.recipeId === recipeId);
 }
 
 export function createSavedMenu(menu: SavedMenu): void {
   const menus = readAll();
-  menus.push(menu);
+  menus.push(normalizeSavedMenu(menu));
   writeAll(menus);
 
   addActivity({
@@ -80,7 +85,7 @@ export function updateSavedMenu(
   const index = menus.findIndex((item) => item.id === menu.id);
   if (index === -1) return;
 
-  menus[index] = menu;
+  menus[index] = normalizeSavedMenu(menu);
   writeAll(menus);
 
   addActivity({
@@ -112,9 +117,7 @@ export function restoreSavedMenu(menu: SavedMenu): void {
   const menus = readAll();
   if (menus.some((item) => item.id === menu.id)) return;
 
-  menus.push({
-    ...menu,
-  });
+  menus.push(normalizeSavedMenu(menu));
   writeAll(menus);
 }
 
@@ -140,4 +143,21 @@ export function filterSavedMenus(menus: SavedMenu[], query: string) {
   if (!normalized) return menus;
 
   return menus.filter((menu) => menu.name.toLowerCase().includes(normalized));
+}
+
+/** Link an existing recipe to a menu without creating a duplicate menu. */
+export function linkRecipeToSavedMenu(
+  menuId: string,
+  recipeId: string
+): SavedMenu | null {
+  const menu = getSavedMenuById(menuId);
+  if (!menu || !recipeId.trim()) return null;
+
+  const updated = normalizeSavedMenu({
+    ...menu,
+    recipeId: recipeId.trim(),
+    updatedAt: new Date().toISOString(),
+  });
+  updateSavedMenu(updated);
+  return updated;
 }

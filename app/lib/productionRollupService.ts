@@ -104,6 +104,12 @@ export function getProductionRollupForPlan(plan: ProductionPlan): ProductionRoll
       );
     }
 
+    if (!menu.recipeId) {
+      throw new Error(
+        `Menu "${menu.name}" (${menu.id}) has no recipe — cannot roll up production`
+      );
+    }
+
     const recipe = getEffectiveRecipeLines(menu.recipeId);
 
     if (!recipe) {

@@ -106,16 +106,25 @@ export function isPathInWorkspace(
     pathname.startsWith("/setup") ||
     pathname.startsWith("/status") ||
     pathname.startsWith("/auth") ||
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
     pathname.startsWith("/order") ||
     pathname.startsWith("/orders")
   ) {
     return true;
   }
 
-  // Menu drafts linked from Lab recipes — match /menus and nested edit routes
+  // Sellable menu library — Lab module "menus" and Backstore "food-menu"
   if (pathname === "/menus" || pathname.startsWith("/menus/")) {
     if (visibleModules === "all") return true;
     if (visibleModules.includes("menus")) return true;
+    if (visibleModules.includes("food-menu")) return true;
+  }
+
+  // Legacy scaffold URL still used in bookmarks — keep in-workspace for Backstore
+  if (pathname === "/food-menu" || pathname.startsWith("/food-menu/")) {
+    if (visibleModules === "all") return true;
+    if (visibleModules.includes("food-menu")) return true;
   }
 
   if (isWorkspaceLandingPath(pathname, workspaceId)) {

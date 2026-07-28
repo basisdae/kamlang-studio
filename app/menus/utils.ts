@@ -1,5 +1,6 @@
 import type { Menu } from "../menu/types";
 import type { SavedMenu } from "./builder/types";
+import { getSaleStatus } from "./saleStatus";
 
 export function filterMenusByName(menus: Menu[], search: string) {
   const query = search.trim().toLowerCase();
@@ -13,6 +14,7 @@ export function formatMenuBaht(value: number) {
 }
 
 export function savedMenuToMenu(savedMenu: SavedMenu): Menu {
+  const saleStatus = getSaleStatus(savedMenu);
   return {
     id: savedMenu.id,
     name: savedMenu.name,
@@ -20,7 +22,8 @@ export function savedMenuToMenu(savedMenu: SavedMenu): Menu {
     recipeId: savedMenu.recipeId,
     packagingSetId: savedMenu.packagingSetId,
     sellingPrice: savedMenu.sellingPrice,
-    isActive: savedMenu.isActive,
+    isActive: saleStatus === "active",
     notes: savedMenu.notes,
+    imageUrl: savedMenu.imageUrl,
   };
 }

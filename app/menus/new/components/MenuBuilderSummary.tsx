@@ -14,6 +14,8 @@ type Props = {
   preview: MenuCostBreakdown | null;
   onSave: () => boolean;
   saveLabel?: string;
+  saving?: boolean;
+  costNotice?: string | null;
 };
 
 const SAVED_CONFIRMATION_MS = 1000;
@@ -22,6 +24,8 @@ export default function MenuBuilderSummary({
   preview,
   onSave,
   saveLabel = "บันทึกเมนูขาย",
+  saving = false,
+  costNotice = null,
 }: Props) {
   const [showSavedConfirmation, setShowSavedConfirmation] = useState(false);
 
@@ -37,6 +41,7 @@ export default function MenuBuilderSummary({
   }, [showSavedConfirmation]);
 
   function handleSave() {
+    if (saving) return;
     const success = onSave();
     if (!success) return;
 
@@ -65,23 +70,36 @@ export default function MenuBuilderSummary({
             />
             <StatCell
               label="กำไร"
-              value={`฿${formatMenuBaht(preview.grossProfit)}`}
+              value={
+                preview.sellingPrice > 0 && Number.isFinite(preview.grossProfit)
+                  ? `฿${formatMenuBaht(preview.grossProfit)}`
+                  : "—"
+              }
               size="sm"
             />
             <StatCell
               label="กำไร %"
-              value={`${preview.grossProfitPercent}%`}
+              value={
+                preview.sellingPrice > 0 &&
+                Number.isFinite(preview.grossProfitPercent)
+                  ? `${preview.grossProfitPercent}%`
+                  : "รอคำนวณ"
+              }
               size="sm"
             />
             <StatCell
               label="ราคาขาย"
-              value={`฿${formatMenuBaht(preview.sellingPrice)}`}
+              value={
+                preview.sellingPrice > 0
+                  ? `฿${formatMenuBaht(preview.sellingPrice)}`
+                  : "ยังไม่ตั้ง"
+              }
               size="sm"
             />
           </div>
         ) : (
           <p className="kl-type-helper text-center">
-            เลือกสูตรและราคาขายเพื่อดูต้นทุน
+            {costNotice ?? "ยังไม่มีต้นทุน — บันทึกเมนูได้โดยไม่ต้องเลือกสูตร"}
           </p>
         )}
 
@@ -92,9 +110,15 @@ export default function MenuBuilderSummary({
           </div>
         ) : null}
 
-        <Button type="button" fullWidth className="mt-4" onClick={handleSave}>
+        <Button
+          type="button"
+          fullWidth
+          className="mt-4"
+          disabled={saving}
+          onClick={handleSave}
+        >
           <Save className={KL_ICON_CLASS} strokeWidth={KL_ICON_STROKE} />
-          {saveLabel}
+          {saving ? "กำลังบันทึก…" : saveLabel}
         </Button>
       </div>
     </div>

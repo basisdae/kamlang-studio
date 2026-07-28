@@ -220,7 +220,7 @@ export const APP_WORKSPACES: Record<AppWorkspaceId, AppWorkspaceConfig> = {
     visibleModules: [...BACKSTORE_MODULES],
     shortcuts: [
       { label: "คลังรูปภาพ", href: "/media" },
-      { label: "เมนูอาหาร", href: "/food-menu" },
+      { label: "เมนูอาหาร", href: "/menus" },
     ],
     accent: "backstore",
   },

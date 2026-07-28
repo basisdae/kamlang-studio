@@ -62,7 +62,7 @@ export const MENUS_SCHEMA: ImportSchema = {
   sheetName: "menus",
   columns: [
     { key: "id", required: true },
-    { key: "recipeId", required: true, aliases: ["recipe_id"] },
+    { key: "recipeId", required: false, aliases: ["recipe_id"] },
     { key: "name", required: true },
     { key: "category", required: true },
     { key: "packagingSetId", required: false, aliases: ["packaging_set_id"] },

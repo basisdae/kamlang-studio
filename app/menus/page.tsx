@@ -1,196 +1,341 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../../components/layout/AppShell";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import ButtonLink from "../../components/ui/ButtonLink";
+import Card from "../../components/ui/Card";
+import EmptyState from "../../components/ui/EmptyState";
 import SearchBar from "../../components/ui/SearchBar";
 import SectionLink from "../../components/ui/SectionLink";
-import SectionTitle from "../../components/ui/SectionTitle";
-import { calculateMenuCost, getMenuCost } from "../lib/menuCostService";
-import { getAllMenus } from "../menu/MenuRepository";
-import type { SavedMenu } from "./builder/types";
-import EmptyState from "../../components/ui/EmptyState";
+import StatCell from "../../components/ui/StatCell";
 import { EMPTY_STATE } from "../copy/emptyStates";
-import MenuLibraryCard from "./components/MenuLibraryCard";
-import { filterMenusByName, savedMenuToMenu } from "./utils";
-import { getAllSavedMenus } from "../repositories/SavedMenuRepository";
+import {
+  getAllSavedMenus,
+  updateSavedMenu,
+} from "../repositories/SavedMenuRepository";
+import type { SavedMenu } from "./builder/types";
+import {
+  COST_STATUS_LABEL,
+  formatCostBaht,
+  formatProfitDisplay,
+  getSaleStatus,
+  resolveMenuCost,
+  SALE_STATUS_LABEL,
+  type MenuCostStatus,
+  type MenuSaleStatus,
+  withSaleStatus,
+} from "./saleStatus";
+import { formatMenuBaht } from "./utils";
+
+type LibraryFilter =
+  | "all"
+  | "active"
+  | "draft"
+  | "closed"
+  | "calculated"
+  | "no_recipe"
+  | "cost_issue";
+
+const FILTERS: { id: LibraryFilter; label: string }[] = [
+  { id: "all", label: "ทั้งหมด" },
+  { id: "active", label: "เปิดขาย" },
+  { id: "draft", label: "แบบร่าง" },
+  { id: "closed", label: "ปิดขาย" },
+  { id: "calculated", label: "คำนวณต้นทุนแล้ว" },
+  { id: "no_recipe", label: "ยังไม่มีสูตร" },
+  { id: "cost_issue", label: "สูตร/ต้นทุนไม่สมบูรณ์" },
+];
+
+type MenuRow = {
+  menu: SavedMenu;
+  saleStatus: MenuSaleStatus;
+  costStatus: MenuCostStatus;
+  cost: ReturnType<typeof resolveMenuCost>["cost"];
+};
+
+function matchesFilter(row: MenuRow, filter: LibraryFilter): boolean {
+  if (filter === "all") return row.saleStatus !== "archived";
+  if (filter === "active") return row.saleStatus === "active";
+  if (filter === "draft") return row.saleStatus === "draft";
+  if (filter === "closed") return row.saleStatus === "closed";
+  if (filter === "calculated") return row.costStatus === "calculated";
+  if (filter === "no_recipe") return row.costStatus === "no_recipe";
+  if (filter === "cost_issue") {
+    return (
+      row.costStatus === "incomplete_recipe" ||
+      row.costStatus === "missing_prices"
+    );
+  }
+  return true;
+}
 
 export default function MenusPage() {
   const pathname = usePathname();
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<LibraryFilter>("all");
   const [savedMenus, setSavedMenus] = useState<SavedMenu[]>([]);
 
-  const standardMenus = useMemo(
-    () => getAllMenus().filter((menu) => menu.isActive),
-    []
-  );
+  function reload() {
+    setSavedMenus(getAllSavedMenus());
+  }
 
   useEffect(() => {
-    setSavedMenus(getAllSavedMenus());
+    queueMicrotask(() => {
+      setSavedMenus(getAllSavedMenus());
+    });
   }, [pathname]);
 
-  const activeSavedMenus = useMemo(
-    () => savedMenus.filter((menu) => menu.isActive),
+  const rows: MenuRow[] = useMemo(
+    () =>
+      savedMenus.map((menu) => {
+        const { status, cost } = resolveMenuCost(menu);
+        return {
+          menu,
+          saleStatus: getSaleStatus(menu),
+          costStatus: status,
+          cost,
+        };
+      }),
     [savedMenus]
   );
 
-  const draftSavedMenus = useMemo(
-    () => savedMenus.filter((menu) => !menu.isActive),
-    [savedMenus]
+  const uncostedCount = useMemo(
+    () => rows.filter((r) => r.costStatus !== "calculated").length,
+    [rows]
   );
 
-  const standardMenusWithCost = useMemo(
-    () =>
-      standardMenus.map((menu) => ({
-        menu,
-        cost: getMenuCost(menu.id),
-      })),
-    [standardMenus]
-  );
-
-  const savedMenusWithCost = useMemo(
-    () =>
-      activeSavedMenus.map((savedMenu) => ({
-        menu: savedMenuToMenu(savedMenu),
-        cost: calculateMenuCost({
-          recipeId: savedMenu.recipeId,
-          packagingSetId: savedMenu.packagingSetId,
-          sellingPrice: savedMenu.sellingPrice,
-        }),
-      })),
-    [activeSavedMenus]
-  );
-
-  const allMenusWithCost = useMemo(
-    () => [...savedMenusWithCost, ...standardMenusWithCost],
-    [savedMenusWithCost, standardMenusWithCost]
-  );
-
-  const filteredMenus = useMemo(() => {
-    const visibleMenus = filterMenusByName(
-      allMenusWithCost.map((entry) => entry.menu),
-      search
-    );
-    const visibleIds = new Set(visibleMenus.map((menu) => menu.id));
-
-    return allMenusWithCost.filter((entry) => visibleIds.has(entry.menu.id));
-  }, [allMenusWithCost, search]);
-
-  const filteredSavedMenus = useMemo(
-    () =>
-      filteredMenus.filter((entry) =>
-        activeSavedMenus.some((savedMenu) => savedMenu.id === entry.menu.id)
-      ),
-    [filteredMenus, activeSavedMenus]
-  );
-
-  const filteredStandardMenus = useMemo(
-    () =>
-      filteredMenus.filter((entry) =>
-        standardMenus.some((menu) => menu.id === entry.menu.id)
-      ),
-    [filteredMenus, standardMenus]
-  );
-
-  const hasSearch = search.trim().length > 0;
-  const filteredDraftMenus = useMemo(() => {
+  const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return draftSavedMenus;
-    return draftSavedMenus.filter((menu) =>
-      menu.name.toLowerCase().includes(q)
-    );
-  }, [draftSavedMenus, search]);
+    return rows.filter((row) => {
+      if (!matchesFilter(row, filter)) return false;
+      if (!q) return true;
+      return (
+        row.menu.name.toLowerCase().includes(q) ||
+        row.menu.category.toLowerCase().includes(q)
+      );
+    });
+  }, [rows, filter, search]);
 
-  const hasVisibleResults =
-    filteredMenus.length > 0 || filteredDraftMenus.length > 0;
+  function setStatus(menu: SavedMenu, saleStatus: MenuSaleStatus) {
+    updateSavedMenu(
+      withSaleStatus(
+        { ...menu, updatedAt: new Date().toISOString() },
+        saleStatus
+      )
+    );
+    reload();
+  }
 
   return (
-    <AppShell
-      title="เมนูขาย"
-      backHref="/"
-    >
+    <AppShell title="เมนูขาย" backHref="/">
       <SearchBar
         placeholder="ค้นหาเมนูขาย..."
         value={search}
         onChange={setSearch}
       />
 
+      {uncostedCount > 0 ? (
+        <Card className="!p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="kl-type-helper">
+              มี {uncostedCount} เมนูที่ยังไม่ได้คำนวณต้นทุน
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="min-h-[40px]"
+              onClick={() => setFilter("no_recipe")}
+            >
+              ดูรายการ
+            </Button>
+          </div>
+        </Card>
+      ) : null}
+
+      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        {FILTERS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setFilter(item.id)}
+            className={`shrink-0 rounded-full border px-3 py-2 kl-type-caption min-h-[40px] ${
+              filter === item.id
+                ? "border-kl-brown bg-kl-brown text-kl-ivory"
+                : "border-kl-border bg-kl-card text-kl-text"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       <SectionLink
         variant="create"
         href="/menus/new"
-        title="สร้างเมนูขาย"
+        title="เพิ่มเมนูใหม่"
         module="menus"
       />
 
-      {!hasVisibleResults ? (
-        hasSearch ? (
+      {visible.length === 0 ? (
+        search.trim() || filter !== "all" ? (
           <EmptyState
             {...EMPTY_STATE.menus.search}
-            onAction={() => setSearch("")}
+            onAction={() => {
+              setSearch("");
+              setFilter("all");
+            }}
           />
         ) : (
           <EmptyState {...EMPTY_STATE.menus.none} />
         )
-      ) : null}
+      ) : (
+        <div className="space-y-3">
+          {visible.map(({ menu, saleStatus, costStatus, cost }) => {
+            const profit = formatProfitDisplay(
+              cost,
+              costStatus,
+              menu.sellingPrice
+            );
+            return (
+              <Card key={menu.id} className="space-y-3 !p-3">
+                <Link
+                  href={`/menus/${menu.id}`}
+                  className="block min-w-0 kl-pressable"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h2 className="kl-type-card-title">{menu.name}</h2>
+                      <p className="kl-type-caption mt-1 text-kl-muted">
+                        {menu.category || "ยังไม่ตั้งหมวด"}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <Badge
+                        tone={
+                          saleStatus === "active"
+                            ? "success"
+                            : saleStatus === "draft"
+                              ? "draft"
+                              : "neutral"
+                        }
+                      >
+                        {SALE_STATUS_LABEL[saleStatus]}
+                      </Badge>
+                      <span className="kl-type-caption text-kl-muted">
+                        {COST_STATUS_LABEL[costStatus]}
+                      </span>
+                    </div>
+                  </div>
 
-      {filteredDraftMenus.length > 0 ? (
-        <section className="space-y-3">
-          <SectionTitle module="menus">แบบร่างเมนู</SectionTitle>
-          <div className="space-y-3">
-            {filteredDraftMenus.map((savedMenu) => {
-              let cost;
-              try {
-                cost = calculateMenuCost({
-                  recipeId: savedMenu.recipeId,
-                  packagingSetId: savedMenu.packagingSetId,
-                  sellingPrice:
-                    savedMenu.sellingPrice > 0 ? savedMenu.sellingPrice : 0.01,
-                });
-                if (savedMenu.sellingPrice <= 0) {
-                  cost = {
-                    ...cost,
-                    sellingPrice: 0,
-                    grossProfit: 0 - cost.totalCost,
-                    grossProfitPercent: 0,
-                  };
-                }
-              } catch {
-                return null;
-              }
-              return (
-                <MenuLibraryCard
-                  key={savedMenu.id}
-                  menu={savedMenuToMenu(savedMenu)}
-                  cost={cost}
-                  href={`/menus/${savedMenu.id}/edit`}
-                />
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <StatCell
+                      label="ราคาขาย"
+                      value={
+                        menu.sellingPrice > 0
+                          ? `฿${formatMenuBaht(menu.sellingPrice)}`
+                          : "ยังไม่ตั้ง"
+                      }
+                      size="sm"
+                    />
+                    <StatCell
+                      label="ต้นทุน"
+                      value={formatCostBaht(cost, costStatus)}
+                      size="sm"
+                    />
+                    <StatCell label="กำไร" value={profit.profit} size="sm" />
+                    <StatCell label="GP" value={profit.gp} size="sm" />
+                  </div>
+                </Link>
 
-      {filteredSavedMenus.length > 0 ? (
-        <section className="space-y-3">
-          <SectionTitle module="menus">เมนูของคุณ</SectionTitle>
-          <div className="space-y-3">
-            {filteredSavedMenus.map(({ menu, cost }) => (
-              <MenuLibraryCard key={menu.id} menu={menu} cost={cost} />
-            ))}
-          </div>
-        </section>
-      ) : null}
+                <div className="flex flex-wrap gap-2">
+                  <ButtonLink
+                    href={`/menus/${menu.id}/edit`}
+                    variant="secondary"
+                    size="sm"
+                    className="min-h-[40px]"
+                  >
+                    แก้ไข
+                  </ButtonLink>
 
-      {filteredStandardMenus.length > 0 ? (
-        <section className="space-y-3">
-          <SectionTitle module="menus">เมนูตัวอย่าง</SectionTitle>
-          <div className="space-y-3">
-            {filteredStandardMenus.map(({ menu, cost }) => (
-              <MenuLibraryCard key={menu.id} menu={menu} cost={cost} />
-            ))}
-          </div>
-        </section>
-      ) : null}
+                  {costStatus === "no_recipe" ? (
+                    <>
+                      <ButtonLink
+                        href={`/recipes/builder?linkMenuId=${encodeURIComponent(menu.id)}&menuName=${encodeURIComponent(menu.name)}`}
+                        size="sm"
+                        className="min-h-[40px]"
+                      >
+                        สร้างสูตร
+                      </ButtonLink>
+                      <ButtonLink
+                        href={`/menus/${menu.id}/edit`}
+                        variant="secondary"
+                        size="sm"
+                        className="min-h-[40px]"
+                      >
+                        เชื่อมสูตร
+                      </ButtonLink>
+                    </>
+                  ) : null}
+
+                  {costStatus === "calculated" && menu.recipeId ? (
+                    <ButtonLink
+                      href={`/recipes/builder?id=${encodeURIComponent(menu.recipeId)}`}
+                      variant="secondary"
+                      size="sm"
+                      className="min-h-[40px]"
+                    >
+                      ดูสูตร
+                    </ButtonLink>
+                  ) : null}
+
+                  {costStatus === "incomplete_recipe" ||
+                  costStatus === "missing_prices" ? (
+                    <ButtonLink
+                      href={
+                        menu.recipeId
+                          ? `/recipes/builder?id=${encodeURIComponent(menu.recipeId)}`
+                          : `/menus/${menu.id}/edit`
+                      }
+                      variant="secondary"
+                      size="sm"
+                      className="min-h-[40px]"
+                    >
+                      แก้สูตร
+                    </ButtonLink>
+                  ) : null}
+
+                  {saleStatus === "active" ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="min-h-[40px]"
+                      onClick={() => setStatus(menu, "closed")}
+                    >
+                      ปิดขาย
+                    </Button>
+                  ) : saleStatus !== "archived" ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="min-h-[40px]"
+                      onClick={() => setStatus(menu, "active")}
+                      disabled={!(menu.sellingPrice > 0)}
+                    >
+                      เปิดขาย
+                    </Button>
+                  ) : null}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </AppShell>
   );
 }

@@ -10,13 +10,15 @@
  */
 export type Menu = {
   id: string;
-  recipeId: string;
+  /** Optional when menu is listed before a recipe exists. */
+  recipeId?: string;
   name: string;
   category: string;
   packagingSetId?: string;
   sellingPrice: number;
   isActive: boolean;
   notes?: string;
+  imageUrl?: string;
 };
 
 export type MenuSeed = Menu;

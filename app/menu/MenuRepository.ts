@@ -17,7 +17,7 @@ import type { Menu, MenuSeed } from "./types";
 let menuCache: Menu[] | null = null;
 
 function validateMenuSeed(menu: MenuSeed): void {
-  if (!getRecipeById(menu.recipeId)) {
+  if (!menu.recipeId || !getRecipeById(menu.recipeId)) {
     throw new Error(
       `Menu "${menu.name}" (${menu.id}) references unknown recipe "${menu.recipeId}"`
     );

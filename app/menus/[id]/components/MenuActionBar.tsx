@@ -46,7 +46,7 @@ export default function MenuActionBar({ menuId, isEditable }: Props) {
     return (
       <ActionBar>
           <ButtonLink href="/menus/new" fullWidth>
-            สร้างเมนูของคุณจากตัวอย่าง
+            เพิ่มเมนูใหม่
           </ButtonLink>
       </ActionBar>
     );

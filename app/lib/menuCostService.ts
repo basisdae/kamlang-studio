@@ -94,6 +94,12 @@ export function getMenuCost(menuId: string): MenuCostBreakdown {
     );
   }
 
+  if (!menu.recipeId) {
+    throw new Error(
+      `Menu "${menu.name}" (${menu.id}) has no recipe — cannot calculate cost`
+    );
+  }
+
   return calculateMenuCost({
     recipeId: menu.recipeId,
     packagingSetId: menu.packagingSetId,
