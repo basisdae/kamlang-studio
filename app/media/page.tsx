@@ -81,6 +81,12 @@ export default function MediaLibraryPage() {
   const canFetch = Boolean(configured && workspaceId);
   const loading = canFetch && loadedWorkspaceId !== workspaceId;
   const canWrite = Boolean(user) && canFetch;
+  /** Do not treat “session still hydrating” or “workspace not ready” as logged-out. */
+  const authReady = !authLoading;
+  const showLoginCta = authReady && !user;
+  const showUploadCta = authReady && Boolean(user) && canFetch;
+  const showActionLoading =
+    authLoading || (Boolean(user) && !canFetch);
 
   useEffect(() => {
     if (!configured || !workspaceId) return;
@@ -213,7 +219,16 @@ export default function MediaLibraryPage() {
           <p className="kl-type-helper text-kl-muted">
             เก็บรูปสินค้าและสื่อสำหรับเมนู
           </p>
-          {canWrite ? (
+          {showActionLoading ? (
+            <Button
+              type="button"
+              size="sm"
+              disabled
+              className="min-h-[44px]"
+            >
+              กำลังตรวจสิทธิ์…
+            </Button>
+          ) : showUploadCta ? (
             <>
               <input
                 id={inputId}
@@ -228,7 +243,7 @@ export default function MediaLibraryPage() {
               <Button
                 type="button"
                 size="sm"
-                disabled={uploading || authLoading}
+                disabled={uploading}
                 onClick={() => inputRef.current?.click()}
                 className="min-h-[44px]"
               >
@@ -236,19 +251,19 @@ export default function MediaLibraryPage() {
                 {uploading ? "กำลังอัปโหลด…" : "อัปโหลดรูป"}
               </Button>
             </>
-          ) : (
+          ) : showLoginCta ? (
             <ButtonLink
-              href="/login"
+              href="/login?next=%2Fmedia"
               variant="secondary"
               size="sm"
               className="min-h-[44px]"
             >
               เข้าสู่ระบบ
             </ButtonLink>
-          )}
+          ) : null}
         </div>
 
-        {!user && !authLoading ? (
+        {showLoginCta ? (
           <Card className="!p-3">
             <p className="kl-type-helper">
               เข้าสู่ระบบเพื่ออัปโหลดหรือลบรูปในคลัง
