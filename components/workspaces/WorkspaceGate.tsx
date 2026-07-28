@@ -12,6 +12,7 @@ const PUBLIC_PREFIXES = [
   "/setup",
   "/status",
   "/auth",
+  "/login",
   "/dev",
   "/order",
   "/orders",

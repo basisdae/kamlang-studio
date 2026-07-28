@@ -19,8 +19,8 @@ export default function BackstoreLandingComposition() {
 
       <EmptyState
         icon={Boxes}
-        title="เริ่มจากคลังรูปหรือเมนูอาหาร"
-        hint="รอบนี้เป็นโครงหน้าเท่านั้น — ยังไม่มีข้อมูลจริงและยังไม่อัปโหลดรูป"
+        title="เริ่มจากคลังรูปหรือเมนูขาย"
+        hint="คลังรูปและเมนูขายพร้อมใช้งาน — เมนูสร้างได้ก่อนมีสูตร"
       />
 
       <Card className="!p-3">
@@ -44,7 +44,7 @@ export default function BackstoreLandingComposition() {
                 strokeWidth={1.75}
                 aria-hidden
               />
-              เมนูอาหาร
+              เมนูขาย
             </span>
           </ButtonLink>
         </div>

@@ -291,7 +291,7 @@ export const navigationItems: NavigationItem[] = [
   {
     id: "food-menu",
     title: "เมนูอาหาร",
-    href: "/food-menu",
+    href: "/menus",
     icon: UtensilsCrossed,
     mobile: true,
     desktop: true,
