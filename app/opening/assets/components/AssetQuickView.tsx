@@ -12,7 +12,6 @@ import {
   type AssetItem,
   type AssetStatus,
 } from "../../../../data/seed/tangtao";
-import { formatBaht } from "../../sampleData";
 import { useAssets } from "../AssetsProvider";
 
 type Props = {
@@ -26,29 +25,53 @@ function priceToInput(value: number | null): string {
 }
 
 function parsePrice(
-  raw: string
+  raw: string,
+  label: string
 ): { ok: true; value: number | null } | { ok: false; error: string } {
   const trimmed = raw.trim();
   if (trimmed === "") return { ok: true, value: null };
   const normalized = trimmed.replace(/,/g, "");
   if (!/^\d+(\.\d+)?$/.test(normalized)) {
-    return { ok: false, error: "ราคาต้องเป็นตัวเลขเท่านั้น" };
+    return { ok: false, error: `${label}ต้องเป็นตัวเลขเท่านั้น` };
   }
   const n = Number(normalized);
   if (!Number.isFinite(n) || n < 0) {
-    return { ok: false, error: "ราคาต้องเป็นตัวเลข ≥ 0" };
+    return { ok: false, error: `${label}ต้องเป็นตัวเลข ≥ 0` };
+  }
+  return { ok: true, value: n };
+}
+
+function parseQuantity(
+  raw: string
+): { ok: true; value: number } | { ok: false; error: string } {
+  const trimmed = raw.trim();
+  if (trimmed === "") {
+    return { ok: false, error: "กรุณาระบุจำนวน" };
+  }
+  const normalized = trimmed.replace(/,/g, "");
+  if (!/^\d+(\.\d+)?$/.test(normalized)) {
+    return { ok: false, error: "จำนวนต้องเป็นตัวเลขเท่านั้น" };
+  }
+  const n = Number(normalized);
+  if (!Number.isFinite(n) || n <= 0) {
+    return { ok: false, error: "จำนวนต้องมากกว่า 0" };
   }
   return { ok: true, value: n };
 }
 
 /**
- * Quick View — edit price + status on the list without leaving scroll position.
+ * Quick View — edit core purchase fields + status without leaving list scroll.
  * Desktop: centered modal · Mobile: bottom sheet.
  */
 export default function AssetQuickView({ item, open, onClose }: Props) {
   const titleId = useId();
   const { updateAsset, saving } = useAssets();
-  const [priceText, setPriceText] = useState("");
+  const [quantityText, setQuantityText] = useState("1");
+  const [estimatedText, setEstimatedText] = useState("");
+  const [actualText, setActualText] = useState("");
+  const [supplier, setSupplier] = useState("");
+  const [purchasedAt, setPurchasedAt] = useState("");
+  const [warranty, setWarranty] = useState("");
   const [status, setStatus] = useState<AssetStatus>("planned");
   const [error, setError] = useState<string | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -59,7 +82,12 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
   useEffect(() => {
     if (!open || !item) return;
     queueMicrotask(() => {
-      setPriceText(priceToInput(item.estimatedPrice));
+      setQuantityText(String(item.quantity));
+      setEstimatedText(priceToInput(item.estimatedPrice));
+      setActualText(priceToInput(item.actualPrice));
+      setSupplier(item.supplier);
+      setPurchasedAt(item.purchasedAt ?? "");
+      setWarranty(item.warranty);
       setStatus(item.status);
       setError(null);
       setConfirmDiscard(false);
@@ -91,7 +119,17 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
   const dirty =
     item != null &&
     (status !== item.status ||
-      priceToInput(item.estimatedPrice) !== priceText.trim());
+      String(item.quantity) !== quantityText.trim() ||
+      priceToInput(item.estimatedPrice) !== estimatedText.trim() ||
+      priceToInput(item.actualPrice) !== actualText.trim() ||
+      item.supplier !== supplier.trim() ||
+      (item.purchasedAt ?? "") !== purchasedAt ||
+      item.warranty !== warranty.trim());
+
+  function markEdited() {
+    setError(null);
+    setConfirmDiscard(false);
+  }
 
   function requestClose() {
     if (busy) return;
@@ -121,9 +159,19 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
     setError(null);
     setConfirmDiscard(false);
 
-    const parsed = parsePrice(priceText);
-    if (!parsed.ok) {
-      setError(parsed.error);
+    const qty = parseQuantity(quantityText);
+    if (!qty.ok) {
+      setError(qty.error);
+      return;
+    }
+    const estimated = parsePrice(estimatedText, "ราคาประเมิน");
+    if (!estimated.ok) {
+      setError(estimated.error);
+      return;
+    }
+    const actual = parsePrice(actualText, "ราคาจริง");
+    if (!actual.ok) {
+      setError(actual.error);
       return;
     }
     if (!status) {
@@ -134,7 +182,12 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
     setLocalSaving(true);
     try {
       const updated = await updateAsset(item.id, {
-        estimatedPrice: parsed.value,
+        quantity: qty.value,
+        estimatedPrice: estimated.value,
+        actualPrice: actual.value,
+        supplier: supplier.trim(),
+        purchasedAt: purchasedAt.trim() || null,
+        warranty: warranty.trim(),
         status,
       });
 
@@ -169,7 +222,7 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
                 {item.name}
               </p>
               <p className="kl-type-helper mt-0.5 truncate">
-                {item.category} · {item.quantity} {item.unit}
+                {item.category} · {item.unit}
               </p>
             </div>
             <Button
@@ -185,29 +238,103 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
           </div>
 
           <label className="block">
-            <span className="kl-type-caption text-kl-muted">
-              ราคา (บาท / หน่วย)
-            </span>
+            <span className="kl-type-caption text-kl-muted">จำนวน</span>
             <input
               className={KL_FIELD_CLASS}
               type="text"
               inputMode="decimal"
-              enterKeyHint="done"
               autoComplete="off"
-              value={priceText}
+              value={quantityText}
               disabled={busy}
-              placeholder="เช่น 1500"
               onChange={(e) => {
-                setPriceText(e.target.value);
-                setError(null);
-                setConfirmDiscard(false);
+                setQuantityText(e.target.value);
+                markEdited();
               }}
             />
-            {item.estimatedPrice != null ? (
-              <p className="kl-type-caption mt-1 text-kl-muted">
-                ค่าปัจจุบัน: {formatBaht(item.estimatedPrice)}
-              </p>
-            ) : null}
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="kl-type-caption text-kl-muted">
+                ราคาประเมิน
+              </span>
+              <input
+                className={KL_FIELD_CLASS}
+                type="text"
+                inputMode="decimal"
+                enterKeyHint="done"
+                autoComplete="off"
+                value={estimatedText}
+                disabled={busy}
+                placeholder="เช่น 4800"
+                onChange={(e) => {
+                  setEstimatedText(e.target.value);
+                  markEdited();
+                }}
+              />
+            </label>
+            <label className="block">
+              <span className="kl-type-caption text-kl-muted">ราคาจริง</span>
+              <input
+                className={KL_FIELD_CLASS}
+                type="text"
+                inputMode="decimal"
+                enterKeyHint="done"
+                autoComplete="off"
+                value={actualText}
+                disabled={busy}
+                placeholder="เช่น 4927"
+                onChange={(e) => {
+                  setActualText(e.target.value);
+                  markEdited();
+                }}
+              />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="kl-type-caption text-kl-muted">Supplier</span>
+            <input
+              className={KL_FIELD_CLASS}
+              type="text"
+              autoComplete="off"
+              value={supplier}
+              disabled={busy}
+              onChange={(e) => {
+                setSupplier(e.target.value);
+                markEdited();
+              }}
+            />
+          </label>
+
+          <label className="block">
+            <span className="kl-type-caption text-kl-muted">วันที่ซื้อ</span>
+            <input
+              className={KL_FIELD_CLASS}
+              type="date"
+              value={purchasedAt}
+              disabled={busy}
+              onChange={(e) => {
+                setPurchasedAt(e.target.value);
+                markEdited();
+              }}
+            />
+          </label>
+
+          <label className="block">
+            <span className="kl-type-caption text-kl-muted">ประกัน</span>
+            <input
+              className={KL_FIELD_CLASS}
+              type="text"
+              autoComplete="off"
+              value={warranty}
+              disabled={busy}
+              placeholder="เช่น 12 เดือน"
+              onChange={(e) => {
+                setWarranty(e.target.value);
+                markEdited();
+              }}
+            />
           </label>
 
           <label className="block">
@@ -218,8 +345,7 @@ export default function AssetQuickView({ item, open, onClose }: Props) {
               disabled={busy}
               onChange={(e) => {
                 setStatus(e.target.value as AssetStatus);
-                setError(null);
-                setConfirmDiscard(false);
+                markEdited();
               }}
             >
               {ASSET_STATUS_FLOW.map((s) => (

@@ -292,12 +292,58 @@ export function decisionGroupFromDatabase(
   };
 }
 
+/**
+ * Prefer UI aliases when present. Domain Asset rows often carry both
+ * `estimatedUnitPrice` and `estimatedPrice`; patches use UI names — if we
+ * prefer domain via `??`, a Quick View save silently keeps the old price.
+ */
+function pickAliasedNumber(
+  item: Record<string, unknown>,
+  uiKey: string,
+  domainKey: string
+): number | null {
+  if (uiKey in item) return asNumber(item[uiKey]);
+  return asNumber(item[domainKey]);
+}
+
+function pickAliasedString(
+  item: Record<string, unknown>,
+  uiKey: string,
+  domainKey: string,
+  fallback = ""
+): string {
+  if (uiKey in item) return asString(item[uiKey], fallback);
+  return asString(item[domainKey], fallback);
+}
+
+function pickAliasedNullableString(
+  item: Record<string, unknown>,
+  uiKey: string,
+  domainKey: string
+): string | null {
+  if (uiKey in item) {
+    const v = item[uiKey];
+    if (v == null || v === "") return null;
+    return String(v);
+  }
+  const v = item[domainKey];
+  if (v == null || v === "") return null;
+  return String(v);
+}
+
 /** Map UI AssetItem-like patch into write input */
 export function uiAssetToWriteInput(
   item: Record<string, unknown>
 ): AssetWriteInput {
-  const warranty = asString(item.warranty);
-  const warrantyMatch = warranty.match(/(\d+)/);
+  let warrantyMonths: number | null;
+  if ("warranty" in item) {
+    const warranty = asString(item.warranty);
+    const warrantyMatch = warranty.match(/(\d+)/);
+    warrantyMonths = warrantyMatch ? Number(warrantyMatch[1]) : null;
+  } else {
+    warrantyMonths = asNumber(item.warrantyMonths);
+  }
+
   const prevSpecs =
     item.specifications && typeof item.specifications === "object"
       ? { ...(item.specifications as Record<string, unknown>) }
@@ -312,20 +358,28 @@ export function uiAssetToWriteInput(
     model: asString(item.model),
     quantity: asRequiredNumber(item.quantity, 1),
     unit: asString(item.unit, "ชิ้น"),
-    estimatedUnitPrice: asNumber(
-      item.estimatedUnitPrice ?? item.estimatedPrice
+    estimatedUnitPrice: pickAliasedNumber(
+      item,
+      "estimatedPrice",
+      "estimatedUnitPrice"
     ),
-    actualUnitPrice: asNumber(item.actualUnitPrice ?? item.actualPrice),
-    supplierName: asString(item.supplierName ?? item.supplier),
+    actualUnitPrice: pickAliasedNumber(
+      item,
+      "actualPrice",
+      "actualUnitPrice"
+    ),
+    supplierName: pickAliasedString(item, "supplier", "supplierName"),
     purchaseChannel: (asString(
       item.purchaseChannel
     ) || "") as AssetPurchaseChannel,
     purchaseUrl: asString(item.purchaseUrl),
     priority: (asString(item.priority, "must") as Asset["priority"]) || "must",
     status: (asString(item.status, "planned") as AssetStatus) || "planned",
-    purchaseDate: (item.purchaseDate ?? item.purchasedAt ?? null) as
-      | string
-      | null,
+    purchaseDate: pickAliasedNullableString(
+      item,
+      "purchasedAt",
+      "purchaseDate"
+    ),
     specifications: {
       ...prevSpecs,
       size: asString(item.size ?? prevSpecs.size),
@@ -340,13 +394,13 @@ export function uiAssetToWriteInput(
             : Boolean(prevSpecs.requiredForOpening)
           : Boolean(item.requiredForOpening),
     },
-    notes: asString(item.notes ?? item.note),
-    warrantyMonths: warrantyMatch
-      ? Number(warrantyMatch[1])
-      : asNumber(item.warrantyMonths),
-    warrantyExpiresAt: (item.warrantyExpiresAt ??
-      item.warrantyUntil ??
-      null) as string | null,
+    notes: pickAliasedString(item, "note", "notes"),
+    warrantyMonths,
+    warrantyExpiresAt: pickAliasedNullableString(
+      item,
+      "warrantyUntil",
+      "warrantyExpiresAt"
+    ),
     serialNumber: asString(item.serialNumber),
     decisionGroupId: (item.decisionGroupId ?? null) as string | null,
   };

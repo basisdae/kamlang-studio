@@ -145,14 +145,30 @@ export class AssetService {
     const existing = await assets.getById(id, workspaceId);
     if (!existing) throw validationError("ไม่พบอุปกรณ์");
 
+    // UI-shaped base only — never spread domain Asset (dual aliases shadow patches).
     const merged = uiAssetToWriteInput({
-      ...existing,
+      name: existing.name,
+      category: existing.category,
+      brand: existing.brand,
+      model: existing.model,
+      quantity: existing.quantity,
+      unit: existing.unit,
       estimatedPrice: existing.estimatedUnitPrice,
       actualPrice: existing.actualUnitPrice,
       supplier: existing.supplierName,
+      purchaseChannel: existing.purchaseChannel,
+      purchaseUrl: existing.purchaseUrl,
+      priority: existing.priority,
+      status: existing.status,
       purchasedAt: existing.purchaseDate,
       note: existing.notes,
+      warranty:
+        existing.warrantyMonths != null
+          ? `${existing.warrantyMonths} เดือน`
+          : "",
       warrantyUntil: existing.warrantyExpiresAt,
+      serialNumber: existing.serialNumber,
+      decisionGroupId: existing.decisionGroupId,
       size: existing.specifications.size,
       color: existing.specifications.color,
       material: existing.specifications.material,
