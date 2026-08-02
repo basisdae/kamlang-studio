@@ -13,8 +13,8 @@ type AppShellProps = {
   hidePageHeader?: boolean;
   compact?: boolean;
   /**
-   * @deprecated Mobile First — content stays ~390px on all breakpoints.
-   * Desktop only adds sidebar; never widen into a dashboard.
+   * Opt-in wider canvas for dense detail dashboards (e.g. asset detail).
+   * Default stays Mobile First (~390px). Does not change global Design System.
    */
   wide?: boolean;
   headerAction?: {
@@ -28,14 +28,15 @@ type AppShellProps = {
 
 /**
  * Mobile First app shell.
- * Design canvas ≈ 390px. Desktop = same column + sidebar (layout expand only).
- * Do not change primary CTA order or flow per breakpoint.
+ * Design canvas ≈ 390px. Desktop = same column + sidebar (layout expand only),
+ * unless `wide` is set for a detail dashboard.
  */
 export default function AppShell({
   title,
   description,
   hidePageHeader = false,
   compact = false,
+  wide = false,
   headerAction,
   children,
   backHref,
@@ -44,6 +45,9 @@ export default function AppShell({
     ? "kl-page-safe-top--compact pb-5"
     : "kl-page-safe-top pb-7";
   const contentGap = compact ? "space-y-3" : "space-y-5";
+  const contentWidth = wide
+    ? "max-w-[min(100%,52rem)]"
+    : "max-w-[var(--bi-app-width)]";
 
   return (
     <div className="kl-shell md:flex">
@@ -56,7 +60,7 @@ export default function AppShell({
           className={`kl-page-above-nav min-h-screen overflow-x-hidden bg-kl-ivory px-4 text-kl-brown sm:px-5 ${mainPadding}`}
         >
           <div
-            className={`mx-auto w-full min-w-0 max-w-[var(--bi-app-width)] ${contentGap}`}
+            className={`mx-auto w-full min-w-0 ${contentWidth} ${contentGap}`}
           >
             <div className="space-y-1">
               {/* Own row: full workspace name — never truncated beside the title */}

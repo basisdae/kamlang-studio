@@ -233,8 +233,8 @@ export default function AssetDetailDashboard({
   return (
     <div className="space-y-4">
       {/* Dashboard header — Content = asset name (workspace stays in switcher) */}
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-2">
+      <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 space-y-2">
           <h1 className="kl-type-page-title break-words">{asset.name}</h1>
           {metaLine ? (
             <p className="kl-type-helper">{metaLine}</p>
@@ -249,7 +249,7 @@ export default function AssetDetailDashboard({
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:max-w-[28rem] lg:justify-end">
           <ButtonLink
             href={`/opening/assets/${asset.id}/edit`}
             className="min-h-[2.75rem] !px-3"
@@ -374,20 +374,20 @@ export default function AssetDetailDashboard({
       ) : null}
 
       {/* Hero: image + summary */}
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,32%)_minmax(0,1fr)] md:items-start">
+      <section className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,34%)_minmax(0,1fr)] md:items-start md:gap-4">
         <Card className="overflow-hidden !p-0">
-          <div className="flex max-h-44 flex-col items-center justify-center gap-2 bg-kl-surface px-3 py-6 md:max-h-52 md:aspect-[4/3] md:py-0">
+          <div className="flex max-h-28 flex-col items-center justify-center gap-1.5 bg-kl-surface px-3 py-4 md:max-h-44 md:aspect-[4/3] md:py-0">
             {asset.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- remote asset URLs vary by workspace
               <img
                 src={asset.imageUrl}
                 alt={asset.name}
-                className="max-h-40 w-full object-contain md:max-h-48"
+                className="max-h-24 w-full object-contain md:max-h-40"
               />
             ) : (
               <>
                 <ImageIcon
-                  className="h-8 w-8 text-kl-muted"
+                  className="h-7 w-7 text-kl-muted"
                   strokeWidth={KL_ICON_STROKE}
                   aria-hidden
                 />

@@ -43,7 +43,7 @@ export default function OpeningAssetDetailPage() {
   }
 
   return (
-    <AppShell title="" hidePageHeader compact backHref="/opening/assets">
+    <AppShell title="" hidePageHeader compact wide backHref="/opening/assets">
       <AssetDetailDashboard
         asset={asset}
         dataSource={dataSource}
